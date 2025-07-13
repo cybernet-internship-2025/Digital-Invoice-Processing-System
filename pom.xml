@@ -17,6 +17,8 @@
 
     <modules>
         <module>notification</module>
+        <module>user-management</module>
+        <module>invoice</module>
     </modules>
 
     <dependencies>
