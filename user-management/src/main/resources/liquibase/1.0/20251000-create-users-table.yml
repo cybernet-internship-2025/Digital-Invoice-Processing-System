@@ -13,6 +13,7 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    primaryKeyName: primary_user_id
                     nullable: false
 
               - column:
