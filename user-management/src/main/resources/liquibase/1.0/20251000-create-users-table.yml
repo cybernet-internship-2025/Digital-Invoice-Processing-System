@@ -5,6 +5,7 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: user
+            schemaName: user_schema
             columns:
               - column:
                   name: id
