@@ -1,4 +1,4 @@
 package az.cybernet.invoice.controller;
 
-public class UserController {
+public class InvoiceController {
 }

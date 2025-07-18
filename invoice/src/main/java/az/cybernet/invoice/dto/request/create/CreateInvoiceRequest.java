@@ -1,4 +1,4 @@
 package az.cybernet.invoice.dto.request.create;
 
-public class CreateUserRequest {
+public class CreateInvoiceRequest {
 }

@@ -1,4 +1,4 @@
 package az.cybernet.invoice.dto.request.update;
 
-public class UpdateUserRequest {
+public class UpdateInvoiceRequest {
 }
