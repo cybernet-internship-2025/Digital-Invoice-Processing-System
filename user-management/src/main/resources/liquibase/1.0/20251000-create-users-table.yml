@@ -4,7 +4,7 @@ databaseChangeLog:
       author: mensura
       changes:
         - createTable:
-            tableName: user
+            tableName: users
             schemaName: user
             columns:
               - column:
