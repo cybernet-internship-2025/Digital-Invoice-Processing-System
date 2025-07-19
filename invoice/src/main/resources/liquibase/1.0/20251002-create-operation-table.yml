@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 20251002
-      author: gulnare.islamova
+      author: gulnare
       changes:
         - createTable:
             schemaName: invoice
