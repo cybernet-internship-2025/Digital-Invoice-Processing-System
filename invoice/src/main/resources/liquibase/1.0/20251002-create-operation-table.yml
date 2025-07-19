@@ -13,6 +13,7 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    primaryKeyName: pk_operations
                     nullable: false
 
               - column:
@@ -35,7 +36,7 @@ databaseChangeLog:
 
               - column:
                   name: comment
-                  type: VARCHAR(255)
+                  type: TEXT
                   constraints:
                     nullable: false
 
