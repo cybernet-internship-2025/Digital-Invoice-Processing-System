@@ -4,6 +4,7 @@ databaseChangeLog:
       author: Farid V
       changes:
         - createTable:
+            schemaName: invoice
             tableName: items
             columns:
               - column:
