@@ -1,0 +1,6 @@
+- changeSet:
+    id: 20251001
+    author: Farid Mustafayev
+    changes:
+      - sql:
+          sql: CREATE SCHEMA IF NOT EXISTS user;
