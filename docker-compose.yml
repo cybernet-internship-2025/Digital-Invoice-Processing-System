@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  invoice-db:
+    image: postgres:16
+    container_name: invoice-db
+    environment:
+      POSTGRES_DB: cybernet-invoice
+      POSTGRES_USER: invoice
+      POSTGRES_PASSWORD: password#2025
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      POSTGRES_DB: cybernet-user
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5434:5432"
+    networks:
+      - backend
+
+  user-management-service:
+    build:
+      context: ./user-management
+      dockerfile: Dockerfile
+    container_name: user-management-service
+    depends_on:
+      - user-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/cybernet-user
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password123
+      SPRING_APPLICATION_NAME: user-management-service
+      SERVER_PORT: 8080
+    ports:
+      - "8081:8080"
+    networks:
+      - backend
+
+  invoice-service:
+    build:
+      context: ./invoice
+      dockerfile: Dockerfile
+    container_name: invoice-service
+    depends_on:
+      - invoice-db
+      - user-management-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://invoice-db:5432/cybernet-invoice
+      SPRING_DATASOURCE_USERNAME: invoice
+      SPRING_DATASOURCE_PASSWORD: password#2025
+      USER_MANAGEMENT_URL: http://user-management-service:8080
+      SPRING_APPLICATION_NAME: invoice-service
+      SERVER_PORT: 8080
+    ports:
+      - "8082:8080"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
