@@ -1,9 +1,10 @@
 databaseChangeLog:
   - changeSet:
       id: 20251002
-      author: gulnare
+      author: gulnare.islamova
       changes:
         - createTable:
+            schemaName: invoice
             tableName: operations
             columns:
               - column:
