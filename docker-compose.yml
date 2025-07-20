@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  invoice-db:
+    image: postgres:16
+    container_name: invoice-db
+    environment:
+      POSTGRES_DB: ${DB_NAME_INVOICE}
+      POSTGRES_USER: ${DB_USERNAME_INVOICE}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_INVOICE}
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      POSTGRES_DB: ${DB_NAME_USER}
+      POSTGRES_USER: ${DB_USERNAME_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_USER}
+    ports:
+      - "5434:5432"
+    networks:
+      - backend
+
+  user-management-service:
+    build:
+      context: ./user-management
+      dockerfile: Dockerfile
+    container_name: user-management-service
+    depends_on:
+      - user-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/${DB_NAME_USER}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD_USER}
+      SPRING_APPLICATION_NAME: user-management-service
+      SERVER_PORT: 8080
+    ports:
+      - "8081:8080"
+    networks:
+      - backend
+
+  invoice-service:
+    build:
+      context: ./invoice
+      dockerfile: Dockerfile
+    container_name: invoice-service
+    depends_on:
+      - invoice-db
+      - user-management-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://invoice-db:5432/${DB_NAME_INVOICE}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME_INVOICE}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD_INVOICE}
+      USER_MANAGEMENT_URL: http://user-management-service:8080
+      SPRING_APPLICATION_NAME: invoice-service
+      SERVER_PORT: 8080
+    ports:
+      - "8082:8080"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

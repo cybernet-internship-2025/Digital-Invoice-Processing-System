@@ -4,7 +4,7 @@ databaseChangeLog:
       author: cavid.abdullayev
       changes:
         - createTable:
-
+            schemaName: invoice
             tableName: invoices
             columns:
               - column:
@@ -54,14 +54,14 @@ databaseChangeLog:
 
               - column:
                   name: invoice_number
-                  type: VARCHAR(100)
+                  type: VARCHAR(8)
                   constraints:
                     nullable: false
                     unique: true
 
               - column:
                   name: invoice_series
-                  type: VARCHAR(20)
+                  type: VARCHAR(10)
                   constraints:
                     nullable: false
 
