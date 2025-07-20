@@ -14,6 +14,7 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
                     nullable: false
+                    primaryKeyName: invoice_id_primary_key
 
               - column:
                   name: sender_user_id
