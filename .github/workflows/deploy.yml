@@ -1,0 +1,169 @@
+name: Deploy Microservices to PROD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare-deployment:
+    runs-on: ubuntu-latest
+    outputs:
+      vps_host: ${{ secrets.VPS_HOST }}
+    steps:
+      - name: Set up deployment variables
+        run: echo "Preparing deployment variables..."
+
+  build-images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - folder: 'invoice'
+            image: 'prometheus-invoice-service'
+            context: '.'
+          - folder: 'notification'
+            image: 'prometheus-notification-service'
+            context: '.'
+          - folder: 'user-management'
+            image: 'prometheus-user-service'
+            context: '.'
+          - folder: 'nginx'
+            image: 'prometheus-api-gateway'
+            context: './nginx'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: List files in the workspace
+        run: ls -R
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image for ${{ matrix.image }}
+        uses: docker/build-push-action@v5
+        with:
+          #context: ./${{ matrix.folder }}
+#          context: .
+          context: ${{ matrix.context }}
+          file: ./${{ matrix.folder }}/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+
+  deploy-to-vps:
+    needs: [prepare-deployment, build-images]
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+      url: 'http://${{ needs.prepare-deployment.outputs.vps_host }}'
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            REPO_DIR="Digital-Invoice-Processing-System"
+            if [ ! -d "$REPO_DIR" ]; then
+              git clone https://github.com/cybernet-internship-2025/Digital-Invoice-Processing-System.git
+              cd $REPO_DIR
+            else
+              cd $REPO_DIR
+              git pull
+            fi
+
+            echo "--- Creating .env file on the server ---"
+            cat <<EOF > .env
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            INVOICE_DB_NAME=${{ secrets.INVOICE_DB_NAME }}
+            INVOICE_DB_USER=${{ secrets.INVOICE_DB_USER }}
+            INVOICE_DB_PASS=${{ secrets.INVOICE_DB_PASS }}
+            NOTIFICATION_DB_NAME=${{ secrets.NOTIFICATION_DB_NAME }}
+            NOTIFICATION_DB_USER=${{ secrets.NOTIFICATION_DB_USER }}
+            NOTIFICATION_DB_PASS=${{ secrets.NOTIFICATION_DB_PASS }}
+            USER_DB_NAME=${{ secrets.USER_DB_NAME }}
+            USER_DB_USER=${{ secrets.USER_DB_USER }}
+            USER_DB_PASS=${{ secrets.USER_DB_PASS }}
+            TZ=Asia/Baku
+            LOGGING_LEVEL_ROOT=INFO
+            EOF
+            echo "--- .env file created successfully ---"
+            
+            cat <<EOF > docker-compose.yml
+            version: '3.8'
+
+            services:
+              api-gateway:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/prometheus-api-gateway:latest
+                container_name: prometheus-api-gateway-container
+                ports:
+                  - "81:80"
+                restart: always
+                depends_on:
+                  - invoice-service
+                  - notification-service
+                  - user-service
+                environment:
+                  TZ: \${TZ}
+
+              postgres-db:
+                image: postgres:16-alpine
+                container_name: prometheus-postgres-db-container
+                env_file:
+                  - .env
+                volumes:
+                  - prometheus-postgres-data:/var/lib/postgresql/data
+                  - ./postgres-init:/docker-entrypoint-initdb.d
+                restart: always
+                environment:
+                  TZ: \${TZ}
+
+              invoice-service:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/prometheus-invoice-service:latest
+                container_name: prometheus-invoice-service-container
+                env_file:
+                  - .env
+                depends_on:
+                  - postgres-db
+                restart: always
+                environment:
+                  TZ: \${TZ}
+
+              notification-service:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/prometheus-notification-service:latest
+                container_name: prometheus-notification-service-container
+                env_file:
+                  - .env
+                depends_on:
+                  - postgres-db
+                restart: always
+                environment:
+                  TZ: \${TZ}
+
+              user-service:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/prometheus-user-service:latest
+                container_name: prometheus-user-management-container
+                env_file:
+                  - .env
+                depends_on:
+                  - postgres-db
+                restart: always
+                environment:
+                  TZ: \${TZ}
+
+            volumes:
+              prometheus-postgres-data:
+            EOF
+
+            echo "--- Configuration files created successfully ---"
+            
+            docker compose pull
+            docker compose up -d --remove-orphans
