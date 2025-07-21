@@ -49,6 +49,12 @@
             <version>3.2.5</version>
         </dependency>
 
+        <!-- liquibase -->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+
         <!-- MyBatis -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
@@ -70,6 +76,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <version>3.2.5</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- MyBatis Test -->

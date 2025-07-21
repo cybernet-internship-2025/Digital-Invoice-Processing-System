@@ -1,3 +1,15 @@
 databaseChangeLog:
-  - includeAll:
-      path: liquibase/1.0
+  - include:
+      file: liquibase/1.0/20251004-create-schema.yml
+
+  - include:
+      file: liquibase/1.0/20251000-create-invoices-table.yml
+
+  - include:
+      file: liquibase/1.0/20251003-create-measurement-table.yml
+
+  - include:
+      file: liquibase/1.0/20251001-create-item-table.yml
+
+  - include:
+      file: liquibase/1.0/20251002-create-operation-table.yml
