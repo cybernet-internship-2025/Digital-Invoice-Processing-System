@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/Digital Invoice Processing System
-    username: digital_invoice_db
-    password: secret123
+    url: jdbc:postgresql://localhost:5433/DB_NAME
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driverClassName: org.postgresql.Driver
   liquibase:
     change-log: classpath:liquibase/changelog-master.yml
-    drop-first: true
+    drop-first:false
