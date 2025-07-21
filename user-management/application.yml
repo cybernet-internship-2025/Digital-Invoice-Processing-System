@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/Digital Invoice Processing System
+    username: digital_invoice_db
+    password: secret123
+    driverClassName: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+    drop-first: true
