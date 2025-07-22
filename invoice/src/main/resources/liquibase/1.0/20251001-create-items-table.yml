@@ -18,13 +18,13 @@ databaseChangeLog:
 
               - column:
                   name: name
-                  type: VARCHAR(256)
+                  type: VARCHAR(50)
                   constraints:
                     nullable: false
 
               - column:
                   name: unit_price
-                  type: NUMERIC(10,2)
+                  type: NUMERIC(10, 2)
                   constraints:
                     nullable: false
 
@@ -41,6 +41,12 @@ databaseChangeLog:
                     nullable: false
 
               - column:
+                  name: is_active
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+              - column:
                   name: invoice_id
                   type: BIGINT
                   constraints:
@@ -51,6 +57,8 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
+
+
 
         - addForeignKeyConstraint:
             baseTableName: items
