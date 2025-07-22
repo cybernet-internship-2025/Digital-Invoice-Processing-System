@@ -1,8 +1,12 @@
 package az.cybernet.invoice.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class OperationEntity {
     private Long id;
