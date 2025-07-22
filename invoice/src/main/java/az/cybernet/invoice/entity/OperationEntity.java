@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class OperationEntity {
      Long id;

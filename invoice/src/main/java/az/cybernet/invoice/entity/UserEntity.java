@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level= PRIVATE)
 public class UserEntity {
     Long id;
@@ -20,6 +20,4 @@ public class UserEntity {
     Boolean isActive;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-
-
 }
