@@ -4,7 +4,7 @@ databaseChangeLog:
       author: mehdi asadov
       changes:
         - createTable:
-            tableName: measurement
+            tableName: measurements
             schemaName: measurement
             columns:
               - column:
