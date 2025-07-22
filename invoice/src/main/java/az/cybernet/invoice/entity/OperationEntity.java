@@ -3,16 +3,21 @@ package az.cybernet.invoice.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+
+import static lombok.AccessLevel.PRIVATE;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@FieldDefaults(level = PRIVATE)
 public class OperationEntity {
-    private Long id;
-    private Long invoiceId;
-    private Long itemId;
-    private String status;
-    private String comment;
-    private LocalDateTime createdAt;
+     Long id;
+     Long invoiceId;
+     Long itemId;
+     String status;
+     String comment;
+     LocalDateTime createdAt;
 }
