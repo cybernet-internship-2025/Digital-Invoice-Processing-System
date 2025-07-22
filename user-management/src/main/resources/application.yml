@@ -7,3 +7,5 @@ spring:
   liquibase:
     change-log: classpath:liquibase/changelog-master.yml
     drop-first: true
+    default-schema: users
+    liquibase-schema: public
