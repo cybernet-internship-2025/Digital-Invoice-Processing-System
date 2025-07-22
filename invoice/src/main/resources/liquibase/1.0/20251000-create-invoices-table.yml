@@ -1,0 +1,81 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20251000
+      author: cavid.abdullayev
+      changes:
+        - createTable:
+            schemaName: invoice
+            tableName: invoices
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: invoice_id_primary_key
+
+              - column:
+                  name: sender_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: recipient_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+
+              - column:
+                  name: total_price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: invoice_number
+                  type: VARCHAR(8)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column:
+                  name: invoice_series
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: invoices
+            baseColumnNames: recipient_user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_invoice_recipient_user
+
+        - addForeignKeyConstraint:
+            baseTableName: invoices
+            baseColumnNames: sender_user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_invoice_sender_user
