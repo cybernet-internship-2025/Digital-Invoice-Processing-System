@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -21,8 +21,8 @@ public class InvoiceEntity {
     Long senderUserId;
     Long recipientUserId;
     BigDecimal totalPrice;
-    Timestamp createdAt;
-    Timestamp updatedAt;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
     String status;
     String invoiceNumber;
     String invoiceSeries;

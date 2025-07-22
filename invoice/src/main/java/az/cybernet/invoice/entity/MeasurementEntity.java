@@ -1,14 +1,15 @@
 package az.cybernet.invoice.entity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
 import java.math.BigInteger;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
-
 
 @Data
 @Builder
@@ -16,9 +17,9 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class MeasurementEntity {
-     BigInteger Id;
-     String name;
-     Timestamp createdAt;
-     Timestamp updateAt;
-     boolean isActive;
+    BigInteger Id;
+    String name;
+    LocalDateTime createdAt;
+    LocalDateTime updateAt;
+    boolean isActive;
 }
