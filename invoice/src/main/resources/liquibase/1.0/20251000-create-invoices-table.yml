@@ -45,7 +45,7 @@ databaseChangeLog:
                   name: updated_at
                   type: TIMESTAMP
                   constraints:
-                    nullable: false
+                    nullable: true
 
               - column:
                   name: status
@@ -67,9 +67,9 @@ databaseChangeLog:
                     nullable: false
 
         - addForeignKeyConstraint:
-            baseTableName: invoice
+            baseTableName: invoices
             baseColumnNames: recipient_user_id
-            referencedTableName: user
+            referencedTableName: users
             referencedColumnNames: id
             constraintName: fk_invoice_recipient_user
 
