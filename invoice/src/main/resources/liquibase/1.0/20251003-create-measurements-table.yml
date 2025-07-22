@@ -4,8 +4,8 @@ databaseChangeLog:
       author: mehdi asadov
       changes:
         - createTable:
-            tableName: measurements
-            schemaName: measurement
+            tableName: measurement
+            schemaName: invoice
             columns:
               - column:
                   name: id
