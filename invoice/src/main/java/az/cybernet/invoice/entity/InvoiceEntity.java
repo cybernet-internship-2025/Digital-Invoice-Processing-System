@@ -6,20 +6,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @FieldDefaults(level = PRIVATE)
-public class MeasurementEntity {
-    BigInteger Id;
-    String name;
+public class InvoiceEntity {
+    Long id;
+    Long senderUserId;
+    Long recipientUserId;
+    BigDecimal totalPrice;
     LocalDateTime createdAt;
-    LocalDateTime updateAt;
-    boolean isActive;
+    LocalDateTime updatedAt;
+    String status;
+    String invoiceNumber;
+    String invoiceSeries;
 }
