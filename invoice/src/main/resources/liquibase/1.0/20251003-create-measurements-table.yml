@@ -20,6 +20,7 @@ databaseChangeLog:
                   type: VARCHAR(128)
                   constraints:
                     nullable: false
+                    unique: true
               - column:
                   name: created_at
                   type: TIMESTAMP
