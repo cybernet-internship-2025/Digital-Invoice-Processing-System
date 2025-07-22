@@ -5,6 +5,7 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: measurement
+            schemaName: measurement
             columns:
               - column:
                   name: id
@@ -12,6 +13,7 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    primaryKeyName: pk_measurement_id
                     nullable: false
               - column:
                   name: name
