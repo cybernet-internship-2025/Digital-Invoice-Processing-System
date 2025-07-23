@@ -1,20 +1,15 @@
-package az.cybernet.invoice.dto.response;
+package az.cybernet.invoice.dto.request.operation;
 
 //import az.cybernet.invoice.enums.OperationStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
 @FieldDefaults(level = PRIVATE)
-public class OperationResponse {
-    Long id;
+public class CreateOperationRequest {
     //OperationStatus status;
     String comment;
-    LocalDateTime createdAt;
     Long invoiceId;
     Long itemId;
 }

@@ -1,7 +1,7 @@
 package az.cybernet.invoice.repository;
 
-import az.cybernet.invoice.dto.request.create.CreateOperationRequest;
-import az.cybernet.invoice.dto.response.OperationResponse;
+import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.response.operation.OperationResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

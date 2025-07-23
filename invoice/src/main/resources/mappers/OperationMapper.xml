@@ -13,12 +13,12 @@
         SELECT * FROM invoice.operations WHERE invoice_id = #{invoiceId}
     </select>
 
-    <insert id="insert" parameterType="az.cybernet.invoice.dto.request.create.CreateOperationRequest">
+    <insert id="insert" parameterType="az.cybernet.invoice.dto.request.operation.CreateOperationRequest">
         INSERT INTO invoice.operations (status, comment, created_at, invoice_id, item_id)
         VALUES (#{status}, #{comment}, #{createdAt}, #{invoiceId}, #{itemId})
     </insert>
 
-    <resultMap id="OperationResultMap" type="az.cybernet.invoice.dto.response.OperationResponse">
+    <resultMap id="OperationResultMap" type="az.cybernet.invoice.dto.response.operation.OperationResponse">
         <id property="id" column="id"/>
         <result property="status" column="status"/>
         <result property="comment" column="comment"/>

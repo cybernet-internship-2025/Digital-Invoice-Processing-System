@@ -1,4 +1,4 @@
-package az.cybernet.invoice.dto.response;
+package az.cybernet.invoice.dto.response.invoice;
 
 import az.cybernet.invoice.enums.InvoiceStatus;
 import lombok.AllArgsConstructor;

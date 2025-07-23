@@ -1,4 +1,4 @@
-package az.cybernet.invoice.dto.request.create;
+package az.cybernet.invoice.dto.request.invoice;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

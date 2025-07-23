@@ -1,8 +1,8 @@
 package az.cybernet.invoice.mapper;
 
 
-import az.cybernet.invoice.dto.request.create.CreateOperationRequest;
-import az.cybernet.invoice.dto.response.OperationResponse;
+import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.response.operation.OperationResponse;
 import az.cybernet.invoice.entity.OperationEntity;
 
 import org.mapstruct.Mapper;
