@@ -6,10 +6,10 @@ databaseChangeLog:
       file: liquibase/1.0/20251000-create-invoices-table.yml
 
   - include:
-      file: liquibase/1.0/20251003-create-measurement-table.yml
+      file: liquibase/1.0/20251003-create-measurements-table.yml
 
   - include:
       file: liquibase/1.0/20251001-create-items-table.yml
 
   - include:
-      file: liquibase/1.0/20251002-create-operation-table.yml
+      file: liquibase/1.0/20251002-create-operations-table.yml
