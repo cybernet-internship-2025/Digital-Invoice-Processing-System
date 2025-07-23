@@ -1,6 +1,5 @@
 package az.cybernet.invoice.dto.response;
 
-import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
