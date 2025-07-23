@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -17,9 +17,10 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class MeasurementEntity {
-    BigInteger Id;
+    Long id;
     String name;
     LocalDateTime createdAt;
     LocalDateTime updateAt;
-    boolean isActive;
+    Boolean isActive;
+    List<ItemEntity> items;
 }

@@ -16,7 +16,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class ItemEntity {
     Long id;
     String name;
-    BigDecimal price;
+    BigDecimal unitPrice;
     Integer quantity;
     Boolean isActive;
     BigDecimal totalPrice;

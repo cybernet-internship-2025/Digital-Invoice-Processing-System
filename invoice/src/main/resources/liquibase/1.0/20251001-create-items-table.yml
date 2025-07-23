@@ -35,12 +35,6 @@ databaseChangeLog:
                     nullable: false
 
               - column:
-                  name: status
-                  type: VARCHAR(64)
-                  constraints:
-                    nullable: false
-
-              - column:
                   name: is_active
                   type: BOOLEAN
                   constraints:
