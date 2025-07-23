@@ -24,8 +24,8 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class InvoiceEntity {
     Long id;
-    Long senderUserId;
-    Long recipientUserId;
+    Long senderTaxId;
+    Long recipientTaxId;
     BigDecimal totalPrice;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
