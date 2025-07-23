@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="az.cybernet.invoice.repository.OperationRepository">
+
+    <select id="findById" resultMap="OperationResultMap">
+        SELECT * FROM invoice.operations WHERE id = #{id}
+    </select>
+
+    <select id="findByInvoiceId" resultMap="OperationResultMap">
+        SELECT * FROM invoice.operations WHERE invoice_id = #{invoiceId}
+    </select>
+
+    <insert id="insert" parameterType="az.cybernet.invoice.dto.request.create.CreateOperationRequest">
+        INSERT INTO invoice.operations (status, comment, created_at, invoice_id, item_id)
+        VALUES (#{status}, #{comment}, #{createdAt}, #{invoiceId}, #{itemId})
+    </insert>
+
+    <resultMap id="OperationResultMap" type="az.cybernet.invoice.dto.response.OperationResponse">
+        <id property="id" column="id"/>
+        <result property="status" column="status"/>
+        <result property="comment" column="comment"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="invoiceId" column="invoice_id"/>
+        <result property="itemId" column="item_id"/>
+    </resultMap>
+
+</mapper>
