@@ -8,8 +8,8 @@
     <!-- RESULT MAPS -->
     <resultMap id="InvoiceResultMap" type="az.cybernet.invoice.entity.InvoiceEntity">
         <id property="id" column="c_id"/>
-        <result property="senderUserId" column="c_sender_user_id"/>
-        <result property="recipientUserId" column="c_recipient_user_id"/>
+        <result property="senderTaxId" column="c_sender_tax_id"/>
+        <result property="recipientTaxId" column="c_recipient_tax_id"/>
         <result property="totalPrice" column="c_total_price"/>
         <result property="invoiceNumber" column="c_invoice_number"/>
         <result property="invoiceSeries" column="c_invoice_series"/>
@@ -32,17 +32,17 @@
     <!-- INSERT -->
     <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity"
             useGeneratedKeys="true">
-        INSERT INTO invoices (sender_user_id, recipient_user_id, total_price, status, invoice_number, invoice_series,
+        INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, status, invoice_number, invoice_series,
                               created_at, updated_at)
-        VALUES (#{senderUserId}, #{recipientUserId}, #{totalPrice}, #{status}, #{invoiceNumber}, #{invoiceSeries},
+        VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{status}, #{invoiceNumber}, #{invoiceSeries},
                 NOW(), NULL)
     </insert>
 
     <!-- SELECT BY ID -->
     <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
         SELECT c.id                AS c_id,
-               c.sender_user_id    AS c_sender_user_id,
-               c.recipient_user_id AS c_recipient_user_id,
+               c.sender_tax_id    AS c_sender_tax_id,
+               c.recipient_tax_id AS c_recipient_tax_id,
                c.total_price       AS c_total_price,
                c.invoice_number    AS c_invoice_number,
                c.invoice_series    AS c_invoice_series,

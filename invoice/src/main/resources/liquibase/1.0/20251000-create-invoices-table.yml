@@ -17,13 +17,13 @@ databaseChangeLog:
                     primaryKeyName: invoice_id_primary_key
 
               - column:
-                  name: sender_user_id
+                  name: sender_tax_id
                   type: BIGINT
                   constraints:
                     nullable: false
 
               - column:
-                  name: recipient_user_id
+                  name: recipient_tax_id
                   type: BIGINT
                   constraints:
                     nullable: false
