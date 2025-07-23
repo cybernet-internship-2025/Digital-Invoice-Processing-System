@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="az.cybernet.invoice.repository.InvoiceRepository">
+
+    <!-- RESULT MAPS -->
+    <resultMap id="InvoiceResultMap" type="az.cybernet.invoice.entity.InvoiceEntity">
+        <id property="id" column="c_id"/>
+        <result property="senderUserId" column="c_sender_user_id"/>
+        <result property="recipientUserId" column="c_recipient_user_id"/>
+        <result property="totalPrice" column="c_total_price"/>
+        <result property="invoiceNumber" column="c_invoice_number"/>
+        <result property="invoiceSeries" column="c_invoice_series"/>
+        <result property="status" column="c_status"/>
+        <result property="createdAt" column="c_created_at"/>
+        <result property="updatedAt" column="c_updated_at"/>
+
+        <collection property="items" ofType="az.cybernet.invoice.entity.ItemEntity">
+            <id property="id" column="i_id"/>
+            <result property="name" column="i_name"/>
+            <result property="unitPrice" column="i_unit_price"/>
+            <result property="quantity" column="i_quantity"/>
+            <result property="totalPrice" column="i_total_price"/>
+            <result property="isActive" column="i_is_active"/>
+            <result property="invoiceId" column="i_invoice_id"/>
+        </collection>
+
+    </resultMap>
+
+    <!-- INSERT -->
+    <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity"
+            useGeneratedKeys="true">
+        INSERT INTO invoices (sender_user_id, recipient_user_id, total_price, status, invoice_number, invoice_series,
+                              created_at, updated_at)
+        VALUES (#{senderUserId}, #{recipientUserId}, #{totalPrice}, #{status}, #{invoiceNumber}, #{invoiceSeries},
+                NOW(), NULL)
+    </insert>
+
+    <!-- SELECT BY ID -->
+    <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
+        SELECT c.id                AS c_id,
+               c.sender_user_id    AS c_sender_user_id,
+               c.recipient_user_id AS c_recipient_user_id,
+               c.total_price       AS c_total_price,
+               c.invoice_number    AS c_invoice_number,
+               c.invoice_series    AS c_invoice_series,
+               c.status            AS c_status,
+               c.created_at        AS c_created_at,
+               c.updated_at        AS c_updated_at,
+
+               i.id                AS i_id,
+               i.name              AS i_name,
+               i.unit_price        AS i_unit_price,
+               i.is_active         AS i_is_active,
+               i.quantity          AS i_quantity,
+               i.total_price       AS i_total_price,
+               i.invoice_id        AS i_invoice_id
+
+        FROM invoices c
+                 LEFT JOIN items i ON c.id = i.invoice_id
+        WHERE c.id = #{id}
+    </select>
+
+    <update id="restoreInvoice" parameterType="long">
+        UPDATE invoices
+        SET status     = 'DRAFT',
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>
