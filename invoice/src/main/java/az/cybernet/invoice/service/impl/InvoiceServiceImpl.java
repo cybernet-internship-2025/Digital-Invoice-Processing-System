@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 
 import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
+import java.util.List;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @Service
@@ -53,5 +55,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     public String generateInvoiceNumber() {
         return "";
+    }
+
+    @Override
+    public List<InvoiceResponse> getAll() {
+        return invoiceRepository.getAll()
+                .stream()
+                .map(invoiceMapper::fromEntityToResponse)
+                .toList();
     }
 }

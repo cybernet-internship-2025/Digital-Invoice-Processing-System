@@ -69,4 +69,10 @@
             updated_at = NOW()
         WHERE id = #{id}
     </update>
+
+    <select id="getAll" resultMap="InvoiceResultMap">
+        select *
+        from invoices
+        where status = 'DRAFT'
+    </select>
 </mapper>
