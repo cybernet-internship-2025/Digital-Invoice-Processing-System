@@ -16,5 +16,5 @@ import static lombok.AccessLevel.PRIVATE;
 public class CreateUserRequest {
     Long id;
     String name;
-    String taxId;
+
 }

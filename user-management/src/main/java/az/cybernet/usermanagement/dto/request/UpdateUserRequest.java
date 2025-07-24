@@ -5,9 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
 
-@Getter
-@Setter
-@EqualsAndHashCode(of = "id")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
