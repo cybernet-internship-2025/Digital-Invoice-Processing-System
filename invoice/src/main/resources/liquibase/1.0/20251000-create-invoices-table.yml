@@ -18,16 +18,15 @@ databaseChangeLog:
 
               - column:
                   name: sender_tax_id
-                  type: BIGINT
+                  type: VARCHAR(10)
                   constraints:
                     nullable: false
 
               - column:
                   name: recipient_tax_id
-                  type: BIGINT
+                  type: VARCHAR(10)
                   constraints:
                     nullable: false
-
 
               - column:
                   name: total_price

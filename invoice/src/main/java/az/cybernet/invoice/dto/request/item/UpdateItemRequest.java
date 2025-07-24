@@ -1,4 +1,4 @@
-package az.cybernet.invoice.dto.request.update;
+package az.cybernet.invoice.dto.request.item;
 
 import lombok.Data;
 

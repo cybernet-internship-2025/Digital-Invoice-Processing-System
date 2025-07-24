@@ -12,6 +12,6 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class CreateInvoiceRequest {
-    Long senderTaxId;
-    Long recipientTaxId;
+    String senderTaxId;
+    String recipientTaxId;
 }
