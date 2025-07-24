@@ -1,7 +1,7 @@
 package az.cybernet.invoice.service.impl;
 
 import az.cybernet.invoice.client.UserClient;
-import az.cybernet.invoice.dto.client.UserDto;
+import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.exception.UserNotFoundException;
@@ -28,12 +28,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest) {
-        UserDto sender = userClient.findUserByTaxId(invoiceRequest.getSenderTaxId());
+        UserResponse sender = userClient.findUserByTaxId(invoiceRequest.getSenderTaxId());
         if (sender == null) {
             throw new UserNotFoundException(SENDER_NOT_FOUND.getCode(), SENDER_NOT_FOUND.getMessage());
         }
 
-        UserDto recipient = userClient.findUserByTaxId(invoiceRequest.getRecipientTaxId());
+        UserResponse recipient = userClient.findUserByTaxId(invoiceRequest.getRecipientTaxId());
         if (recipient == null) {
             throw new UserNotFoundException(RECIPIENT_NOT_FOUND.getCode(), RECIPIENT_NOT_FOUND.getMessage());
         }
