@@ -12,3 +12,7 @@ spring:
     drop-first: true
     default-schema: invoice
     liquibase-schema: public
+
+user:
+  service:
+    url: http://localhost:8080
