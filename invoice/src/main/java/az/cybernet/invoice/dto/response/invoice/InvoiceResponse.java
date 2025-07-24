@@ -26,5 +26,5 @@ public class InvoiceResponse {
     InvoiceStatus status;
     String invoiceNumber;
     String invoiceSeries;
-    List<ItemReponse> items;
+//    List<ItemReponse> items;
 }
