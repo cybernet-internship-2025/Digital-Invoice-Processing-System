@@ -136,7 +136,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         int nextSequence = 1;
         if (lastNumber != null && lastNumber.length() == 8) {
             String lastSequence = lastNumber.substring(4);
-            nextSequence = Integer.parseInt(lastSequence) + 1;
+            try {
+                nextSequence = Integer.parseInt(lastSequence) + 1;
+            } catch (NumberFormatException e) {
+                nextSequence = 1;
+            }
         }
 
         var sequence = String.format("%04d", nextSequence);
