@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="az.cybernet.invoice.mapper.ItemMapper">
+
+    <!-- Result map with cascade to Operations -->
+    <resultMap id="UserResultMap" type="az.cybernet.usermanagement.entity.UserEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="taxId" column="taxId"/>
+        <result property="is_active" column="is_active"/>
+        <result property="created_at" column="created_at"/>
+        <result property="updated_at" column="updated_at"/>
+        <association property="sent_invoices"
+                     javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="category_id"/>
+        </association>
+        <association property="recipient_invoices"
+                     javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="category_id"/>
+        </association>
+    </resultMap>
+
+
+</mapper>
