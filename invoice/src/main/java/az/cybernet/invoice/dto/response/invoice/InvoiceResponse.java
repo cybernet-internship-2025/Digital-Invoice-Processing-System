@@ -1,5 +1,6 @@
 package az.cybernet.invoice.dto.response.invoice;
 
+import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,13 +19,13 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class InvoiceResponse {
     Long id;
-    Long senderTaxId;
-    Long recipientTaxId;
+    String senderTaxId;
+    String recipientTaxId;
     BigDecimal totalPrice;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     InvoiceStatus status;
     String invoiceNumber;
     String invoiceSeries;
-//    List<ItemReponse> items;
+    List<ItemResponse> items;
 }
