@@ -28,12 +28,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest) {
-        UserDto sender = userClient.getUserByTaxId(invoiceRequest.getSenderTaxId());
+        UserDto sender = userClient.findUserByTaxId(invoiceRequest.getSenderTaxId());
         if (sender == null) {
             throw new UserNotFoundException(SENDER_NOT_FOUND.getCode(), SENDER_NOT_FOUND.getMessage());
         }
 
-        UserDto recipient = userClient.getUserByTaxId(invoiceRequest.getRecipientTaxId());
+        UserDto recipient = userClient.findUserByTaxId(invoiceRequest.getRecipientTaxId());
         if (recipient == null) {
             throw new UserNotFoundException(RECIPIENT_NOT_FOUND.getCode(), RECIPIENT_NOT_FOUND.getMessage());
         }
