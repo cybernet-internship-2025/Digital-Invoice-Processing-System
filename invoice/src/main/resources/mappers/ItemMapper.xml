@@ -5,5 +5,61 @@
 
 <mapper namespace="az.cybernet.invoice.repository.ItemRepository">
 
+    <!-- Insert -->
+    <insert id="addItem" parameterType="az.cybernet.invoice.entity.ItemEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO invoice.items (
+            name, unit_price, quantity, total_price,
+            is_active, created_at, updated_at,
+            measurement_id, invoice_id
+        ) VALUES (
+                     #{name}, #{price}, #{quantity}, #{totalPrice},
+                     #{isActive}, #{createdAt}, #{updatedAt},
+                     #{measurement.id}, #{invoice.id}
+                 )
+    </insert>
 
+
+    <!-- Find by ID -->
+    <select id="findById" resultMap="ItemResultMap">
+        SELECT
+            id, name, unit_price, quantity, total_price,
+            is_active, created_at, updated_at,
+            measurement_id, invoice_id
+        FROM invoice.items
+        WHERE id = #{id}
+    </select>
+
+
+    <!-- Soft Delete -->
+    <update id="deleteItem">
+        UPDATE invoice.items
+        SET is_active = false,
+        updated_at = NOW()
+        WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+
+    <!-- ResultMap -->
+    <resultMap id="ItemResultMap" type="az.cybernet.invoice.entity.ItemEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="price" column="unit_price"/>
+        <result property="quantity" column="quantity"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+
+        <association property="measurement" javaType="az.cybernet.invoice.entity.MeasurementEntity">
+            <id property="id" column="measurement_id"/>
+        </association>
+
+        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="invoice_id"/>
+        </association>
+    </resultMap>
 </mapper>
