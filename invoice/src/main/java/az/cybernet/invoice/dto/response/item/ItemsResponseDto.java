@@ -1,4 +1,4 @@
-package az.cybernet.invoice.dto.response;
+package az.cybernet.invoice.dto.response.item;
 
 import lombok.Data;
 
