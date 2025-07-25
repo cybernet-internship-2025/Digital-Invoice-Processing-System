@@ -15,4 +15,6 @@ public interface OperationService {
     List<OperationResponse> findByStatus(OperationStatus status);
     List<OperationResponse> findAllItemsById(Long id);
     List<OperationResponse> findAllInvoicesById(Long id);
+
+    //
 }
