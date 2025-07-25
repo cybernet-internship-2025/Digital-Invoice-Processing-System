@@ -46,4 +46,4 @@ databaseChangeLog:
                   name: updated_at
                   type: TIMESTAMP
                   constraints:
-                    nullable: false
+                    nullable: true
