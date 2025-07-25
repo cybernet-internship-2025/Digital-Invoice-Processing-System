@@ -22,4 +22,8 @@ public interface InvoiceRepository {
 
     List<InvoiceEntity> getAll();
 
+    void deleteInvoiceById(Long id);
+
+    InvoiceEntity updateInvoice(InvoiceEntity invoice);
+
 }
