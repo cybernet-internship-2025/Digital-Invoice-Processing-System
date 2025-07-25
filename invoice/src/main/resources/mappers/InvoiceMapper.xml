@@ -38,20 +38,6 @@
                 NOW(), NULL)
     </insert>
 
-    <update id="updateTotalPrice" parameterType="map">
-        UPDATE invoices
-        SET total_price = #{totalPrice}
-        WHERE id = #{invoiceId}
-    </update>
-
-    <select id="findLastInvoiceNumberStartingWith" parameterType="string" resultType="string">
-        SELECT invoice_number
-        FROM invoices
-        WHERE invoice_number LIKE CONCAT(#{prefix}, '%')
-        ORDER BY invoice_number DESC
-            LIMIT 1
-    </select>
-
     <!-- SELECT BY ID -->
     <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
         SELECT c.id               AS c_id,
@@ -83,10 +69,4 @@
             updated_at = NOW()
         WHERE id = #{id}
     </update>
-
-    <select id="getAll" resultMap="InvoiceResultMap">
-        select *
-        from invoices
-        where status = 'DRAFT'
-    </select>
 </mapper>
