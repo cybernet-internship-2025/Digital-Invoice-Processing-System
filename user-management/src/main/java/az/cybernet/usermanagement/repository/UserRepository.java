@@ -11,6 +11,8 @@ public interface UserRepository {
     UserEntity updateUser(UserEntity userEntity);
 //    Optional<UserEntity> findByTaxId(Long taxId);
     List<UserEntity> findAll();
+    Long findMaxTaxId();
+    Optional<UserEntity> findById(Long id);
 //    void deleteUser(Long id);
 //    void restoreUser(long id);
 }

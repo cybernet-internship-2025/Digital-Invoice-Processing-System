@@ -43,6 +43,18 @@
         </if>
     </select>
 
-
+    <select id="findMaxTaxId" resultType="long">
+        SELECT COALESCE(MAX(id), 0) FROM users
+    </select>
+    <select id="findById" parameterType="long" resultMap="UserResultMap">
+        SELECT u.id,
+               u.name,
+               u.tax_id,
+               u.is_active,
+               u.created_at,
+               u.updated_at
+        FROM users u
+        WHERE u.id = #{id}
+    </select>
 
 </mapper>
