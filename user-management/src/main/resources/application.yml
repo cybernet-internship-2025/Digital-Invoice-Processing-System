@@ -9,3 +9,4 @@ spring:
     drop-first: true
     default-schema: users
     liquibase-schema: public
+

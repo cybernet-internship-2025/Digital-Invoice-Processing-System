@@ -1,6 +1,7 @@
-package az.cybernet.invoice.dto.request.invoice;
+package az.cybernet.usermanagement.dto.request;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,7 +12,9 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class CreateInvoiceRequest {
-    String senderTaxId;
-    String recipientTaxId;
+@Builder
+public class CreateUserRequest {
+    Long id;
+    String name;
+
 }
