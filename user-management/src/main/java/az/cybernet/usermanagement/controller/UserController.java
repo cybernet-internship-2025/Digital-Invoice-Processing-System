@@ -22,4 +22,16 @@ public class UserController {
     public UserResponse findUserByTaxId(@PathVariable("taxId") String taxId) {
         return userService.findUserByTaxId(taxId);
     }
+
+    @DeleteMapping("/{taxId}")
+    @ResponseStatus(OK)
+    public void deleteUser(@PathVariable String taxId) {
+        userService.deleteUser(taxId);
+    }
+
+    @PutMapping("/{taxId}/restore")
+    @ResponseStatus(OK)
+    public void restoreUser(@PathVariable String taxId) {
+        userService.restoreUser(taxId);
+    }
 }
