@@ -16,6 +16,7 @@
         <result property="status" column="c_status"/>
         <result property="createdAt" column="c_created_at"/>
         <result property="updatedAt" column="c_updated_at"/>
+        <result property="isActive" column="is_active"/>
 
         <collection property="items" ofType="az.cybernet.invoice.entity.ItemEntity">
             <id property="id" column="i_id"/>
@@ -89,4 +90,17 @@
         from invoices
         where status = 'DRAFT'
     </select>
+
+    <update id="deleteInvoiceById" parameterType="long">
+        update invoices
+        set is_active = false
+        where id = #{id}
+    </update>
+    
+    <update id="updateInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity">
+        update invoices
+        set recipient_tax_id = #{invoice.recipientTaxId},
+            updated_at = current_timestamp
+        where id = #{invoice.id}
+    </update>
 </mapper>

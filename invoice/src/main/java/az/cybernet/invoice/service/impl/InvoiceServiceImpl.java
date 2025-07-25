@@ -3,6 +3,7 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -153,5 +154,25 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .stream()
                 .map(invoiceMapper::fromEntityToResponse)
                 .toList();
+    }
+
+    @Override
+    public void deleteInvoiceById(Long id) {
+        if (invoiceRepository.findById(id).isEmpty()){
+            throw new RuntimeException("Invoice given by ID not found!");
+        }
+        invoiceRepository.deleteInvoiceById(id);
+    }
+
+    @Override
+    public InvoiceResponse updateInvoice(UpdateInvoiceRequest request, Long invoiceId) {
+        InvoiceEntity invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice given by ID not found!"));
+
+        invoice.setRecipientTaxId(request.getRecipientTaxId());
+
+        invoiceRepository.updateInvoice(invoice);
+
+        return invoiceMapper.fromEntityToResponse(invoice);
     }
 }
