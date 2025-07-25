@@ -10,8 +10,14 @@ import java.util.List;
 public interface InvoiceService {
     InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest);
 
-    List<ItemResponse> addItemsToInvoice(ItemsRequest request);
+    InvoiceResponse findById(Long id);
+
+    void restoreInvoice(Long id);
 
     List<InvoiceResponse> getAll();
+
+    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
+
+    List<ItemResponse> addItemsToInvoice(ItemsRequest requests);
 
 }

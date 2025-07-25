@@ -3,13 +3,10 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
-import az.cybernet.invoice.entity.ItemEntity;
-import az.cybernet.invoice.entity.MeasurementEntity;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.mapper.InvoiceMapper;
 import az.cybernet.invoice.repository.InvoiceRepository;
@@ -22,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
@@ -57,38 +53,42 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceResponse;
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<ItemResponse> addItemsToInvoice(ItemsRequest request) {
-        InvoiceEntity invoice = fetchInvoiceIfExist(request.getInvoiceId());
-
-        List<ItemResponse> responseList = new ArrayList<>();
-
-        for (ItemRequest ir : request.getItemsRequest()) {
-
-            ItemEntity newItem = ItemEntity.builder()
-                    .name(ir.getProductName())
-                    .unitPrice(ir.getUnitPrice())
-                    .quantity(ir.getQuantity())
-                    .measurement(
-                            MeasurementEntity.builder()
-                                    .name(ir.getMeasurementName())
-                                    .build())
-                    .invoice(invoice)
-                    .isActive(true)
-                    .build();
-
-//            ItemResponse itemResponse = itemService.saveItem(newItem);
-//            responseList.add(itemResponse);
-        }
-
-//        updateInvoiceTotalPrice(invoice.getId());
-        return responseList;
+    public List<ItemResponse> addItemsToInvoice(ItemsRequest requests) {
+        List<ItemResponse> items = itemService.addItems(requests);
+        updateInvoiceTotalPrice(requests.getInvoiceId());
+        return items;
     }
 
-    private InvoiceEntity fetchInvoiceIfExist(Long invoiceId) {
-        return invoiceRepository.findById(invoiceId)
-                .orElseThrow(() -> new NotFoundException(INVOICE_NOT_FOUND.getCode(), INVOICE_NOT_FOUND.getMessage()));
+    @Override
+    public InvoiceResponse findById(Long id) {
+        var invoiceEntity = fetchInvoiceIfExist(id);
+        var invoiceResponse = invoiceMapper.fromEntityToResponse(invoiceEntity);
+        invoiceRepository.saveInvoice(invoiceEntity);
+        return invoiceResponse;
+    }
+
+    @Override
+    public void restoreInvoice(Long id) {
+        var invoiceEntity = fetchInvoiceIfExist(id);
+        invoiceRepository.restoreInvoice(invoiceEntity.getId());
+    }
+
+    @Override
+    public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
+        var userResponse = findRecipientByTaxId(recipientTaxId);
+        var allByRecipientUserTaxId = invoiceRepository.findAllByRecipientUserTaxId(userResponse.getTaxId());
+        return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
+    }
+
+    public void updateInvoiceTotalPrice(Long invoiceId) {
+        List<ItemResponse> items = itemService.findAllByInvoiceId(invoiceId);
+
+        BigDecimal total = items.stream()
+                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        invoiceRepository.updateTotalPrice(invoiceId, total);
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {
@@ -115,16 +115,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return ZERO;
     }
 
-//    public void updateInvoiceTotalPrice(Long invoiceId) {
-//        List<ItemEntity> items = itemRepository.findAllByInvoiceId(invoiceId);
-//
-//        BigDecimal total = items.stream()
-//                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//        invoiceRepository.updateTotalPrice(invoiceId, total);
-//    }
-
     private String generateInvoiceNumber() {
         var now = LocalDateTime.now();
         var year = String.valueOf(now.getYear()).substring(2);
@@ -145,6 +135,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var sequence = String.format("%04d", nextSequence);
         return prefix + "-" + sequence;
+    }
+
+    private InvoiceEntity fetchInvoiceIfExist(Long invoiceId) {
+        return invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new NotFoundException(INVOICE_NOT_FOUND.getCode(), INVOICE_NOT_FOUND.getMessage()));
     }
 
     @Override

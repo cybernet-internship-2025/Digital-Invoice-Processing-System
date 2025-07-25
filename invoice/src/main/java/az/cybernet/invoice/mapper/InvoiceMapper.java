@@ -31,6 +31,8 @@ public interface InvoiceMapper {
     @Mapping(target = "items", expression = "java(mapItemResponsesToEntities(response.getItems()))")
     InvoiceEntity buildInvoiceEntity(InvoiceResponse response);
 
+    List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
+
     default Long parseTaxIdToLong(String taxId) {
         try {
             return Long.parseLong(taxId);
