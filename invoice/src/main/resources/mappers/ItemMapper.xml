@@ -5,5 +5,89 @@
 
 <mapper namespace="az.cybernet.invoice.repository.ItemRepository">
 
+    <resultMap id="ItemResultMap" type="az.cybernet.invoice.entity.ItemEntity">
+
+        <!-- ItemEntity fields -->
+        <id property="id" column="i_id"/>
+        <result property="name" column="i_name"/>
+        <result property="unitPrice" column="i_unit_price"/>
+        <result property="quantity" column="i_quantity"/>
+        <result property="isActive" column="i_is_active"/>
+        <result property="totalPrice" column="i_total_price"/>
+
+        <!-- measurement (One-to-One) -->
+        <association property="measurement" javaType="az.cybernet.invoice.entity.MeasurementEntity">
+            <id property="id" column="m_id"/>
+            <result property="name" column="m_name"/>
+            <result property="createdAt" column="m_created_at"/>
+            <result property="updateAt" column="m_updated_at"/>
+            <result property="isActive" column="m_is_active"/>
+        </association>
+
+        <!-- invoice (One-to-One) -->
+        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="inv_id"/>
+            <result property="invoiceNumber" column="inv_number"/>
+            <!-- Add more invoice fields here if needed -->
+        </association>
+
+        <!-- operations (One-to-Many) -->
+        <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
+            <id property="id" column="op_id"/>
+            <result property="status" column="op_status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
+            <result property="comment" column="op_comment"/>
+            <result property="createdAt" column="op_created_at"/>
+            <!-- invoice and item fields are ignored here to prevent circular references -->
+        </collection>
+
+    </resultMap>
+
+    <update id="updateItem" parameterType="az.cybernet.invoice.entity.ItemEntity">
+        UPDATE items
+        SET name           = #{name},
+            unit_price     = #{unitPrice},
+            quantity       = #{quantity},
+            total_price    = #{totalPrice},
+            is_active      = #{isActive},
+            measurement_id = #{measurement.id},
+            invoice_id     = #{invoice.id},
+            updated_at     = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findAllItemsByInvoiceId" resultMap="ItemResultMap">
+        SELECT i.id               AS i_id,
+               i.name             AS i_name,
+               i.unit_price       AS i_unit_price,
+               i.quantity         AS i_quantity,
+               i.total_price      AS i_total_price,
+               i.is_active        AS i_is_active,
+
+               m.id               AS m_id,
+               m.name             AS m_name,
+               m.created_at       AS m_created_at,
+               m.updated_at       AS m_updated_at,
+               m.is_active        AS m_is_active,
+
+               inv.id             AS inv_id,
+               inv.invoice_number AS inv_number,
+
+               op.id              AS op_id,
+               op.status          AS op_status,
+               op.comment         AS op_comment,
+               op.created_at      AS op_created_at
+
+        FROM items i
+                 LEFT JOIN measurements m ON i.measurement_id = m.id
+                 LEFT JOIN invoices inv ON i.invoice_id = inv.id
+                 LEFT JOIN operations op ON op.item_id = i.id
+    </select>
+
+    <update id="restoreItem" parameterType="long">
+        UPDATE items
+        SET is_active  = TRUE,
+            updated_at = NULL
+        WHERE id = #{id}
+    </update>
 
 </mapper>
