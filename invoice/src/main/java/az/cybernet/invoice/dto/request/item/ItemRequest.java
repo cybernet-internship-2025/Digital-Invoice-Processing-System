@@ -11,5 +11,4 @@ public class ItemRequest {
     Integer quantity;
     Integer totalPrice;
     String measurementName;
-
 }
