@@ -5,26 +5,46 @@
 
 <mapper namespace="az.cybernet.invoice.repository.OperationRepository">
 
-    <select id="findById" resultMap="OperationResultMap">
-        SELECT * FROM invoice.operations WHERE id = #{id}
-    </select>
-
-    <select id="findByInvoiceId" resultMap="OperationResultMap">
-        SELECT * FROM invoice.operations WHERE invoice_id = #{invoiceId}
-    </select>
-
-    <insert id="insert" parameterType="az.cybernet.invoice.dto.request.operation.CreateOperationRequest">
-        INSERT INTO invoice.operations (status, comment, created_at, invoice_id, item_id)
-        VALUES (#{status}, #{comment}, #{createdAt}, #{invoiceId}, #{itemId})
-    </insert>
-
-    <resultMap id="OperationResultMap" type="az.cybernet.invoice.dto.response.operation.OperationResponse">
+    <resultMap id="OperationEntityMap" type="az.cybernet.invoice.entity.OperationEntity">
         <id property="id" column="id"/>
-        <result property="status" column="status"/>
+        <result property="status" column="status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
         <result property="comment" column="comment"/>
         <result property="createdAt" column="created_at"/>
-        <result property="invoiceId" column="invoice_id"/>
-        <result property="itemId" column="item_id"/>
+        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="invoice_id"/>
+        </association>
+        <association property="item" javaType="az.cybernet.invoice.entity.ItemEntity">
+            <id property="id" column="item_id"/>
+        </association>
     </resultMap>
+
+    <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity">
+        INSERT INTO operations (status, comment, created_at, invoice_id, item_id)
+        VALUES (#{operationEntity.status}, #{operationEntity.comment}, #{operationEntity.createdAt}, #{operationEntity.invoice.id}, #{operationEntity.item.id})
+    </insert>
+
+    <!-- select by id -->
+    <select id="findById" parameterType="long" resultMap="OperationEntityMap">
+        SELECT * FROM operations WHERE id = #{id}
+    </select>
+
+
+    <select id="findAll" resultMap="OperationEntityMap">
+        SELECT * FROM operations
+    </select>
+
+
+    <select id="findByStatus" parameterType="az.cybernet.invoice.enums.OperationStatus" resultMap="OperationEntityMap">
+        SELECT * FROM operations WHERE status = #{status}
+    </select>
+
+    <select id="findAllItemsById" parameterType="long" resultMap="OperationEntityMap">
+        SELECT * FROM operations WHERE item_id = #{itemId}
+    </select>
+
+    <select id="findAllInvoicesById" parameterType="long" resultMap="OperationEntityMap">
+        SELECT * FROM operations WHERE invoice_id = #{invoiceId}
+    </select>
+
 
 </mapper>
