@@ -7,7 +7,9 @@ import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.exception.InvalidStatusException;
 import az.cybernet.invoice.exception.NotFoundException;
+import az.cybernet.invoice.exception.UnauthorizedException;
 import az.cybernet.invoice.mapper.InvoiceMapper;
 import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
@@ -21,10 +23,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
+import static az.cybernet.invoice.enums.InvoiceStatus.CANCELED;
+import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
+import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
+import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
-import static java.math.BigDecimal.ZERO;
+import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static lombok.AccessLevel.PRIVATE;
 
 @Service
@@ -45,27 +52,80 @@ public class InvoiceServiceImpl implements InvoiceService {
         var invoiceResponse = invoiceMapper.buildInvoiceResponse(invoiceRequest);
         invoiceResponse.setSenderTaxId(sender.getTaxId());
         invoiceResponse.setRecipientTaxId(recipient.getTaxId());
-        invoiceResponse.setTotalPrice(calculateTotalPrice());
         invoiceResponse.setInvoiceNumber(generateInvoiceNumber());
-        invoiceResponse.setInvoiceSeries("INVD");
 
         invoiceRepository.saveInvoice(invoiceMapper.buildInvoiceEntity(invoiceResponse));
         return invoiceResponse;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ItemResponse> addItemsToInvoice(ItemsRequest requests) {
+        var invoiceEntity = fetchInvoiceIfExist(requests.getInvoiceId());
         List<ItemResponse> items = itemService.addItems(requests);
         updateInvoiceTotalPrice(requests.getInvoiceId());
         return items;
     }
 
     @Override
+    public void approveInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
+        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+        if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
+            throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
+        }
+
+        if (invoiceEntity.getStatus() != PENDING) {
+            throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
+        }
+
+        invoiceEntity.setStatus(APPROVED);
+        invoiceEntity.setUpdatedAt(LocalDateTime.now());
+        invoiceEntity.setIsActive(true);
+
+        invoiceRepository.saveInvoice(invoiceEntity);
+    }
+
+    @Override
+    public void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
+        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+        if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
+            throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
+        }
+
+        if (invoiceEntity.getStatus() != PENDING) {
+            throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
+        }
+
+        invoiceEntity.setStatus(CANCELED);
+        invoiceEntity.setUpdatedAt(LocalDateTime.now());
+
+        invoiceRepository.saveInvoice(invoiceEntity);
+    }
+
+    @Override
+    public void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId) {
+        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+        if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
+            throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
+        }
+
+        if (invoiceEntity.getStatus() != PENDING) {
+            throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
+        }
+
+        invoiceEntity.setStatus(CORRECTION);
+        invoiceEntity.setUpdatedAt(LocalDateTime.now());
+
+        invoiceRepository.saveInvoice(invoiceEntity);
+    }
+
+    @Override
     public InvoiceResponse findById(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
-        var invoiceResponse = invoiceMapper.fromEntityToResponse(invoiceEntity);
-        invoiceRepository.saveInvoice(invoiceEntity);
-        return invoiceResponse;
+        return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
 
     @Override
@@ -81,7 +141,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
     }
 
-    public void updateInvoiceTotalPrice(Long invoiceId) {
+    private void updateInvoiceTotalPrice(Long invoiceId) {
         List<ItemResponse> items = itemService.findAllByInvoiceId(invoiceId);
 
         BigDecimal total = items.stream()
@@ -109,10 +169,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         return recipient;
-    }
-
-    private BigDecimal calculateTotalPrice() {
-        return ZERO;
     }
 
     private String generateInvoiceNumber() {

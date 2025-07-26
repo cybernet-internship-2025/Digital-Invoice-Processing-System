@@ -76,12 +76,6 @@
         WHERE c.recipient_tax_id = #{recipientTaxId}
     </select>
 
-    <update id="updateTotalPrice" parameterType="map">
-        UPDATE invoices
-        SET total_price = #{totalPrice}
-        WHERE id = #{invoiceId}
-    </update>
-
     <!-- SELECT BY ID -->
     <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
         SELECT c.id               AS c_id,

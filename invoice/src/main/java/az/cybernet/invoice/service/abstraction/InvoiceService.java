@@ -20,4 +20,10 @@ public interface InvoiceService {
 
     List<ItemResponse> addItemsToInvoice(ItemsRequest requests);
 
+    void approveInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+
+    void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+
+    void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId);
+
 }

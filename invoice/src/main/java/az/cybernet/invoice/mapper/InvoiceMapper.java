@@ -2,15 +2,12 @@ package az.cybernet.invoice.mapper;
 
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
-import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
-import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.exception.InvalidTaxIdException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface InvoiceMapper {
@@ -20,9 +17,9 @@ public interface InvoiceMapper {
     @Mapping(target = "status", constant = "DRAFT")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java((java.time.LocalDateTime) null)")
-    @Mapping(target = "totalPrice", ignore = true)
+    @Mapping(target = "totalPrice", expression = "java(java.math.BigDecimal.ZERO)")
     @Mapping(target = "invoiceNumber", ignore = true)
-    @Mapping(target = "invoiceSeries", ignore = true)
+    @Mapping(target = "invoiceSeries", constant = "INVD")
     @Mapping(target = "items", ignore = true)
     InvoiceResponse buildInvoiceResponse(CreateInvoiceRequest request);
 
@@ -33,14 +30,6 @@ public interface InvoiceMapper {
 
     List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
 
-    default Long parseTaxIdToLong(String taxId) {
-        try {
-            return Long.parseLong(taxId);
-        } catch (NumberFormatException e) {
-            throw new InvalidTaxIdException(taxId);
-        }
-    }
-
 //    default List<ItemEntity> mapItemResponsesToEntities(List<ItemResponse> responses) {
 //        return responses.stream()
 //                .map(itemMapper::buildItemEntity)
@@ -48,5 +37,13 @@ public interface InvoiceMapper {
 //    }
 
     InvoiceResponse fromEntityToResponse(InvoiceEntity invoice);
+
+    default Long parseTaxIdToLong(String taxId) {
+        try {
+            return Long.parseLong(taxId);
+        } catch (NumberFormatException e) {
+            throw new InvalidTaxIdException(taxId);
+        }
+    }
 
 }
