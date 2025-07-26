@@ -100,6 +100,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- AOP(Aspect Oriented Programming) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- MyBatis Test -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
