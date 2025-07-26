@@ -13,6 +13,8 @@ public enum ExceptionConstants {
     SENDER_NOT_FOUND("SENDER_NOT_FOUND", "no sender with id found"),
     INVOICE_NOT_FOUND("INVOICE_NOT_FOUND", "no invoice with id found"),
     VALIDATION_EXCEPTION("VALIDATION_EXCEPTION", "Validation exception"),
+    INVALID_STATUS("INVALID_STATUS", "Only PENDING invoices can be ..."),
+    UNAUTHORIZED("UNAUTHORIZED", "You are not allowed to perform surgery"),
     HTTP_METHOD_IS_NOT_CORRECT("HTTP_METHOD_IS_NOT_CORRECT", "http method is not correct"),
     RECIPIENT_NOT_FOUND("RECIPIENT_NOT_FOUND", "no recipient with id found");
 
