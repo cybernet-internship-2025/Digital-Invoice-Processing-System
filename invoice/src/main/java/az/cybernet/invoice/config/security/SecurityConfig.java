@@ -24,7 +24,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .httpBasic(withDefaults())
-                .csrf(csrf -> csrf.disable());
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
 
         return http.build();
     }
