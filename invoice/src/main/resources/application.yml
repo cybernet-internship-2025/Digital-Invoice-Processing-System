@@ -12,7 +12,17 @@ spring:
     drop-first: true
     default-schema: invoice
     liquibase-schema: public
+  security:
+    user:
+      name: ${USER_NAME}
+      password: ${USER_PASSWORD}
 
 user:
   service:
     url: http://localhost:8080
+
+springdoc:
+  api-docs:
+    path: /api/DIPS/api-docs
+  swagger-ui:
+    path: /api/DIPS/swagger-ui.html
