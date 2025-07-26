@@ -1,5 +1,7 @@
 package az.cybernet.invoice.service.impl;
 
+import az.cybernet.invoice.aop.annotation.Log;
+import az.cybernet.invoice.aop.annotation.LogIgnore;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
@@ -31,6 +33,7 @@ import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
+@Log
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
@@ -125,6 +128,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 //        invoiceRepository.updateTotalPrice(invoiceId, total);
 //    }
 
+    @LogIgnore
     private String generateInvoiceNumber() {
         var now = LocalDateTime.now();
         var year = String.valueOf(now.getYear()).substring(2);
