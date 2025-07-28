@@ -8,11 +8,12 @@
     <resultMap id="UserResultMap" type="az.cybernet.usermanagement.entity.UserEntity">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <result property="taxId" column="taxId"/>
-        <result property="is_active" column="is_active"/>
-        <result property="created_at" column="created_at"/>
-        <result property="updated_at" column="updated_at"/>
+        <result property="taxId" column="tax_id"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
     </resultMap>
+
 
     <!-- RESTORE USER -->
     <update id="restoreUser" parameterType="long">
@@ -25,15 +26,16 @@
     <!-- FIND USER BY TAXID -->
     <select id="findUserByTaxId" resultMap="UserResultMap" parameterType="String">
         SELECT
-        u.id,
-        u.name,
-        u.tax_id,
-        u.is_active,
-        u.created_at,
-        u.updated_at
+            u.id,
+            u.name,
+            u.tax_id,
+            u.is_active,
+            u.created_at,
+            u.updated_at
         FROM users.users u
         WHERE u.tax_id = #{taxId}
     </select>
+
 
 
     <!-- SOFT DELETE USER -->

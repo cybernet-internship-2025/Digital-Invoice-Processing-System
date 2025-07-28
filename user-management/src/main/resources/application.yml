@@ -12,9 +12,8 @@ spring:
 
 
 mybatis:
-#  type-aliases-package: az.cybernet.usermanagement.repository
-#  type-handlers-package: com.example.typehandler
-  mapper-locations: classpath:mapper/*xml
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: az.cybernet.usermanagement.entity
   configuration:
     map-underscore-to-camel-case: true
     default-fetch-size: 100

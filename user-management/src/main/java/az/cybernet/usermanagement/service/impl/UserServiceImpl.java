@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_NOT_FOUND;
 
@@ -22,6 +24,7 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     UserMapper userMapper;
 
+    @Transactional
     @Override
     public void restoreUser(String taxId) {
         var user = fetchUserIfExist(taxId);
@@ -29,6 +32,7 @@ public class UserServiceImpl implements UserService {
         log.info("User with tax ID + " + taxId + " was restored!");
     }
 
+    @Transactional
     @Override
     public void deleteUser(String taxId) {
         var user = fetchUserIfExist(taxId);
