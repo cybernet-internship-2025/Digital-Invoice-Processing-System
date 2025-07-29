@@ -14,7 +14,5 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 @Builder
 public class CreateUserRequest {
-    Long id;
     String name;
-
 }

@@ -53,7 +53,7 @@
                u.is_active,
                u.created_at,
                u.updated_at
-        FROM users u
+        FROM users.users u
         WHERE u.id = #{id}
     </select>
 

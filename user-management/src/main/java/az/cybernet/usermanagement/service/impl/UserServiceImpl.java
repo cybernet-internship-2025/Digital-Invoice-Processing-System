@@ -8,12 +8,10 @@ import az.cybernet.usermanagement.mapper.UserMapper;
 import az.cybernet.usermanagement.repository.UserRepository;
 import az.cybernet.usermanagement.service.abstraction.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +19,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
     @Override
     public List<UserResponse> findAll() {
         List<UserEntity> users = userRepository.findAll();
@@ -28,36 +27,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-//    using transaction
-    @Transactional
     public UserResponse addUser(CreateUserRequest request) {
-        UserEntity userEntity = userMapper.toUserEntity(request);
-        if(userRepository.findById(userEntity.getId()).isEmpty()) {
-            userEntity.setCreatedAt(LocalDateTime.now());
-            userEntity.setUpdatedAt(null);
-            userEntity.setIsActive(true);
-            String taxId= generateNextTaxId();
-            userEntity.setTaxId(taxId);
-            UserEntity db= userRepository.addUser(userEntity);
-            return userMapper.toUserResponseFromEntity(userEntity);
-
-        }
-
-        throw  new RuntimeException("User already exists");
-
+        UserEntity userEntity = userMapper.toUserEntityFromCreate(request);
+        String taxId = generateNextTaxId();
+        userEntity.setTaxId(taxId);
+        userRepository.addUser(userEntity);
+        return userMapper.toUserResponseFromEntity(userEntity);
     }
-//  using tarnsaction
+
+    //  using tarnsaction
     @Transactional
     @Override
     public UserResponse updateUser(UpdateUserRequest request) {
-        UserEntity entity=userMapper.toUserEntityFromUpdate(request);
+
+        UserEntity entity = userMapper.toUserEntityFromUpdate(request);
         entity.setUpdatedAt(LocalDateTime.now());
-        String taxId= generateNextTaxId();
+        String taxId = generateNextTaxId();
         entity.setTaxId(taxId);
-        UserEntity db= userRepository.updateUser(entity);
+        UserEntity db = userRepository.updateUser(entity);
         return userMapper.toUserResponseFromEntity(entity);
     }
-    public String generateNextTaxId() {
+
+    private String generateNextTaxId() {
         Long lastId = userRepository.findMaxTaxId();
         if (lastId == null) lastId = 0L;
 
