@@ -12,7 +12,9 @@ import java.util.List;
 public interface InvoiceService {
     InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest);
 
-    List<ItemResponse> addItemsToInvoice(ItemsRequest request);
+    InvoiceResponse findById(Long id);
+
+    void restoreInvoice(Long id);
 
     List<InvoiceResponse> getAll();
 
@@ -30,5 +32,15 @@ public interface InvoiceService {
 
     List<InvoiceResponse> findInvoicesBySenderTaxId(Long senderTaxId);
 
+
+    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
+
+    List<ItemResponse> addItemsToInvoice(ItemsRequest requests);
+
+    void approveInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+
+    void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+
+    void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId, String comment);
 
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import static az.cybernet.invoice.exception.ExceptionConstants.HTTP_METHOD_IS_NOT_CORRECT;
 import static az.cybernet.invoice.exception.ExceptionConstants.VALIDATION_EXCEPTION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -72,6 +73,26 @@ public class ErrorHandler {
                         .code(ex.getCode())
                         .message(ex.getMessage())
                         .build());
+    }
+
+    @ExceptionHandler(InvalidStatusException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse handle(InvalidStatusException ex) {
+        log.error("InvalidStatusException: ", ex);
+        return ErrorResponse.builder()
+                .code(ex.getCode())
+                .message(ex.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(FORBIDDEN)
+    public ErrorResponse handle(UnauthorizedException ex) {
+        log.error("UnauthorizedException: ", ex);
+        return ErrorResponse.builder()
+                .code(ex.getCode())
+                .message(ex.getMessage())
+                .build();
     }
 
 }
