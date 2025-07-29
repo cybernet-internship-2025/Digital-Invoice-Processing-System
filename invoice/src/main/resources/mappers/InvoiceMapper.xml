@@ -48,16 +48,15 @@
         SELECT invoice_number
         FROM invoices
         WHERE invoice_number LIKE CONCAT(#{prefix}, '%')
-        ORDER BY invoice_number DESC
-            LIMIT 1
+        ORDER BY invoice_number DESC LIMIT 1
     </select>
 
-    <!-- SELECT BY ID -->
-    <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
+    <select id="findAllByRecipientUserTaxId" resultMap="InvoiceResultMap" parameterType="string">
         SELECT c.id               AS c_id,
                c.sender_tax_id    AS c_sender_tax_id,
                c.recipient_tax_id AS c_recipient_tax_id,
                c.total_price      AS c_total_price,
+               c.is_active        AS c_is_active,
                c.invoice_number   AS c_invoice_number,
                c.invoice_series   AS c_invoice_series,
                c.status           AS c_status,
@@ -73,13 +72,42 @@
                i.invoice_id       AS i_invoice_id
 
         FROM invoices c
-                 LEFT JOIN items i ON c.id = i.invoice_id
+                 LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
+        WHERE c.recipient_tax_id = #{recipientTaxId}
+          AND c.is_active = true
+    </select>
+
+    <!-- SELECT BY ID -->
+    <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
+        SELECT c.id               AS c_id,
+               c.sender_tax_id    AS c_sender_tax_id,
+               c.recipient_tax_id AS c_recipient_tax_id,
+               c.total_price      AS c_total_price,
+               c.invoice_number   AS c_invoice_number,
+               c.is_active        AS c_is_active,
+               c.invoice_series   AS c_invoice_series,
+               c.status           AS c_status,
+               c.created_at       AS c_created_at,
+               c.updated_at       AS c_updated_at,
+
+               i.id               AS i_id,
+               i.name             AS i_name,
+               i.unit_price       AS i_unit_price,
+               i.is_active        AS i_is_active,
+               i.quantity         AS i_quantity,
+               i.total_price      AS i_total_price,
+               i.invoice_id       AS i_invoice_id
+
+        FROM invoices c
+                 LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
         WHERE c.id = #{id}
+          AND c.is_active = true
     </select>
 
     <update id="restoreInvoice" parameterType="long">
         UPDATE invoices
         SET status     = 'DRAFT',
+            is_active  = true,
             updated_at = NOW()
         WHERE id = #{id}
     </update>
