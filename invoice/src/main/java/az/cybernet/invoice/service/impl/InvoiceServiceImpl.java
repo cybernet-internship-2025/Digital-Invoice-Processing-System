@@ -27,9 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
-import static az.cybernet.invoice.enums.InvoiceStatus.CANCELED;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
-import static az.cybernet.invoice.enums.OperationStatus.CANCELED;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
@@ -87,7 +85,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceEntity.setStatus(APPROVED);
         invoiceEntity.setUpdatedAt(LocalDateTime.now());
-        invoiceEntity.setIsActive(true);
 
         invoiceRepository.saveInvoice(invoiceEntity);
 

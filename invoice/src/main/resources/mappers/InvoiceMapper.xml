@@ -48,8 +48,7 @@
         SELECT invoice_number
         FROM invoices
         WHERE invoice_number LIKE CONCAT(#{prefix}, '%')
-        ORDER BY invoice_number DESC
-            LIMIT 1
+        ORDER BY invoice_number DESC LIMIT 1
     </select>
 
     <select id="findAllByRecipientUserTaxId" resultMap="InvoiceResultMap" parameterType="string">
