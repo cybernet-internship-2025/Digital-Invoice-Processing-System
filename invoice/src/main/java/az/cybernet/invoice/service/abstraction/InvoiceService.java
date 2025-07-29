@@ -1,6 +1,7 @@
 package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -17,6 +18,17 @@ public interface InvoiceService {
 
     void deleteInvoiceById(Long id);
 
-    InvoiceResponse updateInvoice(UpdateInvoiceRequest request, Long invoiceId);
+    InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
+
+    InvoiceResponse sendInvoice(Long invoiceId, SendInvoiceRequest request);
+
+    List<InvoiceResponse>findAllByStatus(String status);
+
+    InvoiceResponse sendInvoiceToCorrection(Long invoiceId, String senderTaxId);
+
+    InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
+
+    List<InvoiceResponse> findInvoicesBySenderTaxId(Long senderTaxId);
+
 
 }

@@ -68,6 +68,6 @@ databaseChangeLog:
               - column:
                   name: is_active
                   type: BOOLEAN
-                  defaultValueBoolean: false
+                  defaultValueBoolean: true
                   constraints:
                     nullable: false

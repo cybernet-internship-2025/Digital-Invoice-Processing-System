@@ -24,6 +24,14 @@ public interface InvoiceRepository {
 
     void deleteInvoiceById(Long id);
 
-    InvoiceEntity updateInvoice(InvoiceEntity invoice);
+    void updateInvoice(InvoiceEntity invoice);
+
+    void changeStatus(Long id, String status);
+
+    List<InvoiceEntity> findAllByStatus(String status);
+
+    Optional<InvoiceEntity> findByIdAndBySenderTaxId(Long invoiceId, String senderTaxId);
+
+    Optional<InvoiceEntity>findByIdAndReceiverTaxId(Long invoiceId, String receiverTaxId);
 
 }
