@@ -68,6 +68,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return items;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void approveInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
@@ -87,6 +88,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepository.saveInvoice(invoiceEntity);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
@@ -105,6 +107,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepository.saveInvoice(invoiceEntity);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
