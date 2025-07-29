@@ -61,7 +61,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ItemResponse> addItemsToInvoice(ItemsRequest requests) {
-        var invoiceEntity = fetchInvoiceIfExist(requests.getInvoiceId());
+        fetchInvoiceIfExist(requests.getInvoiceId());
         List<ItemResponse> items = itemService.addItems(requests);
         updateInvoiceTotalPrice(requests.getInvoiceId());
         return items;
