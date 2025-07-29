@@ -1,5 +1,7 @@
 package az.cybernet.invoice.service.impl;
 
+import az.cybernet.invoice.aop.annotation.Log;
+import az.cybernet.invoice.aop.annotation.LogIgnore;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
@@ -35,6 +37,7 @@ import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static lombok.AccessLevel.PRIVATE;
 
+@Log
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
@@ -195,6 +198,20 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         return recipient;
     }
+
+    private BigDecimal calculateTotalPrice() {
+        return ZERO;
+    }
+
+//    public void updateInvoiceTotalPrice(Long invoiceId) {
+//        List<ItemEntity> items = itemRepository.findAllByInvoiceId(invoiceId);
+//
+//        BigDecimal total = items.stream()
+//                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//        invoiceRepository.updateTotalPrice(invoiceId, total);
+//    }
 
     private String generateInvoiceNumber() {
         var now = LocalDateTime.now();
