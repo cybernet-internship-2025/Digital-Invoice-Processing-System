@@ -5,42 +5,35 @@
 
 <mapper namespace="az.cybernet.usermanagement.repository.UserRepository">
 
-    <!-- Result map with cascade to Operations -->
     <resultMap id="UserResultMap" type="az.cybernet.usermanagement.entity.UserEntity">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <result property="taxId" column="taxId"/>
+        <result property="taxId" column="tax_id"/>
         <result property="isActive" column="is_active"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
-
     </resultMap>
-    <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (name, tax_id, is_active, created_at, updated_at)
-        VALUES (#{name}, #{taxId}, true,NOW() ,null)
-    </insert>
 
-    <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">
-        UPDATE users
-        SET name = #{name},
-            is_active = #{isActive},
-            updated_at = #{updatedAt}
+
+    <!-- RESTORE USER -->
+    <update id="restoreUser" parameterType="long">
+        UPDATE users.users
+        SET is_active = true,
+        updated_at = null
         WHERE id = #{id}
     </update>
 
-    <select id="findAll" resultMap="UserResultMap" parameterType="Long">
-        SELECT u.id,
-        u.name,
-        u.tax_id,
-        u.is_active,
-        u.created_at,
-        u.updated_at
-        FROM users u
-        WHERE u.is_active != false
-        ORDER BY u.id ASC
-        <if test="limit != null">
-            LIMIT #{limit}
-        </if>
+    <!-- FIND USER BY TAXID -->
+    <select id="findUserByTaxId" resultMap="UserResultMap" parameterType="String">
+        SELECT
+            u.id,
+            u.name,
+            u.tax_id,
+            u.is_active,
+            u.created_at,
+            u.updated_at
+        FROM users.users u
+        WHERE u.tax_id = #{taxId}
     </select>
 
     <select id="findMaxTaxId" resultType="long">
@@ -56,5 +49,13 @@
         FROM users u
         WHERE u.id = #{id}
     </select>
+
+    <!-- SOFT DELETE USER -->
+    <update id="deleteUser" parameterType="long">
+        UPDATE users.users
+        SET is_active = false,
+        updated_at = now()
+        WHERE id = #{id}
+    </update>
 
 </mapper>
