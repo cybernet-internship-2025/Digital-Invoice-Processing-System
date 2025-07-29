@@ -56,6 +56,7 @@
                c.sender_tax_id    AS c_sender_tax_id,
                c.recipient_tax_id AS c_recipient_tax_id,
                c.total_price      AS c_total_price,
+               c.is_active        AS c_is_active,
                c.invoice_number   AS c_invoice_number,
                c.invoice_series   AS c_invoice_series,
                c.status           AS c_status,
@@ -71,8 +72,9 @@
                i.invoice_id       AS i_invoice_id
 
         FROM invoices c
-                 LEFT JOIN items i ON c.id = i.invoice_id
+                 LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
         WHERE c.recipient_tax_id = #{recipientTaxId}
+          AND c.is_active = true
     </select>
 
     <!-- SELECT BY ID -->
@@ -82,6 +84,7 @@
                c.recipient_tax_id AS c_recipient_tax_id,
                c.total_price      AS c_total_price,
                c.invoice_number   AS c_invoice_number,
+               c.is_active        AS c_is_active,
                c.invoice_series   AS c_invoice_series,
                c.status           AS c_status,
                c.created_at       AS c_created_at,
@@ -96,13 +99,15 @@
                i.invoice_id       AS i_invoice_id
 
         FROM invoices c
-                 LEFT JOIN items i ON c.id = i.invoice_id
+                 LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
         WHERE c.id = #{id}
+          AND c.is_active = true
     </select>
 
     <update id="restoreInvoice" parameterType="long">
         UPDATE invoices
         SET status     = 'DRAFT',
+            is_active  = true,
             updated_at = NOW()
         WHERE id = #{id}
     </update>
