@@ -24,6 +24,6 @@ public interface InvoiceService {
 
     void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
 
-    void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId);
+    void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId, String comment);
 
 }

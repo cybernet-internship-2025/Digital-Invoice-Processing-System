@@ -4,9 +4,12 @@ import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
+import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.enums.InvoiceStatus;
+import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.exception.InvalidStatusException;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.exception.UnauthorizedException;
@@ -25,8 +28,8 @@ import java.util.List;
 
 import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CANCELED;
-import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
+import static az.cybernet.invoice.enums.OperationStatus.CANCELED;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
@@ -42,6 +45,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     UserClient userClient;
     InvoiceMapper invoiceMapper;
     ItemService itemService;
+    OperationService operationService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -86,6 +90,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceEntity.setIsActive(true);
 
         invoiceRepository.saveInvoice(invoiceEntity);
+
+        addInvoiceCommentToOperation(invoiceEntity.getId(), recipientTaxId, null, OperationStatus.APPROVED);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -101,15 +107,17 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
 
-        invoiceEntity.setStatus(CANCELED);
+        invoiceEntity.setStatus(InvoiceStatus.CANCELED);
         invoiceEntity.setUpdatedAt(LocalDateTime.now());
 
         invoiceRepository.saveInvoice(invoiceEntity);
+
+        addInvoiceCommentToOperation(invoiceEntity.getId(), recipientTaxId, null, OperationStatus.CANCELED);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId) {
+    public void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId, String comment) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
         if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
@@ -120,10 +128,24 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
 
-        invoiceEntity.setStatus(CORRECTION);
+        invoiceEntity.setStatus(InvoiceStatus.CORRECTION);
         invoiceEntity.setUpdatedAt(LocalDateTime.now());
 
         invoiceRepository.saveInvoice(invoiceEntity);
+
+        addInvoiceCommentToOperation(invoiceEntity.getId(), recipientTaxId, comment, OperationStatus.CORRECTION);
+    }
+
+    private void addInvoiceCommentToOperation(Long invoiceId, String taxId, String comment, OperationStatus status) {
+        InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
+        CreateOperationRequest operationRequest = CreateOperationRequest.builder()
+                .taxId(taxId)
+                .comment(comment)
+                .status(status)
+                .invoice(invoiceEntity)
+                .build();
+
+        operationService.saveOperation(operationRequest);
     }
 
     @Override
@@ -136,6 +158,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     public void restoreInvoice(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
         invoiceRepository.restoreInvoice(invoiceEntity.getId());
+
+        addInvoiceCommentToOperation(invoiceEntity.getId(), invoiceEntity.getRecipientTaxId(), null, OperationStatus.DRAFT);
     }
 
     @Override
