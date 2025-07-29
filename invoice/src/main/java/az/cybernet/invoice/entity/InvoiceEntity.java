@@ -32,6 +32,7 @@ public class InvoiceEntity {
     InvoiceStatus status;
     String invoiceNumber;
     String invoiceSeries;
+    boolean isActive;
     List<OperationEntity> operations;
     List<ItemEntity> items;
 }

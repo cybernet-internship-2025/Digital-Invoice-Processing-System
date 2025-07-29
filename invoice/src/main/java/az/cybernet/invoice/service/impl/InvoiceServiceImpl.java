@@ -5,6 +5,9 @@ import az.cybernet.invoice.aop.annotation.LogIgnore;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceRequest;
+import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -35,6 +38,9 @@ import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND
 import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
+import static az.cybernet.invoice.enums.InvoiceStatus.*;
+import static az.cybernet.invoice.exception.ExceptionConstants.*;
+import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
 
 @Log
@@ -247,4 +253,85 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .map(invoiceMapper::fromEntityToResponse)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public void deleteInvoiceById(Long id) {
+        fetchInvoiceIfExist(id);
+        invoiceRepository.deleteInvoiceById(id);
+    }
+
+    @Override
+    @Transactional
+    public InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId) {
+        //TODO: check current user has invoice given by ID or not
+        InvoiceEntity invoice = fetchInvoiceIfExist(invoiceId);
+
+        if(!(invoice.getStatus().equals(DRAFT)||invoice.getStatus().equals(CORRECTION))){
+            throw new RuntimeException("You cannot update invoice if it isn't in DRAFT status!");
+        }
+
+        invoice.setRecipientTaxId(recipientTaxId);
+
+        invoiceRepository.updateInvoice(invoice);
+
+        return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    @Transactional
+    public InvoiceResponse sendInvoice(Long invoiceId, SendInvoiceRequest request) {
+        InvoiceEntity invoice = invoiceRepository.findByIdAndBySenderTaxId(invoiceId,request.getSenderUserTaxId())
+                        .orElseThrow(()->new RuntimeException("You have no any invoice on status DRAFT and given by ID!"));
+
+        invoiceRepository.changeStatus(invoiceId, PENDING.toString());
+        invoice.setStatus(PENDING);
+
+        //TODO: create operation
+
+        return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    public List<InvoiceResponse> findAllByStatus(String status) {
+        return invoiceRepository.findAllByStatus(status)
+                .stream()
+                .map(invoiceMapper::fromEntityToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public InvoiceResponse sendInvoiceToCorrection(Long invoiceId, String receiverTaxId) {
+        InvoiceEntity invoice = invoiceRepository.findByIdAndReceiverTaxId(invoiceId, receiverTaxId)
+                .orElseThrow(()->new RuntimeException("You have not any received active invoice on status PENDING and given by ID!"));
+
+        invoiceRepository.changeStatus(invoiceId, "CORRECTION");
+
+        invoice.setStatus(CORRECTION);
+
+        //TODO: create operation
+
+        return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    public InvoiceResponse rollbackInvoice(Long invoiceId,String senderTaxId) {
+        InvoiceEntity invoice = invoiceRepository.findByIdAndBySenderTaxId(invoiceId,senderTaxId)
+                .orElseThrow(()->new RuntimeException("You have not any invoice on status PENDING and given by ID"));
+
+        invoice.setStatus(DRAFT);
+
+        //TODO: create operation
+
+        invoiceRepository.changeStatus(invoiceId, "DRAFT");
+
+        return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(Long senderTaxId) {
+        return null;
+    }
+
 }

@@ -13,9 +13,10 @@
         <result property="totalPrice" column="c_total_price"/>
         <result property="invoiceNumber" column="c_invoice_number"/>
         <result property="invoiceSeries" column="c_invoice_series"/>
-        <result property="status" column="c_status"/>
+        <result property="status" column="c_status" typeHandler="az.cybernet.invoice.handler.InvoiceStatusTypeHandler"/>
         <result property="createdAt" column="c_created_at"/>
         <result property="updatedAt" column="c_updated_at"/>
+        <result property="isActive" column="is_active"/>
 
         <collection property="items" ofType="az.cybernet.invoice.entity.ItemEntity">
             <id property="id" column="i_id"/>
@@ -113,8 +114,94 @@
     </update>
 
     <select id="getAll" resultMap="InvoiceResultMap">
+        SELECT
+            i.id,
+            i.sender_tax_id,
+            i.recipient_tax_id,
+            i.total_price,
+            i.invoice_number,
+            i.invoice_series,
+            i.status,
+            i.created_at,
+            i.updated_at,
+            i.is_active,
+
+            it.id,
+            it.name,
+            it.unit_price,
+            it.quantity,
+            it.total_price,
+            it.is_active,
+            it.invoice_id
+        from invoices i
+        left join items it on i.id = it.invoice_id
+        and it.is_active = true
+        where i.is_active = true
+    </select>
+
+    <update id="deleteInvoiceById" parameterType="long">
+        update invoices
+        set is_active = false
+        where id = #{id}
+    </update>
+    
+    <update id="updateInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity">
+        update invoices
+        set recipient_tax_id = #{recipientTaxId},
+            updated_at = current_timestamp
+        where id = #{invoice.id}
+        and is_active = true
+    </update>
+
+    <update id="changeStatus">
+        update invoices
+        set status = #{status},
+            updated_at = current_timestamp
+        where id = #{id}
+    </update>
+
+    <select id="findAllByStatus" resultMap="InvoiceResultMap">
+        SELECT
+            i.id,
+            i.sender_tax_id,
+            i.recipient_tax_id,
+            i.total_price,
+            i.invoice_number,
+            i.invoice_series,
+            i.status,
+            i.created_at,
+            i.updated_at,
+            i.is_active,
+
+            it.id,
+            it.name,
+            it.unit_price,
+            it.quantity,
+            it.total_price,
+            it.is_active,
+            it.invoice_id
+        from invoices i
+                 left join items it on i.id = it.invoice_id
+            and it.is_active = true
+        where i.is_active = true
+        and i.status = #{status}
+    </select>
+
+    <select id="findByIdAndReceiverTaxId" resultMap="InvoiceResultMap">
         select *
         from invoices
-        where status = 'DRAFT'
+        where id = #{invoiceId}
+        and recipient_tax_id = #{receiverTaxId}
+        and is_active = true
+        and status = 'PENDING'
+    </select>
+
+    <select id="findByIdAndBySenderTaxId" resultMap="InvoiceResultMap">
+        select *
+        from invoices
+        where id = #{invoiceId}
+        and sender_tax_id = #{senderTaxId}
+        and is_active = true
+        and status = 'PENDING'
     </select>
 </mapper>
