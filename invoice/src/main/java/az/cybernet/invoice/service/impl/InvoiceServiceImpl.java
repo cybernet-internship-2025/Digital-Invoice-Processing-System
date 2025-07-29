@@ -49,13 +49,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         var sender = findSenderByTaxId(invoiceRequest.getSenderTaxId());
         var recipient = findRecipientByTaxId(invoiceRequest.getRecipientTaxId());
 
-        var invoiceResponse = invoiceMapper.buildInvoiceResponse(invoiceRequest);
-        invoiceResponse.setSenderTaxId(sender.getTaxId());
-        invoiceResponse.setRecipientTaxId(recipient.getTaxId());
-        invoiceResponse.setInvoiceNumber(generateInvoiceNumber());
+        var invoiceEntity = invoiceMapper.fromInvoiceRequestToEntity(invoiceRequest);
 
-        invoiceRepository.saveInvoice(invoiceMapper.buildInvoiceEntity(invoiceResponse));
-        return invoiceResponse;
+        invoiceEntity.setSenderTaxId(sender.getTaxId());
+        invoiceEntity.setRecipientTaxId(recipient.getTaxId());
+        invoiceEntity.setInvoiceNumber(generateInvoiceNumber());
+
+        invoiceRepository.saveInvoice(invoiceEntity);
+        return invoiceMapper.fromInvoiceEntityToResponse(invoiceEntity);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -142,7 +143,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private void updateInvoiceTotalPrice(Long invoiceId) {
-        List<ItemResponse> items = itemService.findAllByInvoiceId(invoiceId);
+        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
 
         BigDecimal total = items.stream()
                 .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
