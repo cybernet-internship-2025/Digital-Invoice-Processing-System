@@ -1,5 +1,7 @@
 package az.cybernet.usermanagement.service.impl;
 
+import az.cybernet.usermanagement.dto.request.CreateUserRequest;
+import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
@@ -13,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 
 import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_NOT_FOUND;
 
@@ -21,6 +26,7 @@ import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_NOT_FOUND
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
+
     UserRepository userRepository;
     UserMapstruct userMapstruct;
 
@@ -49,6 +55,51 @@ public class UserServiceImpl implements UserService {
     private UserEntity fetchUserIfExist(String taxId) {
         return  userRepository.findUserByTaxId(taxId)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
+    }
+
+    @Override
+    public List<UserResponse> findAll() {
+        List<UserEntity> users = userRepository.findAll();
+//        return userMapstruct.toUserResponseList(users);
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public UserResponse addUser(CreateUserRequest request) {
+//        UserEntity userEntity = userMapper.toUserEntity(request);
+//        if(userRepository.findById(userEntity.getId()).isEmpty()) {
+//            userEntity.setCreatedAt(LocalDateTime.now());
+//            userEntity.setUpdatedAt(null);
+//            userEntity.setIsActive(true);
+//            String taxId= generateNextTaxId();
+//            userEntity.setTaxId(taxId);
+//            UserEntity db= userRepository.addUser(userEntity);
+//            return userMapper.toUserResponseFromEntity(userEntity);
+
+//        throw new RuntimeException("User already exists");
+        return null;
+    }
+
+    @Transactional
+    @Override
+    public UserResponse updateUser(UpdateUserRequest request) {
+//        UserEntity entity = userMapper.toUserEntityFromUpdate(request);
+//        entity.setUpdatedAt(LocalDateTime.now());
+//        String taxId = generateNextTaxId();
+//        entity.setTaxId(taxId);
+//        UserEntity db = userRepository.updateUser(entity);
+//        return userMapper.toUserResponseFromEntity(entity);
+        return null;
+    }
+
+    public String generateNextTaxId() {
+//        Long lastId = userRepository.findMaxTaxId();
+//        if (lastId == null) lastId = 0L;
+//
+//        long nextId = lastId + 1;
+//        return String.format("%010d", nextId);
+        return null;
     }
 
 }
