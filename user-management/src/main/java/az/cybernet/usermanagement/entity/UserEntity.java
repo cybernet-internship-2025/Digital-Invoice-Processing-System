@@ -24,7 +24,6 @@ public class UserEntity {
     Long id;
     @NotBlank
     String name;
-    @Size(min = 10,max = 10,message = "taxId can't be smaller than 10 symbols")
     String taxId;
     Boolean isActive;
     LocalDateTime createdAt;

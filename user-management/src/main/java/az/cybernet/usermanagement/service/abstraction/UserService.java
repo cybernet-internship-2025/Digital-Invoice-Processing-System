@@ -4,8 +4,10 @@ import az.cybernet.usermanagement.dto.request.CreateUserRequest;
 import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 
+import java.util.List;
+
 public interface UserService {
-    public UserResponse findAll();
+    public List<UserResponse> findAll();
     public UserResponse addUser(CreateUserRequest request);
     public UserResponse updateUser(UpdateUserRequest request);
 
