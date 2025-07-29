@@ -9,7 +9,7 @@
     <resultMap id="UserResultMap" type="az.cybernet.usermanagement.entity.UserEntity">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <result property="taxId" column="taxId"/>
+        <result property="taxId" column="tax_id"/>
         <result property="isActive" column="is_active"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>

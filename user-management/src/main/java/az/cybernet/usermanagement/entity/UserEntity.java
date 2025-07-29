@@ -12,8 +12,7 @@ import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
-@Getter
-@Setter
+@Data
 @EqualsAndHashCode(of = "id")
 @Builder
 @NoArgsConstructor
