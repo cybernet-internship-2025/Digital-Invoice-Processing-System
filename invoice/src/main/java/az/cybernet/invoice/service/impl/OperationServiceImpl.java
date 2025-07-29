@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -20,7 +21,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = PRIVATE, makeFinal = true)
+@FieldDefaults(level = PRIVATE,makeFinal = true)
 public class OperationServiceImpl implements OperationService {
 
     OperationRepository operationRepository;
@@ -32,7 +33,21 @@ public class OperationServiceImpl implements OperationService {
         OperationEntity entity = operationMapStruct.toEntity(request);
         entity.setCreatedAt(LocalDateTime.now());
 
+        entity.setTaxId(request.getTaxId());
+
         operationRepository.save(entity);
+    }
+
+    private List<Long> itemIds(CreateOperationRequest request) {
+        List<Long> ids = new ArrayList<>();
+
+        if (request.getInvoiceId() != null) {
+            ids.add(request.getInvoiceId());
+        }
+        if (request.getItemId() != null) {
+            ids.add(request.getItemId());
+        }
+        return ids;
     }
 
 
@@ -44,6 +59,7 @@ public class OperationServiceImpl implements OperationService {
                 .map(operationMapStruct::toResponse)
                 .collect(toList());
     }
+
 
 
     @Override

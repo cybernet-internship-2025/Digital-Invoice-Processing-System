@@ -1,6 +1,7 @@
 package az.cybernet.invoice.entity;
 
 import az.cybernet.invoice.enums.OperationStatus;
+import io.micrometer.observation.transport.SenderContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +29,5 @@ public class OperationEntity {
     LocalDateTime createdAt;
     InvoiceEntity invoice;
     ItemEntity item;
+    String taxId;
 }
