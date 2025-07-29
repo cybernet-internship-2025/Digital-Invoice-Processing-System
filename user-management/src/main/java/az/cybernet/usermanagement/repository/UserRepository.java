@@ -1,14 +1,18 @@
 package az.cybernet.usermanagement.repository;
 
 import az.cybernet.usermanagement.entity.UserEntity;
-import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Mapper
+@Repository
 public interface UserRepository {
-    void addUser(UserEntity userEntity);
+
+    Optional<UserEntity> findUserByTaxId(String taxId);
+    void restoreUser(Long id);
+    void deleteUser(Long id);
+    UserEntity addUser(UserEntity userEntity);
     UserEntity updateUser(UserEntity userEntity);
 //    Optional<UserEntity> findByTaxId(Long taxId);
     List<UserEntity> findAll();
