@@ -3,7 +3,7 @@ package az.cybernet.usermanagement.service.impl;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
-import az.cybernet.usermanagement.mapper.UserMapper;
+import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
 import az.cybernet.usermanagement.service.abstraction.UserService;
 import lombok.AccessLevel;
@@ -22,7 +22,7 @@ import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_NOT_FOUND
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
     UserRepository userRepository;
-    UserMapper userMapper;
+    UserMapstruct userMapstruct;
 
     @Transactional
     @Override
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findUserByTaxId(String taxId) {
         var user = fetchUserIfExist(taxId);
-        return userMapper.toUserResponseFromEntity(user);
+        return userMapstruct.toUserResponseFromEntity(user);
     }
 
     private UserEntity fetchUserIfExist(String taxId) {

@@ -6,14 +6,12 @@ spring:
     driverClassName: org.postgresql.Driver
   liquibase:
     change-log: classpath:liquibase/changelog-master.yml
-    drop-first: true
     default-schema: users
     liquibase-schema: public
 
 
 mybatis:
-  mapper-locations: classpath*:mapper/*.xml
-  type-aliases-package: az.cybernet.usermanagement.entity
+  mapper-locations: classpath:mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
     default-fetch-size: 100

@@ -45,7 +45,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceResponse.setInvoiceNumber(generateInvoiceNumber());
         invoiceResponse.setInvoiceSeries("INVD");
 
-        invoiceRepository.saveInvoice();
+//        invoiceRepository.saveInvoice();
         return invoiceResponse;
     }
 

@@ -5,8 +5,8 @@ import az.cybernet.usermanagement.entity.UserEntity;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface UserMapstruct32 {
-    UserResponse toUserResponseFromEntity(UserEntity userEntity);
+public abstract class UserMapstruct {
+    public abstract UserResponse toUserResponseFromEntity(UserEntity userEntity);
 }
 
 
