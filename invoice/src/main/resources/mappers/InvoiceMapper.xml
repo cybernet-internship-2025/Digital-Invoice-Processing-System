@@ -34,9 +34,9 @@
     <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity"
             useGeneratedKeys="true">
         INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, status, invoice_number, invoice_series,
-                              created_at, updated_at)
+                              status, created_at, updated_at, is_active)
         VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{status}, #{invoiceNumber}, #{invoiceSeries},
-                NOW(), NULL)
+                'DRAFT', NOW(), NULL, true)
     </insert>
 
     <update id="updateTotalPrice" parameterType="map">
@@ -104,6 +104,7 @@
                  LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
         WHERE c.id = #{id}
           AND c.is_active = true
+          AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
     </select>
 
     <update id="restoreInvoice" parameterType="long">
@@ -112,6 +113,7 @@
             is_active  = true,
             updated_at = NOW()
         WHERE id = #{id}
+          AND c.status IN ('CANCELED')
     </update>
 
     <select id="getAll" resultMap="InvoiceResultMap">
