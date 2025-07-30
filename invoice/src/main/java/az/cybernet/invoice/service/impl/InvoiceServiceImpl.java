@@ -91,7 +91,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             invoiceEntity.setTotalPrice(totalPrice);
         }
 
-        return invoiceMapper.fromInvoiceEntityToResponse(invoiceEntity);
+        return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
 
     private void validateItem(ItemRequest i) {

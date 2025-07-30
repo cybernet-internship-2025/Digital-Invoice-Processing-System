@@ -1,11 +1,8 @@
 package az.cybernet.invoice.mapper;
 
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
-import az.cybernet.invoice.entity.ItemEntity;
-import az.cybernet.invoice.exception.InvalidTaxIdException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -24,8 +21,6 @@ public interface InvoiceMapper {
     @Mapping(target = "invoiceSeries", constant = "INVD")
     @Mapping(target = "items", ignore = true)
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
-
-    InvoiceResponse fromInvoiceEntityToResponse(InvoiceEntity invoiceEntity);
 
     List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
 
