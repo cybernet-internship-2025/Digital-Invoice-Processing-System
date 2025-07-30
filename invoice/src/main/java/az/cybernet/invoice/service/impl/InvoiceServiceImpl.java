@@ -4,6 +4,8 @@ import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
@@ -116,10 +118,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void approveInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
+    public void approveInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
+        if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId()) || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
             throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
         }
 
@@ -136,15 +138,15 @@ public class InvoiceServiceImpl implements InvoiceService {
         List<Long> itemIds = items == null ? List.of()
                 : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-        addInvoiceToOperation(invoiceEntity.getId(), recipientTaxId, "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
+        addInvoiceToOperation(invoiceEntity.getId(), request.getRecipientTaxId(), "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
+    public void cancelInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
+        if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId()) || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
             throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
         }
 
@@ -157,15 +159,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.saveInvoice(invoiceEntity);
 
-        addInvoiceToOperation(invoiceEntity.getId(), recipientTaxId, "Invoice canceled", OperationStatus.CANCELED, null);
+        addInvoiceToOperation(invoiceEntity.getId(), request.getRecipientTaxId(), "Invoice canceled", OperationStatus.CANCELED, null);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId, String comment) {
+    public void requestCorrection(Long invoiceId, RequestCorrectionRequest request) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        if (!invoiceEntity.getRecipientTaxId().equals(recipientTaxId) || !invoiceEntity.getSenderTaxId().equals(senderTaxId)) {
+        if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId()) || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
             throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
         }
 
@@ -182,11 +184,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         List<Long> itemIds = (items == null) ? List.of()
                 : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-        String opComment = (comment == null || comment.isBlank())
+        String opComment = (request.getComment() == null || request.getComment().isBlank())
                 ? "Correction requested"
-                : comment;
+                : request.getComment();
 
-        addInvoiceToOperation(invoiceEntity.getId(), recipientTaxId, opComment, OperationStatus.CORRECTION, itemIds.isEmpty() ? null : itemIds);
+        addInvoiceToOperation(invoiceEntity.getId(), request.getRecipientTaxId(), opComment, OperationStatus.CORRECTION, itemIds.isEmpty() ? null : itemIds);
     }
 
     private void addInvoiceToOperation(Long invoiceId, String taxId, String comment, OperationStatus status, List<Long> itemIds) {
@@ -223,7 +225,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
         var userResponse = findRecipientByTaxId(recipientTaxId);
-        var allByRecipientUserTaxId = invoiceRepository.findAllByRecipientUserTaxId(userResponse.getTaxId());
+        var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
         return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
     }
 

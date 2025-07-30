@@ -1,6 +1,8 @@
 package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 
@@ -32,10 +34,10 @@ public interface InvoiceService {
 
     List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
 
-    void approveInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+    void approveInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request);
 
-    void cancelInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+    void cancelInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request);
 
-    void requestCorrection(Long invoiceId, String senderTaxId, String recipientTaxId, String comment);
+    void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
 
 }
