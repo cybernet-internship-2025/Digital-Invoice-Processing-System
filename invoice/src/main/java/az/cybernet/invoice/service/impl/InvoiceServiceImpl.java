@@ -213,7 +213,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         var invoiceEntity = fetchInvoiceIfExist(id);
         invoiceRepository.restoreInvoice(invoiceEntity.getId());
 
-        addInvoiceToOperation(invoiceEntity.getId(), invoiceEntity.getRecipientTaxId(), null, DRAFT);
+        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceEntity.getId());
+        List<Long> itemIds = items == null ? List.of()
+                : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
+
+        addInvoiceToOperation(invoiceEntity.getId(), invoiceEntity.getRecipientTaxId(), null, DRAFT, itemIds.isEmpty() ? null : itemIds);
     }
 
     @Override
