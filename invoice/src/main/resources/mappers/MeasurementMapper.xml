@@ -19,9 +19,10 @@
     <update id="updateMeasurement">
         UPDATE invoice.measurements
         SET name = #{name},
-            updated_at = #{updatedAt}
+            updated_at = NOW()
         WHERE id = #{id}
     </update>
+
 
     <update id="deleteMeasurement">
         UPDATE invoice.measurements

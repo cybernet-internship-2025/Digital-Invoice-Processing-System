@@ -9,6 +9,7 @@ import az.cybernet.invoice.repository.MeasurementRepository;
 import az.cybernet.invoice.service.abstraction.MeasurementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class MeasurementServiceImpl implements MeasurementService {
     }
 
     @Override
+    @Transactional
     public void updateMeasurement(Long id, MeasurementRequest request) {
         MeasurementEntity entity = mapper.getByName(request.getName());
 
@@ -53,11 +55,13 @@ public class MeasurementServiceImpl implements MeasurementService {
     }
 
     @Override
+    @Transactional
     public void deleteMeasurement(Long id) {
         mapper.deleteMeasurement(id);
     }
 
     @Override
+    @Transactional
     public void restoreMeasurement(Long id) {
         mapper.restoreMeasurement(id);
     }
