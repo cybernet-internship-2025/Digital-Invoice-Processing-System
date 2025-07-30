@@ -1,5 +1,6 @@
 package az.cybernet.invoice.dto.request.invoice;
 
+import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,6 @@ public class CreateInvoiceRequest {
     @NotBlank(message = "Recipient tax ID must not be blank")
     @Size(min = 10, max = 10, message = "Recipient tax ID must be exactly 10 characters")
     String recipientTaxId;
+
+    ItemsRequest items;
 }
