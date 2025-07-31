@@ -33,9 +33,9 @@
     <!-- INSERT -->
     <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity"
             useGeneratedKeys="true">
-        INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, status, invoice_number, invoice_series,
+        INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, invoice_number, invoice_series,
                               status, created_at, updated_at, is_active)
-        VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{status}, #{invoiceNumber}, #{invoiceSeries},
+        VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{invoiceNumber}, #{invoiceSeries},
                 'DRAFT', NOW(), NULL, true)
     </insert>
 

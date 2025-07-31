@@ -3,8 +3,8 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
@@ -197,7 +197,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .taxId(taxId)
                 .comment(comment)
                 .status(status)
-                .invoice(invoiceEntity)
+                .invoiceId(invoiceEntity.getId())
                 .itemIds(itemIds)
                 .build();
 
@@ -258,8 +258,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         var lastNumber = invoiceRepository.findLastInvoiceNumberStartingWith(prefix);
 
         int nextSequence = 1;
-        if (lastNumber != null && lastNumber.length() == 8) {
-            String lastSequence = lastNumber.substring(4);
+        if (lastNumber != null && lastNumber.length() == 9) {
+            String lastSequence = lastNumber.substring(5);
             try {
                 nextSequence = Integer.parseInt(lastSequence) + 1;
             } catch (NumberFormatException e) {
@@ -268,7 +268,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         var sequence = String.format("%04d", nextSequence);
-        return prefix + "-" + sequence;
+        return prefix + sequence;
     }
 
     private InvoiceEntity fetchInvoiceIfExist(Long invoiceId) {
