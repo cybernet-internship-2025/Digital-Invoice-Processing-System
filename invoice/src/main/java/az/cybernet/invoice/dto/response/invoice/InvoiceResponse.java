@@ -27,8 +27,5 @@ public class InvoiceResponse {
     InvoiceStatus status;
     String invoiceNumber;
     String invoiceSeries;
-<<<<<<< HEAD
-=======
     List<ItemResponse> items;
->>>>>>> main
 }
