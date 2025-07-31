@@ -36,7 +36,7 @@ public class OperationServiceImpl implements OperationService {
         System.out.println("Tax ID: " + request.getTaxId());
 
         System.out.println("Invoice ID:" + request.getInvoiceId());
-        System.out.println("Item ID:" + request.getItemId());
+        System.out.println("Item IDs:" + request.getItemIds());
 
         operationRepository.save(entity);
     }
@@ -48,14 +48,12 @@ public class OperationServiceImpl implements OperationService {
         if (request.getInvoiceId() != null) {
             ids.add(request.getInvoiceId());
         }
-        if (request.getItemId() != null) {
-            ids.add(request.getItemId());
+        if (request.getItemIds() != null && !request.getItemIds().isEmpty()) {
+            ids.addAll(request.getItemIds());
         }
 
         return ids;
     }
-
-
 
 
     @Override
