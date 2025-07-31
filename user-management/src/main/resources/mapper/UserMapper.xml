@@ -59,15 +59,17 @@
     </update>
 
     <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (name, tax_id, is_active, created_at, updated_at)
+        INSERT INTO users.users (name, tax_id, is_active, created_at, updated_at)
         VALUES (#{name}, #{taxId}, true,NOW() ,null)
     </insert>
 
     <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">
-        UPDATE users
-        SET name = #{name},
-            is_active = #{isActive},
-            updated_at = #{updatedAt}
+        UPDATE users.users
+        SET tax_id = #{taxId},
+            updated_at = NOW(),
+            created_at = #{createdAt},
+            is_active =true,
+            id = #{id}
         WHERE tax_id = #{taxId}
     </update>
 
@@ -78,7 +80,7 @@
         u.is_active,
         u.created_at,
         u.updated_at
-        FROM users u
+        FROM users.users u
         WHERE u.is_active != false
         ORDER BY u.id ASC
         <if test="limit != null">

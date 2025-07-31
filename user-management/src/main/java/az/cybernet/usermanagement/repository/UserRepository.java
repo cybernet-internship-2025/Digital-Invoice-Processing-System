@@ -13,7 +13,7 @@ public interface UserRepository {
     void restoreUser(Long id);
     void deleteUser(Long id);
     void addUser(UserEntity userEntity);
-    UserEntity updateUser(UserEntity userEntity);
+    void updateUser(UserEntity userEntity);
 //    Optional<UserEntity> findByTaxId(Long taxId);
     List<UserEntity> findAll();
     Long findMaxTaxId();

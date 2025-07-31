@@ -71,6 +71,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse addUser(CreateUserRequest request) {
         UserEntity userEntity = userMapstruct.toUserEntityFromCreate(request);
 
+
         userEntity.setCreatedAt(LocalDateTime.now());
         userEntity.setUpdatedAt(null);
         userEntity.setIsActive(true);
@@ -84,16 +85,17 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserResponse updateUser(UpdateUserRequest request) {
-        UserEntity entity = userMapstruct.toUserEntityFromUpdate(request);
-        if(fetchUserIfExist(request.getTaxId()) != null) {
-            entity.setUpdatedAt(LocalDateTime.now());
+        Optional<UserEntity> entity = userRepository.findUserByTaxId(request.getTaxId());
+        if (entity.isPresent()) {
+            UserEntity userEntity = entity.get();
+            userEntity.setUpdatedAt(LocalDateTime.now());
             String taxId = generateNextTaxId();
-            entity.setTaxId(taxId);
-            userRepository.updateUser(entity);
+            userEntity.setTaxId(taxId);
+            userRepository.updateUser(userEntity);
+            return userMapstruct.toUserResponseFromEntity(userEntity);
 
         }
-        return userMapstruct.toUserResponseFromEntity(fetchUserIfExist(request.getTaxId()));
-
+        throw new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage());
     }
 
     public String generateNextTaxId() {
