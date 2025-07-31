@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface MeasurementService {
 
-    MeasurementEntity getByName(String name);
 
     List<MeasurementResponse> findAll();
 

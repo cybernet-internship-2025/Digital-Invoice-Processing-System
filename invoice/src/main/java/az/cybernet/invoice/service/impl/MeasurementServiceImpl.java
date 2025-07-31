@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static az.cybernet.invoice.exception.ExceptionConstants.MEASUREMENT_NOT_FOUND;
+
+
 @Service
 @RequiredArgsConstructor
 public class MeasurementServiceImpl implements MeasurementService {
@@ -23,17 +26,13 @@ public class MeasurementServiceImpl implements MeasurementService {
     private final MeasurementRepository mapper;
     private final MeasurementMapStruct mapStruct;
 
-    @Override
-    public MeasurementEntity getByName(String name) {
-        return Optional.ofNullable(mapper.getByName(name))
-                .orElseThrow(() -> new NotFoundException("Not_Found: " + name,"Measurement not found"));
-    }
 
     @Override
     public MeasurementResponse getByNameResponse(String name) {
-        MeasurementEntity entity = getByName(name);
+        MeasurementEntity entity = mapper.getByName(name);
         return mapStruct.toResponse(entity);
     }
+
 
     @Override
     public List<MeasurementResponse> findAll() {
@@ -46,7 +45,7 @@ public class MeasurementServiceImpl implements MeasurementService {
         MeasurementEntity entity = mapper.getByName(request.getName());
 
         if (entity == null || !entity.getId().equals(id)) {
-            throw new NotFoundException("Not_Found","Measurement not found");
+            throw new NotFoundException(MEASUREMENT_NOT_FOUND.getCode(), MEASUREMENT_NOT_FOUND.getMessage());
         }
 
         entity.setName(request.getName());
