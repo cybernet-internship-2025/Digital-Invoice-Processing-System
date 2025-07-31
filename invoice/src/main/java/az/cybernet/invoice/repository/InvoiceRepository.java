@@ -16,10 +16,23 @@ public interface InvoiceRepository {
 
     String findLastInvoiceNumberStartingWith(@Param("prefix") String prefix);
 
-    void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
-
     void restoreInvoice(Long id);
 
     List<InvoiceEntity> getAll();
 
+    void deleteInvoiceById(Long id);
+
+    void updateInvoice(InvoiceEntity invoice);
+
+    void changeStatus(Long id, String status);
+
+    List<InvoiceEntity> findAllByStatus(String status);
+
+    Optional<InvoiceEntity> findByIdAndBySenderTaxId(Long invoiceId, String senderTaxId);
+
+    Optional<InvoiceEntity>findByIdAndReceiverTaxId(Long invoiceId, String receiverTaxId);
+
+    List<InvoiceEntity> findAllByRecipientUserTaxId(String recipientTaxId);
+
+    void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
 }
