@@ -106,16 +106,16 @@ public class OperationServiceImpl implements OperationService {
     }
 
 
-
+@Transactional
     public OperationResponse  approve(Long id, String comment)    {
         return changeStatus(id, OperationStatus.APPROVED, comment); }
-
+@Transactional
     public OperationResponse cancel(Long id, String comment)     {
         return changeStatus(id, OperationStatus.CANCELED, comment); }
-
+@Transactional
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
-
+@Transactional
     public OperationResponse correction(Long id, String comment) {
         return changeStatus(id, OperationStatus.CORRECTION, comment); }
 
