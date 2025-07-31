@@ -12,7 +12,7 @@ public interface UserRepository {
     Optional<UserEntity> findUserByTaxId(String taxId);
     void restoreUser(Long id);
     void deleteUser(Long id);
-    UserEntity addUser(UserEntity userEntity);
+    void addUser(UserEntity userEntity);
     UserEntity updateUser(UserEntity userEntity);
 //    Optional<UserEntity> findByTaxId(Long taxId);
     List<UserEntity> findAll();

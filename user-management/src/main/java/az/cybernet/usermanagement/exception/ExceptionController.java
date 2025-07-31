@@ -16,4 +16,12 @@ public class ExceptionController {
                 .message(ex.getMessage())
                 .build();
     }
+    @ExceptionHandler(UserExists.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleUserExists(UserExists ex) {
+        return ExceptionResponse.builder()
+                .code(ex.getCode())
+                .message(ex.getMessage())
+                .build();
+    }
 }
