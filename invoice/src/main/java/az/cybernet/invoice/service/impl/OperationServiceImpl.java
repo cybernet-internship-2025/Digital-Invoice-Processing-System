@@ -32,13 +32,17 @@ public class OperationServiceImpl implements OperationService {
     public void saveOperation(CreateOperationRequest request) {
         OperationEntity entity = operationMapStruct.toEntity(request);
         entity.setCreatedAt(LocalDateTime.now());
-
         entity.setTaxId(request.getTaxId());
+        System.out.println("Tax ID: " + request.getTaxId());
+
+        System.out.println("Invoice ID:" + request.getInvoiceId());
+        System.out.println("Item ID:" + request.getItemId());
 
         operationRepository.save(entity);
     }
 
-    private List<Long> itemIds(CreateOperationRequest request) {
+
+    public List<Long> itemIds(CreateOperationRequest request) {
         List<Long> ids = new ArrayList<>();
 
         if (request.getInvoiceId() != null) {
@@ -47,8 +51,10 @@ public class OperationServiceImpl implements OperationService {
         if (request.getItemId() != null) {
             ids.add(request.getItemId());
         }
+
         return ids;
     }
+
 
 
 

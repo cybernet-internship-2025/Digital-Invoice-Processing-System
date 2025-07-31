@@ -4,7 +4,6 @@ import az.cybernet.invoice.enums.OperationStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -20,6 +19,7 @@ public class CreateOperationRequest {
     Long invoiceId;
     Long itemId;
     String taxId;
+    List<Long> itemIds;
 
 
 
