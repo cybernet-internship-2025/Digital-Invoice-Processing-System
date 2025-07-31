@@ -3,205 +3,145 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="az.cybernet.invoice.repository.InvoiceRepository">
+<mapper namespace="az.cybernet.invoice.repository.ItemRepository">
 
-    <!-- RESULT MAPS -->
-    <resultMap id="InvoiceResultMap" type="az.cybernet.invoice.entity.InvoiceEntity">
-        <id property="id" column="c_id"/>
-        <result property="senderTaxId" column="c_sender_tax_id"/>
-        <result property="recipientTaxId" column="c_recipient_tax_id"/>
-        <result property="totalPrice" column="c_total_price"/>
-        <result property="invoiceNumber" column="c_invoice_number"/>
-        <result property="invoiceSeries" column="c_invoice_series"/>
-        <result property="status" column="c_status" typeHandler="az.cybernet.invoice.handler.InvoiceStatusTypeHandler"/>
-        <result property="createdAt" column="c_created_at"/>
-        <result property="updatedAt" column="c_updated_at"/>
-        <result property="isActive" column="is_active"/>
+    <!-- Result Map -->
+    <resultMap id="ItemResultMap" type="az.cybernet.invoice.entity.ItemEntity">
 
-        <collection property="items" ofType="az.cybernet.invoice.entity.ItemEntity">
-            <id property="id" column="i_id"/>
-            <result property="name" column="i_name"/>
-            <result property="unitPrice" column="i_unit_price"/>
-            <result property="quantity" column="i_quantity"/>
-            <result property="totalPrice" column="i_total_price"/>
-            <result property="isActive" column="i_is_active"/>
-            <result property="invoiceId" column="i_invoice_id"/>
+        <!-- ItemEntity fields -->
+        <id property="id" column="i_id"/>
+        <result property="name" column="i_name"/>
+        <result property="unitPrice" column="i_unit_price"/>
+        <result property="quantity" column="i_quantity"/>
+        <result property="isActive" column="i_is_active"/>
+        <result property="totalPrice" column="i_total_price"/>
+
+        <!-- measurement (One-to-One) -->
+        <association property="measurement" javaType="az.cybernet.invoice.entity.MeasurementEntity">
+            <id property="id" column="m_id"/>
+            <result property="name" column="m_name"/>
+            <result property="createdAt" column="m_created_at"/>
+            <result property="updateAt" column="m_updated_at"/>
+            <result property="isActive" column="m_is_active"/>
+        </association>
+
+        <!-- invoice (One-to-One) -->
+        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="inv_id"/>
+            <result property="invoiceNumber" column="inv_number"/>
+        </association>
+
+        <!-- operations (One-to-Many) -->
+        <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
+            <id property="id" column="op_id"/>
+            <result property="status" column="op_status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
+            <result property="comment" column="op_comment"/>
+            <result property="createdAt" column="op_created_at"/>
         </collection>
+
     </resultMap>
 
-    <!-- INSERT -->
-    <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity"
-            useGeneratedKeys="true">
-        INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, status, invoice_number, invoice_series,
-                              created_at, updated_at)
-        VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{status}, #{invoiceNumber}, #{invoiceSeries},
-                NOW(), NULL)
-    </insert>
-
-    <!-- UPDATE -->
-    <update id="updateTotalPrice" parameterType="map">
-        UPDATE invoices
-        SET total_price = #{totalPrice}
-        WHERE id = #{invoiceId}
+    <!-- Update Item -->
+    <update id="updateItem" parameterType="az.cybernet.invoice.entity.ItemEntity">
+        UPDATE items
+        SET name           = #{name},
+            unit_price     = #{unitPrice},
+            quantity       = #{quantity},
+            total_price    = #{totalPrice},
+            is_active      = #{isActive},
+            measurement_id = #{measurement.id},
+            invoice_id     = #{invoice.id},
+            updated_at     = NOW()
+        WHERE id = #{id}
     </update>
 
-    <update id="restoreInvoice" parameterType="long">
-        UPDATE invoices
-        SET status     = 'DRAFT',
-            is_active  = true,
+    <!-- Find All by Invoice ID -->
+    <select id="findAllItemsByInvoiceId" resultMap="ItemResultMap">
+        SELECT i.id               AS i_id,
+               i.name             AS i_name,
+               i.unit_price       AS i_unit_price,
+               i.quantity         AS i_quantity,
+               i.total_price      AS i_total_price,
+               i.is_active        AS i_is_active,
+
+               m.id               AS m_id,
+               m.name             AS m_name,
+               m.created_at       AS m_created_at,
+               m.updated_at       AS m_updated_at,
+               m.is_active        AS m_is_active,
+
+               inv.id             AS inv_id,
+               inv.invoice_number AS inv_number,
+
+               op.id              AS op_id,
+               op.status          AS op_status,
+               op.comment         AS op_comment,
+               op.created_at      AS op_created_at
+
+        FROM items i
+                 LEFT JOIN measurements m ON i.measurement_id = m.id
+                 LEFT JOIN invoices inv ON i.invoice_id = inv.id
+                 LEFT JOIN operations op ON op.item_id = i.id
+    </select>
+
+    <!-- Restore Item -->
+    <update id="restoreItem" parameterType="long">
+        UPDATE items
+        SET is_active  = TRUE,
             updated_at = NOW()
         WHERE id = #{id}
     </update>
 
-    <update id="deleteInvoiceById" parameterType="long">
-        UPDATE invoices
-        SET is_active = false
-        WHERE id = #{id}
-    </update>
+    <!-- Insert Item -->
+    <insert id="addItem" parameterType="az.cybernet.invoice.entity.ItemEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO items (name, unit_price, quantity, total_price,
+                           is_active, created_at, updated_at,
+                           measurement_id, invoice_id)
+        VALUES (#{name}, #{unitPrice}, #{quantity}, #{totalPrice},
+                #{isActive}, #{createdAt}, #{updatedAt},
+                #{measurement.id}, #{invoice.id})
+    </insert>
 
-    <update id="updateInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity">
-        UPDATE invoices
-        SET recipient_tax_id = #{recipientTaxId},
-            updated_at = current_timestamp
-        WHERE id = #{invoice.id}
-          AND is_active = true
-    </update>
-
-    <update id="changeStatus">
-        UPDATE invoices
-        SET status = #{status},
-            updated_at = current_timestamp
-        WHERE id = #{id}
-    </update>
-
-    <!-- SELECT -->
-    <select id="findLastInvoiceNumberStartingWith" parameterType="string" resultType="string">
-        SELECT invoice_number
-        FROM invoices
-        WHERE invoice_number LIKE CONCAT(#{prefix}, '%')
-        ORDER BY invoice_number DESC
-        LIMIT 1
-    </select>
-
-    <select id="findAllByRecipientUserTaxId" resultMap="InvoiceResultMap" parameterType="string">
-        SELECT c.id               AS c_id,
-               c.sender_tax_id    AS c_sender_tax_id,
-               c.recipient_tax_id AS c_recipient_tax_id,
-               c.total_price      AS c_total_price,
-               c.is_active        AS c_is_active,
-               c.invoice_number   AS c_invoice_number,
-               c.invoice_series   AS c_invoice_series,
-               c.status           AS c_status,
-               c.created_at       AS c_created_at,
-               c.updated_at       AS c_updated_at,
-
-               i.id               AS i_id,
+    <!-- Find by ID with joins -->
+    <select id="findAllItemsByInvoiceId" resultMap="ItemResultMap" parameterType="long">
+        SELECT i.id               AS i_id,
                i.name             AS i_name,
                i.unit_price       AS i_unit_price,
-               i.is_active        AS i_is_active,
                i.quantity         AS i_quantity,
                i.total_price      AS i_total_price,
-               i.invoice_id       AS i_invoice_id
-
-        FROM invoices c
-        LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
-        WHERE c.recipient_tax_id = #{recipientTaxId}
-          AND c.is_active = true
-    </select>
-
-    <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
-        SELECT c.id               AS c_id,
-               c.sender_tax_id    AS c_sender_tax_id,
-               c.recipient_tax_id AS c_recipient_tax_id,
-               c.total_price      AS c_total_price,
-               c.invoice_number   AS c_invoice_number,
-               c.is_active        AS c_is_active,
-               c.invoice_series   AS c_invoice_series,
-               c.status           AS c_status,
-               c.created_at       AS c_created_at,
-               c.updated_at       AS c_updated_at,
-
-               i.id               AS i_id,
-               i.name             AS i_name,
-               i.unit_price       AS i_unit_price,
                i.is_active        AS i_is_active,
-               i.quantity         AS i_quantity,
-               i.total_price      AS i_total_price,
-               i.invoice_id       AS i_invoice_id
 
-        FROM invoices c
-        LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
-        WHERE c.id = #{id}
-          AND c.is_active = true
+               m.id               AS m_id,
+               m.name             AS m_name,
+               m.created_at       AS m_created_at,
+               m.updated_at       AS m_updated_at,
+               m.is_active        AS m_is_active,
+
+               inv.id             AS inv_id,
+               inv.invoice_number AS inv_number,
+
+               op.id              AS op_id,
+               op.status          AS op_status,
+               op.comment         AS op_comment,
+               op.created_at      AS op_created_at
+
+        FROM items i
+                 LEFT JOIN measurements m ON i.measurement_id = m.id
+                 LEFT JOIN invoices inv ON i.invoice_id = inv.id
+                 LEFT JOIN operations op ON op.item_id = i.id
+        WHERE i.invoice_id = #{invoiceId}
     </select>
 
-    <select id="getAll" resultMap="InvoiceResultMap">
-        SELECT
-            i.id,
-            i.sender_tax_id,
-            i.recipient_tax_id,
-            i.total_price,
-            i.invoice_number,
-            i.invoice_series,
-            i.status,
-            i.created_at,
-            i.updated_at,
-            i.is_active,
-
-            it.id,
-            it.name,
-            it.unit_price,
-            it.quantity,
-            it.total_price,
-            it.is_active,
-            it.invoice_id
-        FROM invoices i
-        LEFT JOIN items it ON i.id = it.invoice_id AND it.is_active = true
-        WHERE i.is_active = true
-    </select>
-
-    <select id="findAllByStatus" resultMap="InvoiceResultMap">
-        SELECT
-            i.id,
-            i.sender_tax_id,
-            i.recipient_tax_id,
-            i.total_price,
-            i.invoice_number,
-            i.invoice_series,
-            i.status,
-            i.created_at,
-            i.updated_at,
-            i.is_active,
-
-            it.id,
-            it.name,
-            it.unit_price,
-            it.quantity,
-            it.total_price,
-            it.is_active,
-            it.invoice_id
-        FROM invoices i
-        LEFT JOIN items it ON i.id = it.invoice_id AND it.is_active = true
-        WHERE i.is_active = true
-          AND i.status = #{status}
-    </select>
-
-    <select id="findByIdAndReceiverTaxId" resultMap="InvoiceResultMap">
-        SELECT *
-        FROM invoices
-        WHERE id = #{invoiceId}
-          AND recipient_tax_id = #{receiverTaxId}
-          AND is_active = true
-          AND status = 'PENDING'
-    </select>
-
-    <select id="findByIdAndBySenderTaxId" resultMap="InvoiceResultMap">
-        SELECT *
-        FROM invoices
-        WHERE id = #{invoiceId}
-          AND sender_tax_id = #{senderTaxId}
-          AND is_active = true
-          AND status = 'PENDING'
-    </select>
+    <!-- Soft Delete -->
+    <update id="deleteItem" parameterType="java.util.List">
+        UPDATE items
+        SET is_active = false,
+        updated_at = NOW()
+        WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
 
 </mapper>
