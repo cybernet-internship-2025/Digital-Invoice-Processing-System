@@ -1,12 +1,11 @@
 package az.cybernet.invoice.dto.request.invoice;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UpdateInvoiceRequest {
-    String recipientTaxId;
+public class SendInvoiceRequest {
+    String senderUserTaxId;
 }

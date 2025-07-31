@@ -1,23 +1,22 @@
-package az.cybernet.usermanagement.dto.response;
+package az.cybernet.usermanagement.exception;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class UserResponse {
-    Long id;
-    String name;
-    String taxId;
-    Boolean isActive;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+public class ExceptionResponse {
+    String code;
+    String message;
+    List<String> validationErrors; // changed to String list for general messages
 }

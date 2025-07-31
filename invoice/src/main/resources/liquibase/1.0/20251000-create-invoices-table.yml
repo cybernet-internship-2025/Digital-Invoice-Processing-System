@@ -64,3 +64,10 @@ databaseChangeLog:
                   type: VARCHAR(10)
                   constraints:
                     nullable: false
+
+              - column:
+                  name: is_active
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
