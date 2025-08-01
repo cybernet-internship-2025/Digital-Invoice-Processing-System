@@ -86,16 +86,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateUser(UpdateUserRequest request) {
         Optional<UserEntity> entity = userRepository.findUserByTaxId(request.getTaxId());
-        if (entity.isPresent()) {
-            UserEntity userEntity = entity.get();
-            userEntity.setUpdatedAt(LocalDateTime.now());
-            String taxId = generateNextTaxId();
-            userEntity.setTaxId(taxId);
-            userRepository.updateUser(userEntity);
-            return userMapstruct.toUserResponseFromEntity(userEntity);
 
-        }
-        throw new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage());
+        UserEntity userEntity = entity.get();
+        userEntity.setUpdatedAt(LocalDateTime.now());
+        String taxId = generateNextTaxId();
+        userEntity.setTaxId(taxId);
+        userRepository.updateUser(userEntity);
+        return userMapstruct.toUserResponseFromEntity(userEntity);
+
     }
 
     public String generateNextTaxId() {
