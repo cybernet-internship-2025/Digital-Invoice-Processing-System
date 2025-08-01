@@ -20,7 +20,7 @@ public class OperationController {
 
 
 
-    @GetMapping("/all")
+    @GetMapping("/api/v1/operation")
     public List<OperationResponse> findAll(){
         return operationService.findAll();
     }
@@ -40,15 +40,7 @@ public class OperationController {
         return operationService.findAllInvoicesById(id);
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     public void saveOperation(@RequestBody CreateOperationRequest request){
         operationService.saveOperation(request);}
-
-
-
-
-
-
-
-
 }
