@@ -4,7 +4,6 @@ import az.cybernet.usermanagement.dto.request.CreateUserRequest;
 import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.service.abstraction.UserService;
-import feign.Param;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

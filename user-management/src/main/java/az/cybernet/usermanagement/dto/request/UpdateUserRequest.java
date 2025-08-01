@@ -11,7 +11,6 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
-
 public class UpdateUserRequest {
     @NotBlank(message = "Name must not be blank")
     String name;

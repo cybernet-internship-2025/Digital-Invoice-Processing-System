@@ -4,6 +4,7 @@ import az.cybernet.usermanagement.dto.request.CreateUserRequest;
 import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
+import az.cybernet.usermanagement.exception.InvalidTaxIdException;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+import static az.cybernet.usermanagement.exception.ExceptionConstants.INVALID_TAX_ID_EXCEPTION;
 import static az.cybernet.usermanagement.exception.ExceptionConstants.USER_NOT_FOUND;
 
 @Slf4j
@@ -89,12 +91,24 @@ public class UserServiceImpl implements UserService {
 
     private String generateNextTaxId() {
         String lastTaxId = userRepository.findMaxTaxId();
-        if (lastTaxId == null || lastTaxId.isEmpty()) lastTaxId = "0";
 
-        long lastId = Long.parseLong(lastTaxId);
+        if (lastTaxId == null || lastTaxId.isBlank()) {
+            lastTaxId = "0";
+        }
+
+        long lastId;
+
+        try {
+            lastId = Long.parseLong(lastTaxId);
+        } catch (NumberFormatException e) {
+            log.error("Invalid tax ID found in DB: {}", lastTaxId, e);
+            throw new InvalidTaxIdException(INVALID_TAX_ID_EXCEPTION.getCode(), INVALID_TAX_ID_EXCEPTION.getMessage());
+        }
+
         long nextId = lastId + 1;
         return String.format("%010d", nextId);
     }
+
 
     private UserEntity fetchUserIfExist(String taxId) {
         return  userRepository.findUserByTaxId(taxId)
