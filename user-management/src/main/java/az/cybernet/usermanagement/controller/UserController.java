@@ -1,12 +1,18 @@
 package az.cybernet.usermanagement.controller;
 
+import az.cybernet.usermanagement.dto.request.CreateUserRequest;
+import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.service.abstraction.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static lombok.AccessLevel.PRIVATE;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -34,4 +40,21 @@ public class UserController {
     public void restoreUser(@PathVariable String taxId) {
         userService.restoreUser(taxId);
     }
+    @GetMapping
+    @ResponseStatus(OK)
+    public List<UserResponse> findAllUsers() {
+        return userService.findAll();
+    }
+    @PostMapping
+    @ResponseStatus(CREATED)
+    public UserResponse addUser(@Valid @RequestBody  CreateUserRequest request) {
+        return userService.addUser(request);
+    }
+    @PutMapping
+    @ResponseStatus(OK)
+    public UserResponse updateUser(@Valid @RequestBody UpdateUserRequest request) {
+        return userService.updateUser(request);
+    }
+
+
 }

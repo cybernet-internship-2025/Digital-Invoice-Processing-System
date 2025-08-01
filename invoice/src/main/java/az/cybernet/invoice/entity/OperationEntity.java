@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -21,7 +20,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = PRIVATE)
+@FieldDefaults(level = PRIVATE  )
 public class OperationEntity {
     Long id;
     OperationStatus status;
