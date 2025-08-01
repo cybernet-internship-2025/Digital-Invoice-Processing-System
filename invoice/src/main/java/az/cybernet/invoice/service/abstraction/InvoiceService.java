@@ -16,21 +16,19 @@ public interface InvoiceService {
 
     void restoreInvoice(Long id);
 
-    List<InvoiceResponse> getAll();
+    List<InvoiceResponse> findAll();
 
-    void deleteInvoiceById(Long id);
+    void deleteInvoiceById(Long invoiceId);
 
     InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
 
     InvoiceResponse sendInvoice(Long invoiceId, SendInvoiceRequest request);
 
-    List<InvoiceResponse>findAllByStatus(String status);
-
     InvoiceResponse sendInvoiceToCorrection(Long invoiceId, String senderTaxId);
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(Long senderTaxId);
+    List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
 
 
     List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
