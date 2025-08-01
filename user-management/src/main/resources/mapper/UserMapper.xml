@@ -16,11 +16,11 @@
 
 
     <!-- RESTORE USER -->
-    <update id="restoreUser" parameterType="long">
+    <update id="restoreUser" parameterType="String">
         UPDATE users.users
         SET is_active = true,
-        updated_at = null
-        WHERE id = #{id}
+            updated_at = null
+        WHERE tax_id = #{taxId}
     </update>
 
     <!-- FIND USER BY TAXID -->
@@ -36,10 +36,27 @@
         WHERE u.tax_id = #{taxId}
     </select>
 
-    <select id="findMaxTaxId" resultType="long">
-        SELECT COALESCE(MAX(id), 0) FROM users
-    </select>
-    <select id="findById" parameterType="long" resultMap="UserResultMap">
+    <!-- SOFT DELETE USER -->
+    <update id="deleteUser" parameterType="String">
+        UPDATE users.users
+        SET is_active = false,
+            updated_at = now()
+        WHERE tax_id = #{taxId}
+    </update>
+
+    <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users.users (name, tax_id, is_active, created_at)
+        VALUES (#{name}, #{taxId}, true, NOW())
+    </insert>
+
+    <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">
+        UPDATE users.users
+        SET name = #{name},
+            updated_at = NOW()
+        WHERE tax_id = #{taxId}
+    </update>
+
+    <select id="findAll" resultMap="UserResultMap" parameterType="Long">
         SELECT u.id,
                u.name,
                u.tax_id,
@@ -47,46 +64,15 @@
                u.created_at,
                u.updated_at
         FROM users.users u
-        WHERE u.id = #{id}
-    </select>
-
-    <!-- SOFT DELETE USER -->
-    <update id="deleteUser" parameterType="long">
-        UPDATE users.users
-        SET is_active = false,
-        updated_at = now()
-        WHERE id = #{id}
-    </update>
-
-    <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users.users (name, tax_id, is_active, created_at, updated_at)
-        VALUES (#{name}, #{taxId}, true,NOW() ,null)
-    </insert>
-
-    <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">
-        UPDATE users.users
-        SET tax_id = #{taxId},
-            updated_at = NOW(),
-            created_at = #{createdAt},
-            is_active =true
-        WHERE id = #{id}
-    </update>
-
-    <select id="findAll" resultMap="UserResultMap" parameterType="Long">
-        SELECT u.id,
-        u.name,
-        u.tax_id,
-        u.is_active,
-        u.created_at,
-        u.updated_at
-        FROM users.users u
         WHERE u.is_active != false
-        ORDER BY u.id ASC
+        ORDER BY u.tax_id ASC
         <if test="limit != null">
             LIMIT #{limit}
         </if>
     </select>
 
-
+    <select id="findMaxTaxId" resultType="String">
+        SELECT COALESCE(MAX(tax_id), '0') FROM users
+    </select>
 
 </mapper>

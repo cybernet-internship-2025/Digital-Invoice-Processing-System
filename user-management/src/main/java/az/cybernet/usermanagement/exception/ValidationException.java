@@ -1,9 +1,6 @@
 package az.cybernet.usermanagement.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -11,7 +8,7 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
+@Getter
 @FieldDefaults(level = PRIVATE)
 public class ValidationException {
     String field;

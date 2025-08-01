@@ -1,4 +1,4 @@
-package az.cybernet.usermanagement.enums;
+package az.cybernet.usermanagement.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ExceptionConstants {
     USER_NOT_FOUND("USER_NOT_FOUND", "User with provided id was not found!"),
-    USER_EXISTS("USER_EXISTS","User with provided id already exists!"),
-    VALIDATION_EXCEPTION("Validation_Exception", "Validation exception!");
+    VALIDATION_EXCEPTION("VALIDATION_EXCEPTION", "Validation exception happened!"),
+    INVALID_TAX_ID_EXCEPTION("INVALID_TAX_ID_EXCEPTION", "Invalid Tax ID in the database!");
 
     private final String code;
     private final String message;
