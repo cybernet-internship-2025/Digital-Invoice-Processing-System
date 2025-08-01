@@ -121,4 +121,11 @@ public class OperationServiceImpl implements OperationService {
 @Transactional
     public OperationResponse pending(Long id, String comment)    {
         return changeStatus(id, OperationStatus.PENDING,comment);}
+
+    @Transactional
+    public OperationResponse deleted(Long id, String comment)   {
+        return changeStatus(id, OperationStatus.DELETE,comment);}
+    @Transactional
+    public OperationResponse update(Long id, String comment)   {
+        return changeStatus(id, OperationStatus.UPDATE,comment);}
 }
