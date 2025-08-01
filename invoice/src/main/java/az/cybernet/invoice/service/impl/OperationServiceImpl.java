@@ -32,8 +32,6 @@ public class OperationServiceImpl implements OperationService {
     public void saveOperation(CreateOperationRequest request) {
         OperationEntity entity = operationMapStruct.toEntity(request);
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setTaxId(request.getTaxId());
-        System.out.println("Tax ID: " + request.getTaxId());
 
         System.out.println("Invoice ID:" + request.getInvoiceId());
         System.out.println("Item IDs:" + request.getItemIds());

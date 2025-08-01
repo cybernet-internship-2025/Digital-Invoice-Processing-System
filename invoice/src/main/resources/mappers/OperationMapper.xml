@@ -20,10 +20,10 @@
 
     <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity">
         INSERT INTO operations (status, comment, created_at, invoice_id, item_id)
-        VALUES (#{operationEntity.status}, #{operationEntity.comment}, #{operationEntity.createdAt}, #{operationEntity.invoice.id}, #{operationEntity.item.id})
+        VALUES (#{status}, #{comment}, #{createdAt}, #{invoice.id}, #{item.id})
     </insert>
 
-    <!-- select by id -->
+
     <select id="findById" parameterType="long" resultMap="OperationEntityMap">
         SELECT * FROM operations WHERE id = #{id}
     </select>

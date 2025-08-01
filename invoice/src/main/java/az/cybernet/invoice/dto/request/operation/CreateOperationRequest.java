@@ -17,10 +17,5 @@ public class CreateOperationRequest {
     OperationStatus status;
     String comment;
     Long invoiceId;
-    String taxId;
     List<Long> itemIds;
-
-
-
-
 }
