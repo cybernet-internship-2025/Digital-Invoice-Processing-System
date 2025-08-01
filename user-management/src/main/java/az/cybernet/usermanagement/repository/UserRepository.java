@@ -1,6 +1,7 @@
 package az.cybernet.usermanagement.repository;
 
 import az.cybernet.usermanagement.entity.UserEntity;
+import feign.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -8,16 +9,18 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository {
+    Optional<UserEntity> findUserByTaxId(@Param("taxId") String taxId);
 
-    Optional<UserEntity> findUserByTaxId(String taxId);
-    void restoreUser(Long id);
-    void deleteUser(Long id);
+    void restoreUser(@Param("taxId") String taxId);
+
+    void deleteUser(@Param("taxId") String taxId);
+
     void addUser(UserEntity userEntity);
+
     void updateUser(UserEntity userEntity);
-//    Optional<UserEntity> findByTaxId(Long taxId);
-    List<UserEntity> findAll();
-    Long findMaxTaxId();
-    Optional<UserEntity> findById(Long id);
-//    void deleteUser(Long id);
-//    void restoreUser(long id);
+
+    List<UserEntity> findAll(@Param("limit") Long limit);
+
+    String findMaxTaxId();
+
 }

@@ -4,6 +4,7 @@ import az.cybernet.usermanagement.dto.request.CreateUserRequest;
 import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.service.abstraction.UserService;
+import feign.Param;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,30 +32,31 @@ public class UserController {
 
     @DeleteMapping("/{taxId}")
     @ResponseStatus(OK)
-    public void deleteUser(@PathVariable String taxId) {
+    public void deleteUser(@PathVariable("taxId") String taxId) {
         userService.deleteUser(taxId);
     }
 
     @PutMapping("/{taxId}/restore")
     @ResponseStatus(OK)
-    public void restoreUser(@PathVariable String taxId) {
+    public void restoreUser(@PathVariable("taxId") String taxId) {
         userService.restoreUser(taxId);
     }
+
     @GetMapping
     @ResponseStatus(OK)
-    public List<UserResponse> findAllUsers() {
-        return userService.findAll();
+    public List<UserResponse> findAllUsers(@RequestParam("limit") Long limit) {
+        return userService.findAll(limit);
     }
+
     @PostMapping
     @ResponseStatus(CREATED)
     public UserResponse addUser(@Valid @RequestBody  CreateUserRequest request) {
         return userService.addUser(request);
     }
-    @PutMapping
+
+    @PutMapping("/{taxId}")
     @ResponseStatus(OK)
-    public UserResponse updateUser(@Valid @RequestBody UpdateUserRequest request) {
-        return userService.updateUser(request);
+    public UserResponse updateUser(@Valid @RequestBody UpdateUserRequest request, @PathVariable("taxId")  String taxId) {
+        return userService.updateUser(taxId, request);
     }
-
-
 }
