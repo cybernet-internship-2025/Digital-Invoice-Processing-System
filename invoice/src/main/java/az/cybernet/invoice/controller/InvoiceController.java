@@ -66,7 +66,7 @@ public class InvoiceController {
         invoiceService.restoreInvoice(invoiceId);
     }
 
-    @GetMapping("/{recipientTaxId}/allInvoices")
+    @GetMapping("/inbox/{recipientTaxId}")
     @ResponseStatus(OK)
     public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(@PathVariable String recipientTaxId) {
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId);
