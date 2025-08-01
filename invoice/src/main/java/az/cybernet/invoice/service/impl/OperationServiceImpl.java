@@ -118,7 +118,7 @@ public class OperationServiceImpl implements OperationService {
 @Transactional
     public OperationResponse correction(Long id, String comment) {
         return changeStatus(id, OperationStatus.CORRECTION, comment); }
-
+@Transactional
     public OperationResponse pending(Long id, String comment)    {
         return changeStatus(id, OperationStatus.PENDING,comment);}
 }
