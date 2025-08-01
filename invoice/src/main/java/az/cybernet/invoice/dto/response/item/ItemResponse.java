@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 public class ItemResponse {
     Long id;
     String productName;
-    BigDecimal totalPrice;
     BigDecimal unitPrice;
     Integer quantity;
+    BigDecimal totalPrice;
     Boolean isActive;
     Long invoiceId;
     String measurementName;

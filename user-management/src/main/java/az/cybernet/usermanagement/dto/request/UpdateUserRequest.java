@@ -12,5 +12,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 
 public class UpdateUserRequest {
+
+    String taxId;
     String name;
 }
