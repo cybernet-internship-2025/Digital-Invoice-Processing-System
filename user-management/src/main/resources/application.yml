@@ -10,6 +10,7 @@ spring:
     liquibase-schema: public
 
 
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:

@@ -1,0 +1,36 @@
+databaseChangeLog:
+- changeSet:
+    id: 20251005
+    author: gulnare islamova
+    changes:
+      - insert:
+          tableName: measurements
+          schemaName: invoice
+          columns:
+            - column: { name: name, value: 'kq' }
+            - column: { name: created_at, valueDate: '2025-07-29T00:00:00' }
+            - column: { name: is_active, valueBoolean: true }
+
+      - insert:
+          tableName: measurements
+          schemaName: invoice
+          columns:
+            - column: { name: name, value: 'ədəd' }
+            - column: { name: created_at, valueDate: '2025-07-29T00:00:00' }
+            - column: { name: is_active, valueBoolean: true }
+
+      - insert:
+          tableName: measurements
+          schemaName: invoice
+          columns:
+            - column: { name: name, value: 'litr' }
+            - column: { name: created_at, valueDate: '2025-07-29T00:00:00' }
+            - column: { name: is_active, valueBoolean: true }
+
+      - insert:
+          tableName: measurements
+          schemaName: invoice
+          columns:
+            - column: { name: name, value: 'metr' }
+            - column: { name: created_at, valueDate: '2025-07-29T00:00:00' }
+            - column: { name: is_active, valueBoolean: true }

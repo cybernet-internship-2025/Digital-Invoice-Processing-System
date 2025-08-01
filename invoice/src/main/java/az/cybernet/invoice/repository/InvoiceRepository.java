@@ -34,7 +34,7 @@ public interface InvoiceRepository {
     Optional<InvoiceEntity> findByIdAndReceiverTaxId(@Param("invoiceId") Long invoiceId,
                                                      @Param("receiverTaxId") String receiverTaxId);
 
-    List<InvoiceEntity> findAllByRecipientUserTaxId(String recipientTaxId);
+    List<InvoiceEntity> findAllInvoicesByRecipientUserTaxId(String recipientTaxId);
 
     void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
 

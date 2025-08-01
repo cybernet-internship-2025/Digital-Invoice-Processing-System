@@ -1,6 +1,7 @@
 package az.cybernet.invoice.entity;
 
 import az.cybernet.invoice.enums.OperationStatus;
+import io.micrometer.observation.transport.SenderContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -20,7 +20,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = PRIVATE)
+@FieldDefaults(level = PRIVATE  )
 public class OperationEntity {
     Long id;
     OperationStatus status;
@@ -28,4 +28,5 @@ public class OperationEntity {
     LocalDateTime createdAt;
     InvoiceEntity invoice;
     ItemEntity item;
+    String taxId;
 }

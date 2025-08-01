@@ -1,4 +1,4 @@
-package az.cybernet.usermanagement.dto.request;
+package az.cybernet.usermanagement.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,11 +8,12 @@ import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
 
-@Data
-@AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = PRIVATE)
+@AllArgsConstructor
 @Builder
-public class CreateUserRequest {
-    String name;
+@Data
+@FieldDefaults(level = PRIVATE)
+public class ValidationException {
+    String field;
+    String message;
 }
