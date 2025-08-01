@@ -3,18 +3,13 @@ package az.cybernet.invoice.controller;
 import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -72,6 +67,46 @@ public class InvoiceController {
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId);
     }
 
+    @GetMapping
+    List<InvoiceResponse> findAll() {
+        return invoiceService.findAll();
+    }
+
+    @GetMapping("/sender/{senderTaxId}")
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable("senderTaxId") String senderTaxId) {
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId);
+    }
+
+
+    @PutMapping("/{recipientTaxId}/{invoiceId}")
+    public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
+                                                    @PathVariable("invoiceId") Long invoiceId) {
+        return invoiceService.updateInvoiceRecipientId(recipientTaxId, invoiceId);
+    }
+
+    @PutMapping("/send-invoice/{invoiceId}")
+    public InvoiceResponse sendInvoice(@PathVariable("invoiceId") Long invoiceId,
+                                       @RequestBody SendInvoiceRequest request) {
+        return invoiceService.sendInvoice(invoiceId, request);
+    }
+
+    @PutMapping("/correction/{invoiceId}/{senderTaxId}")
+    public InvoiceResponse sendInvoiceToCorrection(@PathVariable("invoiceId") Long invoiceId,
+                                                   @PathVariable("senderTaxId") String senderTaxId) {
+        return invoiceService.sendInvoiceToCorrection(invoiceId, senderTaxId);
+    }
+
+    @PutMapping("/rollback/{invoiceId}/{senderTaxId}")
+    public InvoiceResponse rollbackInvoice(@PathVariable("invoiceId") Long invoiceId,
+                                           @PathVariable("senderTaxId") String senderTaxId) {
+        return invoiceService.rollbackInvoice(invoiceId, senderTaxId);
+    }
+
+
+    @DeleteMapping("/{invoiceId}")
+    public void deleteInvoiceById(@PathVariable("invoiceId") Long invoiceId) {
+        invoiceService.deleteInvoiceById(invoiceId);
+    }
 
 
 }

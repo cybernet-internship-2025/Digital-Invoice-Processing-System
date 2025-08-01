@@ -22,8 +22,23 @@ public interface InvoiceMapper {
     @Mapping(target = "items", ignore = true)
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
 
+
     List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
 
+//    default List<ItemEntity> mapItemResponsesToEntities(List<ItemResponse> responses) {
+//        return responses.stream()
+//                .map(itemMapper::buildItemEntity)
+//                .collect(Collectors.toList());
+//    }
+
     InvoiceResponse fromEntityToResponse(InvoiceEntity invoice);
+
+    default Long parseTaxIdToLong(String taxId) {
+        try {
+            return Long.parseLong(taxId);
+        } catch (NumberFormatException e) {
+            throw new InvalidTaxIdException(taxId);
+        }
+    }
 
 }
