@@ -27,5 +27,6 @@ public class OperationEntity {
     LocalDateTime createdAt;
     InvoiceEntity invoice;
     ItemEntity item;
+    String taxId;
 
 }
