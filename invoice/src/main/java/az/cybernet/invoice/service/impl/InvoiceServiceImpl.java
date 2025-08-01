@@ -107,8 +107,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
 
         BigDecimal total = items.stream()
-                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(ZERO, BigDecimal::add);
+                .map(ItemResponse::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         invoiceRepository.updateTotalPrice(invoiceId, total);
         return total;
