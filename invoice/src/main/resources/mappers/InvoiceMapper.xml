@@ -28,6 +28,13 @@
             <result property="invoiceId" column="i_invoice_id"/>
         </collection>
 
+        <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
+            <id property="id" column="o_id"/>
+            <result property="status" column="o_status"/>
+            <result property="comment" column="o_comment"/>
+            <result property="createdAt" column="o_created_at"/>
+        </collection>
+
     </resultMap>
 
     <!-- INSERT -->
@@ -98,10 +105,16 @@
                i.is_active        AS i_is_active,
                i.quantity         AS i_quantity,
                i.total_price      AS i_total_price,
-               i.invoice_id       AS i_invoice_id
+               i.invoice_id       AS i_invoice_id,
+
+               o.id               AS o_id,
+               o.status           AS o_status,
+               o.comment          AS o_comment,
+               o.created_at       AS o_created_at
 
         FROM invoices c
                  LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
+                 LEFT JOIN operations o ON o.item_id = i.id
         WHERE c.id = #{id}
           AND c.is_active = true
           AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
