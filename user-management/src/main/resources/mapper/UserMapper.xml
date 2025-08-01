@@ -68,9 +68,8 @@
         SET tax_id = #{taxId},
             updated_at = NOW(),
             created_at = #{createdAt},
-            is_active =true,
-            id = #{id}
-        WHERE tax_id = #{taxId}
+            is_active =true
+        WHERE id = #{id}
     </update>
 
     <select id="findAll" resultMap="UserResultMap" parameterType="Long">

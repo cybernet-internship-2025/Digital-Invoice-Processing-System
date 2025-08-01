@@ -6,17 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 import static lombok.AccessLevel.PRIVATE;
 
-@Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Data
 @FieldDefaults(level = PRIVATE)
-public class ExceptionResponse {
-    String code;
+public class ValidationException {
+    String field;
     String message;
-    List<ValidationException> validationErrors; // changed to String list for general messages
 }
