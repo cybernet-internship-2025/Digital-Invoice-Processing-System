@@ -1,53 +1,15 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="az.cybernet.invoice.repository.ItemRepository">
 
-    <!-- Insert -->
-    <insert id="addItem" parameterType="az.cybernet.invoice.entity.ItemEntity"
-            useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO invoice.items (
-            name, unit_price, quantity, total_price,
-            is_active, created_at, updated_at,
-            measurement_id, invoice_id
-        ) VALUES (
-                     #{name}, #{price}, #{quantity}, #{totalPrice},
-                     #{isActive}, #{createdAt}, #{updatedAt},
-                     #{measurement.id}, #{invoice.id}
-                 )
-    </insert>
-
-
-    <!-- Find by ID -->
-    <select id="findById" resultMap="ItemResultMap">
-        SELECT
-            id, name, unit_price, quantity, total_price,
-            is_active, created_at, updated_at,
-            measurement_id, invoice_id
-        FROM invoice.items
-        WHERE id = #{id}
-    </select>
-
-
-    <!-- Soft Delete -->
-    <update id="deleteItem">
-        UPDATE invoice.items
-        SET is_active = false,
-        updated_at = NOW()
-        WHERE id IN
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </update>
-
-
-    <!-- ResultMap -->
+    <!-- RESULT MAPS -->
     <resultMap id="ItemResultMap" type="az.cybernet.invoice.entity.ItemEntity">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
-        <result property="price" column="unit_price"/>
+        <result property="unitPrice" column="unit_price"/>
         <result property="quantity" column="quantity"/>
         <result property="totalPrice" column="total_price"/>
         <result property="isActive" column="is_active"/>
@@ -62,4 +24,89 @@
             <id property="id" column="invoice_id"/>
         </association>
     </resultMap>
+
+    <!-- INSERT -->
+    <insert id="addItem"
+            parameterType="az.cybernet.invoice.entity.ItemEntity"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO items (name, unit_price, quantity, total_price,
+                           is_active, created_at, updated_at,
+                           measurement_id, invoice_id)
+        VALUES (#{name},
+                #{unitPrice},
+                #{quantity},
+                #{totalPrice},
+                #{isActive},
+                #{createdAt},
+                #{updatedAt},
+                #{measurement.id},
+                #{invoice.id})
+    </insert>
+
+    <!-- SELECT -->
+    <select id="findById" parameterType="long" resultMap="ItemResultMap">
+        SELECT id,
+               name,
+               unit_price,
+               quantity,
+               total_price,
+               is_active,
+               created_at,
+               updated_at,
+               measurement_id,
+               invoice_id
+        FROM items
+        WHERE id = #{id}
+    </select>
+
+    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemResultMap">
+        SELECT id,
+               name,
+               unit_price,
+               quantity,
+               total_price,
+               is_active,
+               created_at,
+               updated_at,
+               measurement_id,
+               invoice_id
+        FROM items
+        WHERE invoice_id = #{invoiceId}
+          AND is_active = true
+        ORDER BY id
+    </select>
+
+    <!-- UPDATE -->
+    <update id="updateItem" parameterType="az.cybernet.invoice.entity.ItemEntity">
+        UPDATE items
+        SET name           = #{name},
+            unit_price     = #{unitPrice},
+            quantity       = #{quantity},
+            total_price    = #{totalPrice},
+            is_active      = #{isActive},
+            updated_at     = #{updatedAt},
+            measurement_id = #{measurement.id},
+            invoice_id     = #{invoice.id}
+        WHERE id = #{id}
+    </update>
+
+    <update id="restoreItem" parameterType="long">
+        UPDATE items
+        SET is_active  = true,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- SOFT DELETE -->
+    <update id="deleteItem" parameterType="list">
+        UPDATE items
+        SET is_active = false,
+        updated_at = NOW()
+        WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
 </mapper>
