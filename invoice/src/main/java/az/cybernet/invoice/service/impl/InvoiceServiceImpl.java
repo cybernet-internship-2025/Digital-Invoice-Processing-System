@@ -68,7 +68,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepository.saveInvoice(invoiceEntity);
         Long invoiceId = invoiceEntity.getId();
 
-        addInvoiceToOperation(invoiceId, invoiceEntity.getRecipientTaxId(), "Invoice created", OperationStatus.DRAFT, null);
+        addInvoiceToOperation(invoiceId, "Invoice created", OperationStatus.DRAFT, null);
 
         if (invoiceRequest.getItems() != null && invoiceRequest.getItems().getItemsRequest() != null && !invoiceRequest.getItems().getItemsRequest().isEmpty()) {
 
@@ -85,7 +85,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                     .map(ItemResponse::getId)
                     .toList();
 
-            addInvoiceToOperation(invoiceId, invoiceEntity.getRecipientTaxId(), "Items added: " + itemIds.size(), OperationStatus.DRAFT, itemIds);
+            addInvoiceToOperation(invoiceId,"Items added: " + itemIds.size(), OperationStatus.DRAFT, itemIds);
 
             var totalPrice = updateInvoiceTotalPrice(invoiceId);
             invoiceEntity.setTotalPrice(totalPrice);
@@ -157,7 +157,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.saveInvoice(invoiceEntity);
 
-        addInvoiceToOperation(invoiceEntity.getId(), request.getRecipientTaxId(), "Invoice canceled", OperationStatus.CANCELED, null);
+        addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, null);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -186,13 +186,12 @@ public class InvoiceServiceImpl implements InvoiceService {
                 ? "Correction requested"
                 : request.getComment();
 
-        addInvoiceToOperation(invoiceEntity.getId(), request.getRecipientTaxId(), opComment, OperationStatus.CORRECTION, itemIds.isEmpty() ? null : itemIds);
+        addInvoiceToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION, itemIds.isEmpty() ? null : itemIds);
     }
 
-    private void addInvoiceToOperation(Long invoiceId, String taxId, String comment, OperationStatus status, List<Long> itemIds) {
+    private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status, List<Long> itemIds) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
         CreateOperationRequest operationRequest = CreateOperationRequest.builder()
-                .taxId(taxId)
                 .comment(comment)
                 .status(status)
                 .invoiceId(invoiceEntity.getId())
@@ -217,7 +216,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         List<Long> itemIds = items == null ? List.of()
                 : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-        addInvoiceToOperation(invoiceEntity.getId(), invoiceEntity.getRecipientTaxId(), null, DRAFT, itemIds.isEmpty() ? null : itemIds);
+        addInvoiceToOperation(invoiceEntity.getId(), null, DRAFT, itemIds.isEmpty() ? null : itemIds);
     }
 
     @Override
