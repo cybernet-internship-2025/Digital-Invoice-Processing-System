@@ -58,12 +58,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest) {
-        var sender = findSenderByTaxId(invoiceRequest.getSenderTaxId());
-        var recipient = findRecipientByTaxId(invoiceRequest.getRecipientTaxId());
+        findSenderByTaxId(invoiceRequest.getSenderTaxId());
+        findRecipientByTaxId(invoiceRequest.getRecipientTaxId());
 
         var invoiceEntity = invoiceMapper.fromInvoiceRequestToEntity(invoiceRequest);
-        invoiceEntity.setSenderTaxId(sender.getTaxId());
-        invoiceEntity.setRecipientTaxId(recipient.getTaxId());
         invoiceEntity.setInvoiceNumber(generateInvoiceNumber());
         invoiceEntity.setTotalPrice(ZERO);
 
