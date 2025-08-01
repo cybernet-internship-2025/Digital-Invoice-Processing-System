@@ -20,7 +20,7 @@ public class OperationController {
 
 
 
-    @GetMapping("/api/v1/operation")
+    @GetMapping()
     public List<OperationResponse> findAll(){
         return operationService.findAll();
     }
