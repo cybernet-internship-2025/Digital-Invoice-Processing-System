@@ -18,5 +18,5 @@ import static lombok.AccessLevel.PRIVATE;
 public class ExceptionResponse {
     String code;
     String message;
-    List<String> validationErrors; // changed to String list for general messages
+    List<ValidationException> validationErrors; // changed to String list for general messages
 }

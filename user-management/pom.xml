@@ -13,6 +13,7 @@
     <artifactId>user-management</artifactId>
     <version>0.0.1</version>
 
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -21,6 +22,7 @@
 
 
     </dependencies>
+
 
     <build>
         <plugins>
@@ -36,6 +38,7 @@
                 </configuration>
             </plugin>
         </plugins>
+
     </build>
 
 </project>
