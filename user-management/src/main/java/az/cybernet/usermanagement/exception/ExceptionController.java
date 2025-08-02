@@ -24,15 +24,7 @@ public class ExceptionController {
                 .message(ex.getMessage())
                 .build();
     }
-    @ExceptionHandler(UserExists.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse handleUserExists(UserExists ex) {
-        log.error(" User has already exists " ,ex);
-        return ExceptionResponse.builder()
-                .code(ex.getCode())
-                .message(ex.getMessage())
-                .build();
-    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {

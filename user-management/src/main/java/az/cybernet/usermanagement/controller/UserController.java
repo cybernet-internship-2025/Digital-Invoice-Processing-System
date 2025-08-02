@@ -7,6 +7,7 @@ import az.cybernet.usermanagement.service.abstraction.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping("/api/internal/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
+@Validated
 public class UserController {
 
     UserService userService;
@@ -40,21 +42,22 @@ public class UserController {
     public void restoreUser(@PathVariable String taxId) {
         userService.restoreUser(taxId);
     }
+
     @GetMapping
     @ResponseStatus(OK)
-    public List<UserResponse> findAllUsers() {
-        return userService.findAll();
+    public List<UserResponse> findAllUsers(@RequestParam("limit") Long limit) {
+        return userService.findAll(limit);
     }
+
     @PostMapping
     @ResponseStatus(CREATED)
     public UserResponse addUser(@Valid @RequestBody  CreateUserRequest request) {
         return userService.addUser(request);
     }
+
     @PutMapping
     @ResponseStatus(OK)
     public UserResponse updateUser(@Valid @RequestBody UpdateUserRequest request) {
         return userService.updateUser(request);
     }
-
-
 }

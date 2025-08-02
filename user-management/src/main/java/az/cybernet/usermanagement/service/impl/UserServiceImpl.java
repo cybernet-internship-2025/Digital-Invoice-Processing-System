@@ -4,7 +4,6 @@ import az.cybernet.usermanagement.dto.request.CreateUserRequest;
 import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
-import az.cybernet.usermanagement.exception.UserExists;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
@@ -18,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
-import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_EXISTS;
 import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_NOT_FOUND;
 
 @Slf4j
@@ -55,53 +52,46 @@ public class UserServiceImpl implements UserService {
         return userMapstruct.toUserResponseFromEntity(user);
     }
 
-    private UserEntity fetchUserIfExist(String taxId) {
-        return  userRepository.findUserByTaxId(taxId)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
-    }
-
     @Override
-    public List<UserResponse> findAll() {
-        List<UserEntity> users = userRepository.findAll();
+    public List<UserResponse> findAll(Long limit) {
+        List<UserEntity> users = userRepository.findAll(limit);
         return userMapstruct.toUserResponseList(users);
     }
 
     @Override
-
+    @Transactional
     public UserResponse addUser(CreateUserRequest request) {
         UserEntity userEntity = userMapstruct.toUserEntityFromCreate(request);
-
-
-        userEntity.setCreatedAt(LocalDateTime.now());
-        userEntity.setUpdatedAt(null);
-        userEntity.setIsActive(true);
         String taxId = generateNextTaxId();
+        userEntity.setIsActive(true);
+        userEntity.setCreatedAt(LocalDateTime.now());
         userEntity.setTaxId(taxId);
         userRepository.addUser(userEntity);
         return userMapstruct.toUserResponseFromEntity(userEntity);
-
     }
 
     @Transactional
     @Override
     public UserResponse updateUser(UpdateUserRequest request) {
-        Optional<UserEntity> entity = userRepository.findUserByTaxId(request.getTaxId());
-
-        UserEntity userEntity = entity.get();
-        userEntity.setUpdatedAt(LocalDateTime.now());
-        String taxId = generateNextTaxId();
-        userEntity.setTaxId(taxId);
-        userRepository.updateUser(userEntity);
-        return userMapstruct.toUserResponseFromEntity(userEntity);
-
+        UserEntity userEntity = fetchUserIfExist(request.getTaxId());
+            userEntity.setUpdatedAt(LocalDateTime.now());
+            userEntity.setName(request.getName());
+            userRepository.updateUser(userEntity);
+            return userMapstruct.toUserResponseFromEntity(userEntity);
     }
 
-    public String generateNextTaxId() {
+    private String generateNextTaxId() {
         Long lastId = userRepository.findMaxTaxId();
         if (lastId == null) lastId = 0L;
 
         long nextId = lastId + 1;
         return String.format("%010d", nextId);
+    }
+
+
+    private UserEntity fetchUserIfExist(String taxId) {
+        return  userRepository.findUserByTaxId(taxId)
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
     }
 
 }

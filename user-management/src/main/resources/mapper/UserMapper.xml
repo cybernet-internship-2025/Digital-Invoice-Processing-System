@@ -39,37 +39,27 @@
     <select id="findMaxTaxId" resultType="long">
         SELECT COALESCE(MAX(id), 0) FROM users
     </select>
-    <select id="findById" parameterType="long" resultMap="UserResultMap">
-        SELECT u.id,
-               u.name,
-               u.tax_id,
-               u.is_active,
-               u.created_at,
-               u.updated_at
-        FROM users.users u
-        WHERE u.id = #{id}
-    </select>
+
 
     <!-- SOFT DELETE USER -->
     <update id="deleteUser" parameterType="long">
         UPDATE users.users
         SET is_active = false,
         updated_at = now()
-        WHERE id = #{id}
+        WHERE tax_id = #{taxId}
     </update>
 
     <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users.users (name, tax_id, is_active, created_at, updated_at)
-        VALUES (#{name}, #{taxId}, true,NOW() ,null)
+        INSERT INTO users.users (name, tax_id, is_active, created_at)
+        VALUES (#{name}, #{taxId}, true, NOW())
     </insert>
 
     <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">
         UPDATE users.users
-        SET tax_id = #{taxId},
+        SET
             updated_at = NOW(),
-            created_at = #{createdAt},
-            is_active =true
-        WHERE id = #{id}
+            name = #{name}
+        WHERE tax_id = #{taxId}
     </update>
 
     <select id="findAll" resultMap="UserResultMap" parameterType="Long">

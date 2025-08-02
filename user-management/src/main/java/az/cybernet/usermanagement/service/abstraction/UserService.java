@@ -8,9 +8,11 @@ import java.util.List;
 
 public interface UserService {
 
-    public List<UserResponse> findAll();
-    public UserResponse addUser(CreateUserRequest request);
-    public UserResponse updateUser(UpdateUserRequest request);
+     List<UserResponse> findAll(Long limit);
+
+     UserResponse addUser(CreateUserRequest request);
+
+     UserResponse updateUser(UpdateUserRequest request);
 
     UserResponse findUserByTaxId(String taxId);
 

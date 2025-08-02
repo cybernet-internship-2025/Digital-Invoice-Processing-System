@@ -1,14 +1,13 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5434/cybernet-user
+    username: user
+    password: password123
     driverClassName: org.postgresql.Driver
   liquibase:
     change-log: classpath:liquibase/changelog-master.yml
     default-schema: users
     liquibase-schema: public
-
 
 
 mybatis:
