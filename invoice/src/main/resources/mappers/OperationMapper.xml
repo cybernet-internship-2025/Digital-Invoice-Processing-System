@@ -20,7 +20,7 @@
 
     <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity">
         INSERT INTO operations (status, comment, created_at, invoice_id, item_id)
-        VALUES (#{status}, #{comment}, #{createdAt}, #{invoice.id}, #{item.id})
+        VALUES (#{op.status}, #{op.comment}, #{op.createdAt}, #{op.invoice.id}, #{op.item.id})
     </insert>
 
 
