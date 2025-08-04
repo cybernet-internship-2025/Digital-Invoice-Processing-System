@@ -51,7 +51,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public UserResponse addUser(@Valid @RequestBody  CreateUserRequest request) {
+    public UserResponse addUser(@Valid @RequestBody CreateUserRequest request) {
         return userService.addUser(request);
     }
 

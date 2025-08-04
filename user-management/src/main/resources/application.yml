@@ -8,6 +8,7 @@ spring:
     change-log: classpath:liquibase/changelog-master.yml
     default-schema: users
     liquibase-schema: public
+    drop-first: true
 
 
 mybatis:

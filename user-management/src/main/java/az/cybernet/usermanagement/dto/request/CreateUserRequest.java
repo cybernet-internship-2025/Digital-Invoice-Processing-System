@@ -1,12 +1,12 @@
 package az.cybernet.usermanagement.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.validation.annotation.Validated;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -15,7 +15,8 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = PRIVATE)
+@Validated
 public class CreateUserRequest {
-
+    @NotBlank
     String name;
 }
