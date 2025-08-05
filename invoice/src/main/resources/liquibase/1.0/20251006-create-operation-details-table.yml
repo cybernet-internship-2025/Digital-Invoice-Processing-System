@@ -1,11 +1,11 @@
 databaseChangeLog:
   - changeSet:
-      id: 20251002
+      id: 20251006
       author: gulnare
       changes:
         - createTable:
             schemaName: invoice
-            tableName: operations
+            tableName: operation_details
             columns:
               - column:
                   name: id
@@ -13,36 +13,34 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
-                    primaryKeyName: pk_operations
+                    primaryKeyName: pk_operations_id
                     nullable: false
-
               - column:
-                  name: invoice_id
+                  name: item_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: operation_id
                   type: BIGINT
                   constraints:
                     nullable: false
 
-              - column:
-                  name: operation_status
-                  type: VARCHAR(50)
-                  constraints:
-                    nullable: false
-
-              - column:
-                  name: comment
-                  type: TEXT
-                  constraints:
-                    nullable: false
-
-              - column:
-                  name: created_at
-                  type: TIMESTAMP
-                  constraints:
-                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: operation_details
+            baseColumnNames: item_id
+            referencedTableName: items
+            referencedColumnNames: id
+            constraintName: fk_operation_details_items
 
         - addForeignKeyConstraint:
-            baseTableName: operations
-            baseColumnNames: invoice_id
-            referencedTableName: invoices
+            baseTableName: operation_details
+            baseColumnNames: operation_id
+            referencedTableName: operations
             referencedColumnNames: id
-            constraintName: fk_operation_invoice
+            constraintName: fk_operation_operation_details

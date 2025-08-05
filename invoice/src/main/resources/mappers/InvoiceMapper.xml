@@ -16,7 +16,7 @@
         <result property="status" column="c_status" typeHandler="az.cybernet.invoice.handler.InvoiceStatusTypeHandler"/>
         <result property="createdAt" column="c_created_at"/>
         <result property="updatedAt" column="c_updated_at"/>
-        <result property="isActive" column="is_active"/>
+        <result property="isActive" column="c_is_active"/>
 
         <collection property="items" ofType="az.cybernet.invoice.entity.ItemEntity">
             <id property="id" column="i_id"/>
@@ -25,7 +25,6 @@
             <result property="quantity" column="i_quantity"/>
             <result property="totalPrice" column="i_total_price"/>
             <result property="isActive" column="i_is_active"/>
-            <result property="invoiceId" column="i_invoice_id"/>
         </collection>
 
         <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
@@ -39,25 +38,29 @@
 
     <!-- INSERT -->
     <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity"
-            useGeneratedKeys="true">
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, invoice_number, invoice_series,
                               status, created_at, updated_at, is_active)
         VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{invoiceNumber}, #{invoiceSeries},
                 'DRAFT', NOW(), NULL, true)
     </insert>
 
+    <select id="getNextInvoiceSequence" resultType="long">
+        SELECT nextval('invoice.invoice_number_seq')
+    </select>
+
+    <update id="updateInvoiceStatus" parameterType="map">
+        UPDATE invoices
+        SET status = #{status},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
     <update id="updateTotalPrice" parameterType="map">
         UPDATE invoices
         SET total_price = #{totalPrice}
         WHERE id = #{invoiceId}
     </update>
-
-    <select id="findLastInvoiceNumberStartingWith" parameterType="string" resultType="string">
-        SELECT invoice_number
-        FROM invoices
-        WHERE invoice_number LIKE CONCAT(#{prefix}, '%')
-        ORDER BY invoice_number DESC LIMIT 1
-    </select>
 
     <select id="findAllInvoicesByRecipientUserTaxId" resultMap="InvoiceResultMap" parameterType="string">
         SELECT c.id               AS c_id,
@@ -117,17 +120,8 @@
                  LEFT JOIN operations o ON o.item_id = i.id
         WHERE c.id = #{id}
           AND c.is_active = true
-          AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
+          AND c.status IN ('DRAFT', 'PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
     </select>
-
-    <update id="restoreInvoice" parameterType="long">
-        UPDATE invoices
-        SET status     = 'DRAFT',
-            is_active  = true,
-            updated_at = NOW()
-        WHERE id = #{id}
-          AND c.status IN ('CANCELED')
-    </update>
 
     <select id="getAll" resultMap="InvoiceResultMap">
         SELECT i.id,

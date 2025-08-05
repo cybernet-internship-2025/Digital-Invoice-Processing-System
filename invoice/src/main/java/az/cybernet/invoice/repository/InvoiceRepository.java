@@ -1,10 +1,12 @@
 package az.cybernet.invoice.repository;
 
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.enums.InvoiceStatus;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,11 +14,11 @@ import java.util.Optional;
 public interface InvoiceRepository {
     void saveInvoice(InvoiceEntity invoice);
 
-    Optional<InvoiceEntity> findById(Long id);
+    Optional<InvoiceEntity> findById(@Param("id") Long id);
 
-    String findLastInvoiceNumberStartingWith(@Param("prefix") String prefix);
+    Long getNextInvoiceSequence();
 
-    void restoreInvoice(Long id);
+    void updateInvoiceStatus(@Param("id") Long id, @Param("status") InvoiceStatus status, @Param("updatedAt") LocalDateTime updatedAt);
 
     List<InvoiceEntity> getAll();
 
@@ -30,7 +32,7 @@ public interface InvoiceRepository {
 
     Optional<InvoiceEntity> findByIdAndBySenderTaxId(Long invoiceId, String senderTaxId);
 
-    Optional<InvoiceEntity>findByIdAndReceiverTaxId(Long invoiceId, String receiverTaxId);
+    Optional<InvoiceEntity> findByIdAndReceiverTaxId(Long invoiceId, String receiverTaxId);
 
     List<InvoiceEntity> findAllInvoicesByRecipientUserTaxId(String recipientTaxId);
 
