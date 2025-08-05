@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private UserEntity fetchUserIfExist(String taxId) {
+    public UserEntity fetchUserIfExist(String taxId) {
         return  userRepository.findUserByTaxId(taxId)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
     }
