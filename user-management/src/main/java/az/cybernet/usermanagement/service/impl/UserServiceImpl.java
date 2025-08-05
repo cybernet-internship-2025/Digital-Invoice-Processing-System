@@ -4,6 +4,7 @@ import az.cybernet.usermanagement.dto.request.CreateUserRequest;
 import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
+import az.cybernet.usermanagement.exception.InvalidTaxIdException;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
@@ -14,12 +15,15 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 
-import static az.cybernet.usermanagement.enums.ExceptionConstants.USER_NOT_FOUND;
+import static az.cybernet.usermanagement.exception.ExceptionConstants.INVALID_TAX_ID_EXCEPTION;
+import static az.cybernet.usermanagement.exception.ExceptionConstants.USER_NOT_FOUND;
+
 
 @Slf4j
 @Service
@@ -34,16 +38,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public void restoreUser(String taxId) {
         var user = fetchUserIfExist(taxId);
-        userRepository.restoreUser(user.getId());
-        log.info("User with tax ID + " + taxId + " was restored!");
+        userRepository.restoreUser(user.getTaxId());
+        log.info("User with tax ID {} was restored!",  taxId);
     }
 
     @Transactional
     @Override
     public void deleteUser(String taxId) {
         var user = fetchUserIfExist(taxId);
-        userRepository.deleteUser(user.getId());
-        log.info("User with tax ID + " + taxId + " was deleted!");
+        userRepository.deleteUser(user.getTaxId());
+        log.info("User with tax ID {} was deleted!",  taxId);
     }
 
     @Override
@@ -52,37 +56,49 @@ public class UserServiceImpl implements UserService {
         return userMapstruct.toUserResponseFromEntity(user);
     }
 
-    @Override
-    public List<UserResponse> findAll(Long limit) {
-        List<UserEntity> users = userRepository.findAll(limit);
-        return userMapstruct.toUserResponseList(users);
-    }
 
-    @Override
     @Transactional
+    @Override
     public UserResponse addUser(CreateUserRequest request) {
         UserEntity userEntity = userMapstruct.toUserEntityFromCreate(request);
+
         String taxId = generateNextTaxId();
+
+        userEntity.setTaxId(taxId);
         userEntity.setIsActive(true);
         userEntity.setCreatedAt(LocalDateTime.now());
-        userEntity.setTaxId(taxId);
         userRepository.addUser(userEntity);
+        log.info("User was successfully added!");
+        return  userMapstruct.toUserResponseFromEntity(userEntity);
+    }
+
+    @Transactional
+    @Override
+    public UserResponse updateUser(String taxId, UpdateUserRequest request) {
+        UserEntity userEntity = fetchUserIfExist(taxId);
+
+        userEntity.setName(request.getName());
+        userEntity.setUpdatedAt(LocalDateTime.now());
+        userRepository.updateUser(userEntity);
+        log.info("User with tax ID {} was updated!", taxId);
         return userMapstruct.toUserResponseFromEntity(userEntity);
     }
 
-    @Transactional
-    @Override
-    public UserResponse updateUser(UpdateUserRequest request) {
-        UserEntity userEntity = fetchUserIfExist(request.getTaxId());
-            userEntity.setUpdatedAt(LocalDateTime.now());
-            userEntity.setName(request.getName());
-            userRepository.updateUser(userEntity);
-            return userMapstruct.toUserResponseFromEntity(userEntity);
-    }
-
     private String generateNextTaxId() {
-        Long lastId = userRepository.findMaxTaxId();
-        if (lastId == null) lastId = 0L;
+        String lastTaxId = userRepository.findMaxTaxId();
+
+        if (lastTaxId == null || lastTaxId.isBlank()) {
+            lastTaxId = "0";
+        }
+
+        long lastId;
+
+        try {
+            lastId = Long.parseLong(lastTaxId);
+        } catch (NumberFormatException e) {
+            log.error("Invalid tax ID found in DB: {}", lastTaxId, e);
+            throw new InvalidTaxIdException(INVALID_TAX_ID_EXCEPTION.getCode(), INVALID_TAX_ID_EXCEPTION.getMessage());
+        }
 
         long nextId = lastId + 1;
         return String.format("%010d", nextId);
@@ -93,5 +109,4 @@ public class UserServiceImpl implements UserService {
         return  userRepository.findUserByTaxId(taxId)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
     }
-
 }

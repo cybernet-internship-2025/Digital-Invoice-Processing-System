@@ -11,10 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
-
 public class UpdateUserRequest {
-
-    String taxId;
-    @NotBlank
+    @NotBlank(message = "Name must not be blank")
     String name;
 }

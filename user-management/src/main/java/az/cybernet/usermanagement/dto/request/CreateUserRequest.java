@@ -6,17 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.validation.annotation.Validated;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-@Validated
+@Builder
 public class CreateUserRequest {
-    @NotBlank
+    @NotBlank(message = "Name must not be blank")
     String name;
 }
