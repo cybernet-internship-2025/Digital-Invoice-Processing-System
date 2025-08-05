@@ -52,7 +52,24 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+              - column:
+                  name: total_price
+                  type: NUMERIC(10, 2)
+                  constraints:
+                    nullable: false
 
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValue: now()
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
 
         - addForeignKeyConstraint:
             baseTableName: items

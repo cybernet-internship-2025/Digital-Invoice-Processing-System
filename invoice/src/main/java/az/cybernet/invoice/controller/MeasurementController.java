@@ -16,20 +16,27 @@ public class MeasurementController {
 
     private final MeasurementService measurementService;
 
-    // Ad ilə ölçü vahidi
+
+    @PostMapping
+    public ResponseEntity<Void> addMeasurement(@RequestBody MeasurementRequest request) {
+        measurementService.addMeasurement(request);
+        return ResponseEntity.noContent().build();
+    }
+
+
     @GetMapping("/by-name")
     public ResponseEntity<MeasurementResponse> getByName(@RequestParam String name) {
         return ResponseEntity.ok(measurementService.getByNameResponse(name));
     }
 
-    //butun olcu vahidlerini elde edir
+
     @GetMapping
     public ResponseEntity<List<MeasurementResponse>> findAll() {
         return ResponseEntity.ok(measurementService.findAll());
     }
 
 
-    //  Ölçü vahidini redaktə et
+
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                                        @RequestBody MeasurementRequest request) {
@@ -37,14 +44,12 @@ public class MeasurementController {
         return ResponseEntity.noContent().build();
     }
 
-    // Ölçü vahidini sil (soft delete)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         measurementService.deleteMeasurement(id);
         return ResponseEntity.noContent().build();
     }
 
-    //  Ölçü vahidini geri qaytar (restore)
     @PutMapping("/{id}/restore")
     public ResponseEntity<Void> restore(@PathVariable Long id) {
         measurementService.restoreMeasurement(id);

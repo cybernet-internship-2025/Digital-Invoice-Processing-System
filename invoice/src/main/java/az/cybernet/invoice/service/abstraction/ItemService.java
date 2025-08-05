@@ -7,15 +7,22 @@ import az.cybernet.invoice.dto.response.item.ItemResponse;
 import java.util.List;
 
 public interface ItemService {
+
+    List<ItemResponse> addItems(ItemsRequest requests);
+
     void updateItem(List<UpdateItemRequest> itemRequests);
 
     List<ItemResponse> findAllItemsByInvoiceId(Long invoiceId);
 
-    List<ItemResponse> addItems(ItemsRequest request);
 
     ItemResponse findById(Long id);
 
     void deleteItem(List<Long> ids);
+
+
+    void deleteItemsByInvoiceId(Long invoiceId);
+
+    void deleteItemsByItemsId(List<Long> ids);
 
     void restoreItem(Long itemId);
 }

@@ -20,6 +20,29 @@ public class ItemController {
         List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
         return ResponseEntity.ok(items);
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemResponse> getItemById(@PathVariable Long id) {
+        ItemResponse itemResponse = itemService.findById(id);
+        return ResponseEntity.ok(itemResponse);
+    }
+    @DeleteMapping
+    public ResponseEntity<Void> deleteItems(@RequestBody List<Long> ids) {
+        itemService.deleteItem(ids);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/invoice/{invoiceId}")
+    public ResponseEntity<Void> deleteItemsByInvoiceId(@PathVariable Long invoiceId) {
+        itemService.deleteItemsByInvoiceId(invoiceId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @DeleteMapping("/bulk")
+    public ResponseEntity<Void> deleteItemsByItemsId(@RequestBody List<Long> ids) {
+        itemService.deleteItemsByItemsId(ids);
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping("/{id}/restore")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface MeasurementService {
 
+    void addMeasurement(MeasurementRequest request);
 
     List<MeasurementResponse> findAll();
 
