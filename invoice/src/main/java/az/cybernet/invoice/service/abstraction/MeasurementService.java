@@ -18,7 +18,7 @@ public interface MeasurementService {
 
     void restoreMeasurement(Long id);
 
-    MeasurementResponse getByNameResponse(String name);
+    MeasurementResponse findByName(String name);
 
 }
 

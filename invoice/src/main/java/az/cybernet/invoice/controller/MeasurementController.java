@@ -26,7 +26,7 @@ public class MeasurementController {
 
     @GetMapping("/by-name")
     public ResponseEntity<MeasurementResponse> getByName(@RequestParam String name) {
-        return ResponseEntity.ok(measurementService.getByNameResponse(name));
+        return ResponseEntity.ok(measurementService.findByName(name));
     }
 
 

@@ -40,7 +40,7 @@ public class MeasurementServiceImpl implements MeasurementService {
 
 
     @Override
-    public MeasurementResponse getByNameResponse(String name) {
+    public MeasurementResponse findByName(String name) {
         MeasurementEntity entity = mapper.getByName(name);
         return mapStruct.toResponse(entity);
     }
