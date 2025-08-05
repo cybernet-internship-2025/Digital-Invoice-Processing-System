@@ -14,4 +14,5 @@ import static lombok.AccessLevel.PRIVATE;
 public class UpdateUserRequest {
     @NotBlank(message = "Name must not be blank")
     String name;
+
 }

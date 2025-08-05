@@ -1,8 +1,10 @@
 package az.cybernet.usermanagement.service;
-
-import az.cybernet.usermanagement.common.TestConstants;
+import az.cybernet.usermanagement.dto.request.CreateUserRequest;
+import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
-import az.cybernet.usermanagement.enums.ExceptionConstants;
+
+import az.cybernet.usermanagement.entity.UserEntity;
+import az.cybernet.usermanagement.exception.ExceptionConstants;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
@@ -14,14 +16,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static az.cybernet.usermanagement.common.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -33,6 +33,34 @@ public class UserServiceTest {
 
     @Mock
     UserMapstruct userMapstruct;
+
+    String taxId ="0000000003";
+
+    UserEntity USER_ENTITY= UserEntity.builder()
+            .name("Test")
+            .id(3L)
+            .taxId("0000000003")
+            .isActive(true)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(null)
+            .build();
+
+    CreateUserRequest CREATE_USER_REQUEST= CreateUserRequest.builder()
+            .name("Test")
+            .build();
+
+    UserResponse USER_RESPONSE= UserResponse.builder()
+            .name("Test")
+            .id(3L)
+            .taxId("0000000003")
+            .isActive(true)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(null)
+            .build();
+    UpdateUserRequest UPDATE_USER_REQUEST= UpdateUserRequest.builder()
+            .name("Test")
+            .build();
+
 
     @Test
     void test_addUser_ReturnSuccess() {
@@ -53,16 +81,48 @@ public class UserServiceTest {
     @Test
     void test_updateUser_ReturnSuccess() {
         //Arrange
-        userRepository.addUser(USER_ENTITY);
-        when(userRepository.findUserByTaxId(UPDATE_USER_REQUEST.getTaxId())).thenReturn(Optional.of(USER_ENTITY));
-        USER_ENTITY.setTaxId(UPDATE_USER_REQUEST.getTaxId());
+
+        String taxId ="0000000003";
+
+        UserEntity USER_ENTITY= UserEntity.builder()
+                .name("Test")
+                .id(3L)
+                .taxId("0000000003")
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
+                .build();
+
+        CreateUserRequest CREATE_USER_REQUEST= CreateUserRequest.builder()
+                .name("Test")
+                .build();
+
+        UserResponse USER_RESPONSE= UserResponse.builder()
+                .name("Test")
+                .id(3L)
+                .taxId("0000000003")
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
+                .build();
+        UpdateUserRequest UPDATE_USER_REQUEST= UpdateUserRequest.builder()
+                .name("Test")
+                .build();
+
+        when(userRepository.findUserByTaxId(taxId)).thenReturn(Optional.of(USER_ENTITY));
+//        doReturn(userRepository.findUserByTaxId(taxId)).when(Optional.of(USER_ENTITY));
+        USER_ENTITY.setUpdatedAt(LocalDateTime.now());
         USER_ENTITY.setName(UPDATE_USER_REQUEST.getName());
         willDoNothing().given(userRepository).updateUser(USER_ENTITY);
         when(userMapstruct.toUserResponseFromEntity(USER_ENTITY)).thenReturn(USER_RESPONSE);
 
-        UserResponse expectedUser = userService.updateUser(UPDATE_USER_REQUEST);
+        UserResponse actualResponse = userService.updateUser(USER_ENTITY.getTaxId(),UPDATE_USER_REQUEST);
 
-        assertEquals(USER_RESPONSE, expectedUser);
+        assertEquals(USER_RESPONSE, actualResponse);
+        Assertions.assertNotNull(actualResponse);
+        Assertions.assertEquals("Test", actualResponse.getName());
+        Assertions.assertEquals(taxId, actualResponse.getTaxId());
+
         verify(userRepository).updateUser(USER_ENTITY);
 
     }
@@ -72,8 +132,9 @@ public class UserServiceTest {
             userService.findUserByTaxId("0000000003");
         });
 
-        Assertions.assertEquals(ExceptionConstants.USER_NOT_FOUND.getCode(), exception.getCode());
-        Assertions.assertEquals(ExceptionConstants.USER_NOT_FOUND.getMessage(), exception.getMessage());
+          Assertions.assertEquals(ExceptionConstants.USER_NOT_FOUND.getMessage(), exception.getMessage());
+          Assertions.assertEquals(ExceptionConstants.USER_NOT_FOUND.getCode(), exception.getCode());
+
     }
 
 
