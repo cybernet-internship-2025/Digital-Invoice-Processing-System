@@ -27,11 +27,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
+import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
+import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static az.cybernet.invoice.enums.OperationStatus.DRAFT;
 import static az.cybernet.invoice.exception.ExceptionConstants.*;
 import java.util.Arrays;
@@ -224,26 +230,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse findById(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
-    }
-
-    @Override
-    public void restoreInvoice(Long id) {
-        var invoiceEntity = fetchInvoiceIfExist(id);
-        invoiceRepository.restoreInvoice(invoiceEntity.getId());
-
-        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceEntity.getId());
-        List<Long> itemIds = items == null ? List.of()
-                : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
-
-        if (!itemIds.isEmpty()) {
-            itemService.restoreItems(itemIds);
-
-            for (Long itemId : itemIds) {
-                addInvoiceToOperation(invoiceEntity.getId(), "Invoice restored", DRAFT, List.of(itemId));
-            }
-        } else {
-            addInvoiceToOperation(invoiceEntity.getId(), "Invoice restored", DRAFT, null);
-        }
     }
 
     @Override
