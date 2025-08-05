@@ -41,12 +41,6 @@ public class UserController {
         userService.restoreUser(taxId);
     }
 
-    @GetMapping
-    @ResponseStatus(OK)
-    public List<UserResponse> findAllUsers(@RequestParam("limit") Long limit) {
-        return userService.findAll(limit);
-    }
-
     @PostMapping
     @ResponseStatus(CREATED)
     public UserResponse addUser(@Valid @RequestBody  CreateUserRequest request) {

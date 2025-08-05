@@ -1,7 +1,7 @@
 package az.cybernet.usermanagement.repository;
 
 import az.cybernet.usermanagement.entity.UserEntity;
-import feign.Param;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,8 +19,5 @@ public interface UserRepository {
 
     void updateUser(UserEntity userEntity);
 
-    List<UserEntity> findAll(@Param("limit") Long limit);
-
     String findMaxTaxId();
-
 }

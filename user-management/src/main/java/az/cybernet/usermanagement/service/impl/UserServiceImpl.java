@@ -24,6 +24,7 @@ import java.util.List;
 import static az.cybernet.usermanagement.exception.ExceptionConstants.INVALID_TAX_ID_EXCEPTION;
 import static az.cybernet.usermanagement.exception.ExceptionConstants.USER_NOT_FOUND;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -55,12 +56,6 @@ public class UserServiceImpl implements UserService {
         return userMapstruct.toUserResponseFromEntity(user);
     }
 
-
-    @Override
-    public List<UserResponse> findAll(Long limit) {
-        List<UserEntity> users = userRepository.findAll(limit);
-        return userMapstruct.toUserResponseList(users);
-    }
 
     @Transactional
     @Override
