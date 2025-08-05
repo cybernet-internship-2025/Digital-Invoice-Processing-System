@@ -20,8 +20,6 @@ public interface InvoiceRepository {
 
     void updateInvoiceStatus(@Param("id") Long id, @Param("status") InvoiceStatus status, @Param("updatedAt") LocalDateTime updatedAt);
 
-    void restoreInvoice(Long id);
-
     List<InvoiceEntity> getAll();
 
     void deleteInvoiceById(Long id);
