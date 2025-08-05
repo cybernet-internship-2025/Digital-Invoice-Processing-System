@@ -26,21 +26,14 @@ public class ItemController {
         return ResponseEntity.ok(itemResponse);
     }
     @DeleteMapping
-    public ResponseEntity<Void> deleteItems(@RequestBody List<Long> ids) {
-        itemService.deleteItem(ids);
+    public ResponseEntity<Void> deleteItemsByItemsId(@RequestBody List<Long> ids) {
+        itemService.deleteItemsByItemsId(ids);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/invoice/{invoiceId}")
     public ResponseEntity<Void> deleteItemsByInvoiceId(@PathVariable Long invoiceId) {
         itemService.deleteItemsByInvoiceId(invoiceId);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    @DeleteMapping("/bulk")
-    public ResponseEntity<Void> deleteItemsByItemsId(@RequestBody List<Long> ids) {
-        itemService.deleteItemsByItemsId(ids);
         return ResponseEntity.noContent().build();
     }
 

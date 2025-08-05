@@ -98,16 +98,7 @@
         WHERE invoice_id = #{invoiceId}
     </update>
 
-    <!-- SOFT DELETE -->
-    <update id="deleteItem" parameterType="list">
-        UPDATE items
-        SET is_active = false,
-        updated_at = NOW()
-        WHERE id IN
-        <foreach collection="list" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </update>
+
 
     <resultMap id="ItemEntityResultMap" type="az.cybernet.invoice.entity.ItemEntity">
         <id property="id" column="id"/>

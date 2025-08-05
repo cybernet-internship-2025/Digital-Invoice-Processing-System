@@ -93,16 +93,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public void deleteItem(List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException("Item IDs cannot be null or empty");
-        }
-
-
-        itemRepository.deleteItem(ids);
-    }
-
-    @Override
     public void deleteItemsByInvoiceId(Long invoiceId) {
         itemRepository.deleteItemsByInvoiceId(invoiceId);
     }

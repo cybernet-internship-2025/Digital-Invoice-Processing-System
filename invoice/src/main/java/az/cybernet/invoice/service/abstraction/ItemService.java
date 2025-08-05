@@ -17,9 +17,6 @@ public interface ItemService {
 
     ItemResponse findById(Long id);
 
-    void deleteItem(List<Long> ids);
-
-
     void deleteItemsByInvoiceId(Long invoiceId);
 
     void deleteItemsByItemsId(List<Long> ids);
