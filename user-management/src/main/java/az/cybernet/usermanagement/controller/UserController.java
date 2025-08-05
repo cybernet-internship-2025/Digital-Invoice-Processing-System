@@ -31,30 +31,25 @@ public class UserController {
 
     @DeleteMapping("/{taxId}")
     @ResponseStatus(OK)
-    public void deleteUser(@PathVariable String taxId) {
+    public void deleteUser(@PathVariable("taxId") String taxId) {
         userService.deleteUser(taxId);
     }
 
     @PutMapping("/{taxId}/restore")
     @ResponseStatus(OK)
-    public void restoreUser(@PathVariable String taxId) {
+    public void restoreUser(@PathVariable("taxId") String taxId) {
         userService.restoreUser(taxId);
     }
-    @GetMapping
-    @ResponseStatus(OK)
-    public List<UserResponse> findAllUsers() {
-        return userService.findAll();
-    }
+
     @PostMapping
     @ResponseStatus(CREATED)
     public UserResponse addUser(@Valid @RequestBody  CreateUserRequest request) {
         return userService.addUser(request);
     }
-    @PutMapping
+
+    @PutMapping("/{taxId}")
     @ResponseStatus(OK)
-    public UserResponse updateUser(@Valid @RequestBody UpdateUserRequest request) {
-        return userService.updateUser(request);
+    public UserResponse updateUser(@Valid @RequestBody UpdateUserRequest request, @PathVariable("taxId")  String taxId) {
+        return userService.updateUser(taxId, request);
     }
-
-
 }
