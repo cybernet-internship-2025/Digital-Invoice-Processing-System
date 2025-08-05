@@ -71,6 +71,12 @@ databaseChangeLog:
                   constraints:
                     nullable: true
 
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
         - addForeignKeyConstraint:
             baseTableName: items
             baseColumnNames: invoice_id
