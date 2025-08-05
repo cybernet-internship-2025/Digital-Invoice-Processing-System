@@ -1,9 +1,6 @@
 package az.cybernet.invoice.service.abstraction;
 
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 
 import java.util.List;
@@ -15,15 +12,14 @@ public interface InvoiceService {
 
     void restoreInvoice(Long id);
 
-    List<InvoiceResponse> findAll();
 
     void deleteInvoiceById(Long invoiceId);
 
     InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
 
-    InvoiceResponse sendInvoice(Long invoiceId, SendInvoiceRequest request);
+    InvoiceResponse sendInvoice(SendInvoiceRequest request);
 
-    InvoiceResponse sendInvoiceToCorrection(Long invoiceId, String senderTaxId);
+    InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
@@ -37,5 +33,7 @@ public interface InvoiceService {
     void cancelInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request);
 
     void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
+
+    InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request);
 
 }

@@ -1,5 +1,6 @@
 package az.cybernet.invoice.repository;
 
+import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -18,11 +19,11 @@ public interface InvoiceRepository {
 
     void restoreInvoice(Long id);
 
-    List<InvoiceEntity> findAll();
 
     void deleteInvoiceById(Long id);
 
-    void updateInvoiceRecipientTaxId(String recipientTaxId);
+    void updateInvoiceRecipientTaxId(@Param("invoiceId") Long InvoiceId,
+                                     @Param("recipientTaxId") String recipientTaxId);
 
     void changeStatus(@Param("invoiceId") Long invoiceId,
                       @Param("status") String status);
@@ -39,4 +40,6 @@ public interface InvoiceRepository {
     void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
 
     List<InvoiceEntity> findInvoicesBySenderTaxId(String senderTaxId);
+
+    void refreshInvoice(Long invoiceId);
 }

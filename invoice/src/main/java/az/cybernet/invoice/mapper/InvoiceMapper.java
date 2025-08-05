@@ -3,6 +3,7 @@ package az.cybernet.invoice.mapper;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.exception.InvalidTaxIdException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
