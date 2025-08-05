@@ -27,20 +27,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
 import static az.cybernet.invoice.enums.OperationStatus.DRAFT;
+import static az.cybernet.invoice.exception.ExceptionConstants.*;
+import java.util.Arrays;
+import java.util.Collections;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
-import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
-import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
@@ -64,6 +60,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var invoiceEntity = invoiceMapper.fromInvoiceRequestToEntity(invoiceRequest);
         invoiceEntity.setInvoiceNumber(generateInvoiceNumber());
+        invoiceEntity.setInvoiceSeries("INVD");
         invoiceEntity.setTotalPrice(ZERO);
 
         invoiceRepository.saveInvoice(invoiceEntity);
@@ -86,7 +83,14 @@ public class InvoiceServiceImpl implements InvoiceService {
                     .map(ItemResponse::getId)
                     .toList();
 
-            addInvoiceToOperation(invoiceId,"Items added: " + itemIds.size(), OperationStatus.DRAFT, itemIds);
+            for (ItemResponse item : savedItems) {
+                addInvoiceToOperation(
+                        invoiceId,
+                        "Item added: " + item.getProductName() + ", item size: " + itemIds.size(),
+                        OperationStatus.DRAFT,
+                        List.of(item.getId())
+                );
+            }
 
             var totalPrice = updateInvoiceTotalPrice(invoiceId);
             invoiceEntity.setTotalPrice(totalPrice);
@@ -107,8 +111,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     private BigDecimal updateInvoiceTotalPrice(Long invoiceId) {
         List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
 
+        if (items == null) {
+            items = Collections.emptyList();
+        }
+
         BigDecimal total = items.stream()
                 .map(ItemResponse::getTotalPrice)
+                .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         invoiceRepository.updateTotalPrice(invoiceId, total);
@@ -128,16 +137,13 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
 
-        invoiceEntity.setStatus(APPROVED);
-        invoiceEntity.setUpdatedAt(LocalDateTime.now());
-
-        invoiceRepository.saveInvoice(invoiceEntity);
+        invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.APPROVED, LocalDateTime.now());
 
         List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
         List<Long> itemIds = items == null ? List.of()
                 : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-        addInvoiceToOperation(invoiceEntity.getId(), request.getRecipientTaxId(), "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
+        addInvoiceToOperation(invoiceEntity.getId(), "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -153,12 +159,21 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
 
-        invoiceEntity.setStatus(InvoiceStatus.CANCELED);
-        invoiceEntity.setUpdatedAt(LocalDateTime.now());
+        invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.CANCELED, LocalDateTime.now());
 
-        invoiceRepository.saveInvoice(invoiceEntity);
+        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
+        List<Long> itemIds = items == null ? List.of()
+                : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-        addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, null);
+        if (!itemIds.isEmpty()) {
+            itemService.deleteItem(itemIds);
+            for (Long itemId : itemIds) {
+                addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, List.of(itemId));
+            }
+        } else {
+            addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, null);
+        }
+
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -174,10 +189,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
 
-        invoiceEntity.setStatus(InvoiceStatus.CORRECTION);
-        invoiceEntity.setUpdatedAt(LocalDateTime.now());
-
-        invoiceRepository.saveInvoice(invoiceEntity);
+        invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.CORRECTION, LocalDateTime.now());
 
         List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
         List<Long> itemIds = (items == null) ? List.of()
@@ -187,7 +199,13 @@ public class InvoiceServiceImpl implements InvoiceService {
                 ? "Correction requested"
                 : request.getComment();
 
-        addInvoiceToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION, itemIds.isEmpty() ? null : itemIds);
+        if (!itemIds.isEmpty()) {
+            for (Long itemId : itemIds) {
+                addInvoiceToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION, List.of(itemId));
+            }
+        } else {
+            addInvoiceToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION, null);
+        }
     }
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status, List<Long> itemIds) {
@@ -196,7 +214,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .comment(comment)
                 .status(status)
                 .invoiceId(invoiceEntity.getId())
-                .itemIds(itemIds)
+                .itemIds(itemIds != null ? itemIds : Collections.emptyList())
                 .build();
 
         operationService.saveOperation(operationRequest);
@@ -217,7 +235,15 @@ public class InvoiceServiceImpl implements InvoiceService {
         List<Long> itemIds = items == null ? List.of()
                 : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-        addInvoiceToOperation(invoiceEntity.getId(), null, DRAFT, itemIds.isEmpty() ? null : itemIds);
+        if (!itemIds.isEmpty()) {
+            itemService.restoreItems(itemIds);
+
+            for (Long itemId : itemIds) {
+                addInvoiceToOperation(invoiceEntity.getId(), "Invoice restored", DRAFT, List.of(itemId));
+            }
+        } else {
+            addInvoiceToOperation(invoiceEntity.getId(), "Invoice restored", DRAFT, null);
+        }
     }
 
     @Override
@@ -253,19 +279,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         var month = String.format("%02d", now.getMonthValue());
         var prefix = year + month;
 
-        var lastNumber = invoiceRepository.findLastInvoiceNumberStartingWith(prefix);
+        Long nextVal = invoiceRepository.getNextInvoiceSequence();
+        var sequence = String.format("%04d", nextVal);
 
-        int nextSequence = 1;
-        if (lastNumber != null && lastNumber.length() == 9) {
-            String lastSequence = lastNumber.substring(5);
-            try {
-                nextSequence = Integer.parseInt(lastSequence) + 1;
-            } catch (NumberFormatException e) {
-                nextSequence = 1;
-            }
-        }
-
-        var sequence = String.format("%04d", nextSequence);
         return prefix + sequence;
     }
 
