@@ -123,15 +123,6 @@
           AND c.status IN ('DRAFT', 'PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
     </select>
 
-    <update id="restoreInvoice" parameterType="long">
-        UPDATE invoices
-        SET status     = 'DRAFT',
-            is_active  = true,
-            updated_at = NOW()
-        WHERE id = #{id}
-          AND c.status IN ('CANCELED')
-    </update>
-
     <select id="getAll" resultMap="InvoiceResultMap">
         SELECT i.id,
                i.sender_tax_id,

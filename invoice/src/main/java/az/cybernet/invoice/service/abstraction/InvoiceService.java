@@ -1,7 +1,7 @@
 package az.cybernet.invoice.service.abstraction;
 
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -12,8 +12,6 @@ public interface InvoiceService {
     InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest);
 
     InvoiceResponse findById(Long id);
-
-    void restoreInvoice(Long id);
 
     List<InvoiceResponse> getAll();
 
