@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -20,7 +21,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = PRIVATE, makeFinal = true)
+@FieldDefaults(level = PRIVATE,makeFinal = true)
 public class OperationServiceImpl implements OperationService {
 
     OperationRepository operationRepository;
@@ -31,10 +32,28 @@ public class OperationServiceImpl implements OperationService {
     public void saveOperation(CreateOperationRequest request) {
         OperationEntity entity = operationMapStruct.toEntity(request);
         entity.setCreatedAt(LocalDateTime.now());
+        entity.setTaxId(request.getTaxId());
+        System.out.println("Tax ID: " + request.getTaxId());
+
+        System.out.println("Invoice ID:" + request.getInvoiceId());
+        System.out.println("Item IDs:" + request.getItemIds());
 
         operationRepository.save(entity);
     }
 
+
+    public List<Long> itemIds(CreateOperationRequest request) {
+        List<Long> ids = new ArrayList<>();
+
+        if (request.getInvoiceId() != null) {
+            ids.add(request.getInvoiceId());
+        }
+        if (request.getItemIds() != null && !request.getItemIds().isEmpty()) {
+            ids.addAll(request.getItemIds());
+        }
+
+        return ids;
+    }
 
 
     @Override
@@ -44,6 +63,7 @@ public class OperationServiceImpl implements OperationService {
                 .map(operationMapStruct::toResponse)
                 .collect(toList());
     }
+
 
 
     @Override
@@ -86,19 +106,26 @@ public class OperationServiceImpl implements OperationService {
     }
 
 
-
+@Transactional
     public OperationResponse  approve(Long id, String comment)    {
         return changeStatus(id, OperationStatus.APPROVED, comment); }
-
+@Transactional
     public OperationResponse cancel(Long id, String comment)     {
         return changeStatus(id, OperationStatus.CANCELED, comment); }
-
+@Transactional
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
-
+@Transactional
     public OperationResponse correction(Long id, String comment) {
         return changeStatus(id, OperationStatus.CORRECTION, comment); }
-
+@Transactional
     public OperationResponse pending(Long id, String comment)    {
         return changeStatus(id, OperationStatus.PENDING,comment);}
+
+    @Transactional
+    public OperationResponse deleted(Long id, String comment)   {
+        return changeStatus(id, OperationStatus.DELETE,comment);}
+    @Transactional
+    public OperationResponse update(Long id, String comment)   {
+        return changeStatus(id, OperationStatus.UPDATE,comment);}
 }

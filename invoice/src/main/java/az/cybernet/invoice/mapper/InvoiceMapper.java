@@ -11,14 +11,14 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface InvoiceMapper {
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "senderTaxId",  expression = "java(parseTaxIdToLong(request.getSenderTaxId()))")
-    @Mapping(target = "recipientTaxId", expression = "java(parseTaxIdToLong(request.getRecipientTaxId()))")
+    @Mapping(target = "senderTaxId", source = "senderTaxId")
+    @Mapping(target = "recipientTaxId", source = "recipientTaxId")
     @Mapping(target = "status", constant = "DRAFT")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java((java.time.LocalDateTime) null)")
     @Mapping(target = "totalPrice", ignore = true)
     @Mapping(target = "invoiceNumber", ignore = true)
-    @Mapping(target = "invoiceSeries", constant = "INVD")
+    @Mapping(target = "invoiceSeries", ignore = true)
     @Mapping(target = "items", ignore = true)
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
 
