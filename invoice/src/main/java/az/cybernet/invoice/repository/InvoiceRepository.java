@@ -20,21 +20,30 @@ public interface InvoiceRepository {
 
     void updateInvoiceStatus(@Param("id") Long id, @Param("status") InvoiceStatus status, @Param("updatedAt") LocalDateTime updatedAt);
 
-    List<InvoiceEntity> getAll();
+    void restoreInvoice(Long id);
+
 
     void deleteInvoiceById(Long id);
 
-    void updateInvoice(InvoiceEntity invoice);
+    void updateInvoiceRecipientTaxId(@Param("invoiceId") Long InvoiceId,
+                                     @Param("recipientTaxId") String recipientTaxId);
 
-    void changeStatus(Long id, String status);
+    void changeStatus(@Param("invoiceId") Long invoiceId,
+                      @Param("status") String status);
+    Optional<InvoiceEntity> findBySenderTaxIdAndInvoiceId(
+            @Param("senderTaxId") String senderTaxId,
+            @Param("invoiceId") Long invoiceId
+    );
 
-    List<InvoiceEntity> findAllByStatus(String status);
+    Optional<InvoiceEntity> findByIdAndReceiverTaxId(@Param("invoiceId") Long invoiceId,
+                                                     @Param("receiverTaxId") String receiverTaxId);
 
-    Optional<InvoiceEntity> findByIdAndBySenderTaxId(Long invoiceId, String senderTaxId);
-
-    Optional<InvoiceEntity> findByIdAndReceiverTaxId(Long invoiceId, String receiverTaxId);
 
     List<InvoiceEntity> findAllInvoicesByRecipientUserTaxId(String recipientTaxId);
 
     void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
+
+    List<InvoiceEntity> findInvoicesBySenderTaxId(String senderTaxId);
+
+    void refreshInvoice(Long invoiceId);
 }

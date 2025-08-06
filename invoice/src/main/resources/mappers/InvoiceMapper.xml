@@ -120,33 +120,18 @@
                  LEFT JOIN operations o ON o.item_id = i.id
         WHERE c.id = #{id}
           AND c.is_active = true
-          AND c.status IN ('DRAFT', 'PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
+          AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION','DRAFT')
     </select>
 
-    <select id="getAll" resultMap="InvoiceResultMap">
-        SELECT i.id,
-               i.sender_tax_id,
-               i.recipient_tax_id,
-               i.total_price,
-               i.invoice_number,
-               i.invoice_series,
-               i.status,
-               i.created_at,
-               i.updated_at,
-               i.is_active,
+    <update id="restoreInvoice" parameterType="long">
+        UPDATE invoices
+        SET status     = 'DRAFT',
+            is_active  = true,
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND c.status IN ('CANCELED')
+    </update>
 
-               it.id,
-               it.name,
-               it.unit_price,
-               it.quantity,
-               it.total_price,
-               it.is_active,
-               it.invoice_id
-        from invoices i
-                 left join items it on i.id = it.invoice_id
-            and it.is_active = true
-        where i.is_active = true
-    </select>
 
     <update id="deleteInvoiceById" parameterType="long">
         update invoices
@@ -154,62 +139,107 @@
         where id = #{id}
     </update>
 
-    <update id="updateInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity">
+    <update id="updateInvoiceRecipientTaxId">
         update invoices
         set recipient_tax_id = #{recipientTaxId},
-            updated_at       = current_timestamp
-        where id = #{invoice.id}
-          and is_active = true
+            updated_at = current_timestamp
+        where id = #{invoiceId}
+            and is_active = true
     </update>
 
     <update id="changeStatus">
         update invoices
-        set status     = #{status},
+        set status = #{status},
             updated_at = current_timestamp
-        where id = #{id}
+        where id = #{invoiceId}
     </update>
 
-    <select id="findAllByStatus" resultMap="InvoiceResultMap">
-        SELECT i.id,
-               i.sender_tax_id,
-               i.recipient_tax_id,
-               i.total_price,
-               i.invoice_number,
-               i.invoice_series,
-               i.status,
-               i.created_at,
-               i.updated_at,
-               i.is_active,
-
-               it.id,
-               it.name,
-               it.unit_price,
-               it.quantity,
-               it.total_price,
-               it.is_active,
-               it.invoice_id
-        from invoices i
-                 left join items it on i.id = it.invoice_id
-            and it.is_active = true
-        where i.is_active = true
-          and i.status = #{status}
-    </select>
-
     <select id="findByIdAndReceiverTaxId" resultMap="InvoiceResultMap">
-        select *
-        from invoices
-        where id = #{invoiceId}
-          and recipient_tax_id = #{receiverTaxId}
-          and is_active = true
-          and status = 'PENDING'
+        SELECT c.id               AS c_id,
+        c.sender_tax_id    AS c_sender_tax_id,
+        c.recipient_tax_id AS c_recipient_tax_id,
+        c.total_price      AS c_total_price,
+        c.is_active        AS c_is_active,
+        c.invoice_number   AS c_invoice_number,
+        c.invoice_series   AS c_invoice_series,
+        c.status           AS c_status,
+        c.created_at       AS c_created_at,
+        c.updated_at       AS c_updated_at,
+
+        i.id               AS i_id,
+        i.name             AS i_name,
+        i.unit_price       AS i_unit_price,
+        i.is_active        AS i_is_active,
+        i.quantity         AS i_quantity,
+        i.total_price      AS i_total_price,
+        i.invoice_id       AS i_invoice_id
+        from invoices c
+        left join items i
+        on i.invoice_id = c.id
+            and i.is_active = true
+        where c.id = #{invoiceId}
+        and c.recipient_tax_id = #{receiverTaxId}
+        and c.is_active = true
+
     </select>
 
-    <select id="findByIdAndBySenderTaxId" resultMap="InvoiceResultMap">
-        select *
-        from invoices
-        where id = #{invoiceId}
-          and sender_tax_id = #{senderTaxId}
-          and is_active = true
-          and status = 'PENDING'
+    <select id="findBySenderTaxIdAndInvoiceId" resultMap="InvoiceResultMap">
+        SELECT c.id               AS c_id,
+        c.sender_tax_id    AS c_sender_tax_id,
+        c.recipient_tax_id AS c_recipient_tax_id,
+        c.total_price      AS c_total_price,
+        c.is_active        AS c_is_active,
+        c.invoice_number   AS c_invoice_number,
+        c.invoice_series   AS c_invoice_series,
+        c.status           AS c_status,
+        c.created_at       AS c_created_at,
+        c.updated_at       AS c_updated_at,
+
+        i.id               AS i_id,
+        i.name             AS i_name,
+        i.unit_price       AS i_unit_price,
+        i.is_active        AS i_is_active,
+        i.quantity         AS i_quantity,
+        i.total_price      AS i_total_price,
+        i.invoice_id       AS i_invoice_id
+        from invoices c
+        left join items i
+        on i.invoice_id = c.id and i.is_active = true
+        where c.id = #{invoiceId}
+        and c.sender_tax_id = #{senderTaxId}
+        and c.is_active = true
     </select>
+
+    <select id="findInvoicesBySenderTaxId" resultMap="InvoiceResultMap">
+        SELECT c.id               AS c_id,
+        c.sender_tax_id    AS c_sender_tax_id,
+        c.recipient_tax_id AS c_recipient_tax_id,
+        c.total_price      AS c_total_price,
+        c.is_active        AS c_is_active,
+        c.invoice_number   AS c_invoice_number,
+        c.invoice_series   AS c_invoice_series,
+        c.status           AS c_status,
+        c.created_at       AS c_created_at,
+        c.updated_at       AS c_updated_at,
+
+        i.id               AS i_id,
+        i.name             AS i_name,
+        i.unit_price       AS i_unit_price,
+        i.is_active        AS i_is_active,
+        i.quantity         AS i_quantity,
+        i.total_price      AS i_total_price,
+        i.invoice_id       AS i_invoice_id
+        from invoices c
+        left join items i
+        on i.invoice_id = c.id
+               and i.is_active = true
+        where c.sender_tax_id = #{senderTaxId}
+        and c.is_active = true
+    </select>
+
+    <update id="refreshInvoice" parameterType="Long">
+        update invoices
+        set updated_at = current_timestamp
+        where id = #{invoiceId}
+    </update>
 </mapper>
