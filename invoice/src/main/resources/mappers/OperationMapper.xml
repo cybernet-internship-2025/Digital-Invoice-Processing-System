@@ -13,7 +13,7 @@
             <id property="id" column="item_id"/>
         </association>
         <result property="itemStatus" column="item_status" javaType="az.cybernet.invoice.enums.ItemStatus"/>
-        <result property="comment" column="comment"/>
+
     </resultMap>
 
     <resultMap id="OperationEntityMap" type="az.cybernet.invoice.entity.OperationEntity">
@@ -39,8 +39,8 @@
         o.invoice_id AS invoice_id,
         od.operation_id AS operation_id,
         od.item_id AS item_id,
-        od.item_status AS item_status,
-        od.comment AS comment
+        od.item_status AS item_status
+        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE o.id = #{id}
@@ -54,8 +54,8 @@
         o.invoice_id AS invoice_id,
         od.operation_id AS operation_id,
         od.item_id AS item_id,
-        od.item_status AS item_status,
-        od.comment AS comment
+        od.item_status AS item_status
+        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
     </select>
@@ -68,8 +68,8 @@
         o.invoice_id AS invoice_id,
         od.operation_id AS operation_id,
         od.item_id AS item_id,
-        od.item_status AS item_status,
-        od.comment AS comment
+        od.item_status AS item_status
+        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE o.status = #{status}
@@ -83,8 +83,8 @@
         o.invoice_id AS invoice_id,
         od.operation_id AS operation_id,
         od.item_id AS item_id,
-        od.item_status AS item_status,
-        od.comment AS comment
+        od.item_status AS item_status
+        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE od.item_id = #{itemId}
@@ -98,8 +98,8 @@
         o.invoice_id AS invoice_id,
         od.operation_id AS operation_id,
         od.item_id AS item_id,
-        od.item_status AS item_status,
-        od.comment AS comment
+        od.item_status AS item_status
+        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE o.invoice_id = #{invoiceId}
