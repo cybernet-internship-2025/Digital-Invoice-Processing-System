@@ -20,4 +20,4 @@ public class CreateOperationRequest {
     List<Long> itemIds;
     List<CreateOperationRequestDetails> items;
 }
-    //List<Long> itemIds;
+

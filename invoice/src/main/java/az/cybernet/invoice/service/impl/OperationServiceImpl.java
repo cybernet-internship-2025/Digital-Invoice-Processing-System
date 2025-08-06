@@ -1,10 +1,12 @@
 package az.cybernet.invoice.service.impl;
 
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.request.operation.CreateOperationRequestDetails;
 import az.cybernet.invoice.dto.response.operation.OperationResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.OperationEntity;
+import az.cybernet.invoice.entity.OperationEntityDetails;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.mapper.OperationMapStruct;
 import az.cybernet.invoice.repository.OperationRepository;
@@ -31,8 +33,9 @@ public class OperationServiceImpl implements OperationService {
 
 
     @Override
+    @Transactional
     public void saveOperation(CreateOperationRequest request) {
-        OperationEntity entity = operationMapStruct.toEntity(request);
+        OperationEntity entity = new OperationEntity();
         entity.setCreatedAt(LocalDateTime.now());
         entity.setStatus(request.getStatus());
         entity.setComment(request.getComment());
@@ -41,16 +44,25 @@ public class OperationServiceImpl implements OperationService {
         invoiceEntity.setId(request.getInvoiceId());
         entity.setInvoice(invoiceEntity);
 
-        if (request.getItemIds() == null || request.getItemIds().isEmpty()) {
-            entity.setItem(null);
-        } else {
-            ItemEntity itemEntity = new ItemEntity();
-            itemEntity.setId(request.getItemIds().get(0));
-            entity.setItem(itemEntity);
+
+        List<OperationEntityDetails> detailsList = new ArrayList<>();
+
+        for (CreateOperationRequestDetails detail : request.getItems()) {
+            OperationEntityDetails operationDetail = OperationEntityDetails.builder()
+                    .item(ItemEntity.builder().id(detail.getItemId()).build())
+                    .itemStatus(detail.getItemStatus())
+                    .comment(detail.getComment())
+                    .operation(entity)
+                    .build();
+
+            detailsList.add(operationDetail);
         }
+
+        entity.setItemDetails(detailsList);
 
         operationRepository.save(entity);
     }
+
 
 
 

@@ -15,4 +15,6 @@ public class CreateOperationRequestDetails {
     Long itemId;
     Long operationId;
     ItemStatus itemStatus;
+
+
 }
