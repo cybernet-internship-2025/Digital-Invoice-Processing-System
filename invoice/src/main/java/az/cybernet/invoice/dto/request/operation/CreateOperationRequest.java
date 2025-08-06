@@ -18,4 +18,6 @@ public class CreateOperationRequest {
     String comment;
     Long invoiceId;
     List<Long> itemIds;
+    List<CreateOperationRequestDetails> items;
 }
+    //List<Long> itemIds;

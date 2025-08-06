@@ -25,7 +25,7 @@ public class MeasurementEntity {
     Long id;
     String name;
     LocalDateTime createdAt;
-    LocalDateTime updateAt;
+    LocalDateTime updatedAt;
     Boolean isActive;
     List<ItemEntity> items;
 }

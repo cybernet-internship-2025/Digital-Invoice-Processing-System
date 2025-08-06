@@ -1,16 +1,16 @@
 package az.cybernet.invoice.entity;
 
 import az.cybernet.invoice.enums.OperationStatus;
-import io.micrometer.observation.transport.SenderContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -24,8 +24,8 @@ import static lombok.AccessLevel.PRIVATE;
 public class OperationEntity {
     Long id;
     OperationStatus status;
-    String comment;
     LocalDateTime createdAt;
     InvoiceEntity invoice;
-    ItemEntity item;
+    List<OperationEntityDetails> itemDetails;
+
 }

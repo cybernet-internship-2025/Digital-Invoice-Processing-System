@@ -49,7 +49,7 @@ public class MeasurementServiceImpl implements MeasurementService {
         }
 
         entity.setName(request.getName());
-        entity.setUpdateAt(LocalDateTime.now());
+        entity.setUpdatedAt(LocalDateTime.now());
         mapper.updateMeasurement(entity);
     }
 

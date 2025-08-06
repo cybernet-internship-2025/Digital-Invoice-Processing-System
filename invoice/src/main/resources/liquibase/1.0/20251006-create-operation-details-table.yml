@@ -20,6 +20,13 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
+
+              - column:
+                  name: comment
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
               - column:
                   name: item_status
                   type: VARCHAR(50)
