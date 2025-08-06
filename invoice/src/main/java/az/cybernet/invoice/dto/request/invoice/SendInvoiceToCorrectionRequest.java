@@ -6,7 +6,8 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SendInvoiceRequest {
-    String senderUserTaxId;
+public class SendInvoiceToCorrectionRequest {
     Long invoiceId;
+    String receiverTaxId;
+    String comment;
 }
