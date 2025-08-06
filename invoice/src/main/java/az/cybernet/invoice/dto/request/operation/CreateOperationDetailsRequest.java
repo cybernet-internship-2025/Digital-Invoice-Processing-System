@@ -10,11 +10,10 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class CreateOperationRequestDetails {
+public class CreateOperationDetailsRequest {
 
     Long itemId;
     Long operationId;
     ItemStatus itemStatus;
-
 
 }

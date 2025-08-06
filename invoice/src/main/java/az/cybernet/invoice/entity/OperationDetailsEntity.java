@@ -11,9 +11,8 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE  )
-public class OperationEntityDetails {
+public class OperationDetailsEntity {
     OperationEntity operation;
     ItemEntity item;
     ItemStatus itemStatus;
-    String comment;
 }

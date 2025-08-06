@@ -1,12 +1,12 @@
 package az.cybernet.invoice.service.impl;
 
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
-import az.cybernet.invoice.dto.request.operation.CreateOperationRequestDetails;
+import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.response.operation.OperationResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.OperationEntity;
-import az.cybernet.invoice.entity.OperationEntityDetails;
+import az.cybernet.invoice.entity.OperationDetailsEntity;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.mapper.OperationMapStruct;
 import az.cybernet.invoice.repository.OperationRepository;
@@ -39,19 +39,19 @@ public class OperationServiceImpl implements OperationService {
         entity.setCreatedAt(LocalDateTime.now());
         entity.setStatus(request.getStatus());
         entity.setComment(request.getComment());
-
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(request.getInvoiceId());
+
         entity.setInvoice(invoiceEntity);
 
 
-        List<OperationEntityDetails> detailsList = new ArrayList<>();
-
-        for (CreateOperationRequestDetails detail : request.getItems()) {
-            OperationEntityDetails operationDetail = OperationEntityDetails.builder()
-                    .item(ItemEntity.builder().id(detail.getItemId()).build())
+        List<OperationDetailsEntity> detailsList = new ArrayList<>();
+        for (CreateOperationDetailsRequest detail : request.getItems()) {
+            OperationDetailsEntity operationDetail = OperationDetailsEntity.builder()
+                    .item(ItemEntity.builder()
+                            .id(detail.getItemId())
+                            .build())
                     .itemStatus(detail.getItemStatus())
-                    .comment(detail.getComment())
                     .operation(entity)
                     .build();
 
@@ -59,24 +59,7 @@ public class OperationServiceImpl implements OperationService {
         }
 
         entity.setItemDetails(detailsList);
-
         operationRepository.save(entity);
-    }
-
-
-
-
-    public List<Long> itemIds(CreateOperationRequest request) {
-        List<Long> ids = new ArrayList<>();
-
-        if (request.getInvoiceId() != null) {
-            ids.add(request.getInvoiceId());
-        }
-        if (request.getItemIds() != null && !request.getItemIds().isEmpty()) {
-            ids.addAll(request.getItemIds());
-        }
-
-        return ids;
     }
 
 
@@ -116,16 +99,14 @@ public class OperationServiceImpl implements OperationService {
 
 
     @Transactional
-    public OperationResponse changeStatus(Long operationId, OperationStatus newStatus, String comment) {
-        OperationEntity op = operationRepository.findById(operationId)
-
-                .orElseThrow(() -> new RuntimeException("Operation is not found: " + operationId));
+    public OperationResponse changeStatus(Long id, OperationStatus newStatus, String comment) {
+        OperationEntity op = operationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Operation not found with ID: " + id));
 
         op.setStatus(newStatus);
         op.setComment(comment);
 
         operationRepository.save(op);
-
         return operationMapStruct.toResponse(op);
     }
 
@@ -142,6 +123,8 @@ public class OperationServiceImpl implements OperationService {
     @Transactional
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
+
+
 
     @Transactional
     public OperationResponse correction(Long id, String comment) {
