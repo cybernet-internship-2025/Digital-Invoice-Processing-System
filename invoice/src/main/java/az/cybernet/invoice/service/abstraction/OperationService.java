@@ -6,7 +6,7 @@ import az.cybernet.invoice.enums.OperationStatus;
 
 import java.util.List;
 
-public interface OperationService {
+public interface  OperationService {
 
 
     void saveOperation(CreateOperationRequest createOperationRequest);
