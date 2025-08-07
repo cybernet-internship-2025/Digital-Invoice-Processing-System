@@ -1,7 +1,8 @@
 package az.cybernet.usermanagement.service.impl;
 
-import az.cybernet.usermanagement.dto.request.CreateUserRequest;
-import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
+import az.cybernet.usermanagement.aop.annotation.Log;
+import az.cybernet.usermanagement.aop.annotation.LogIgnore;
+import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.InvalidTaxIdException;
@@ -15,16 +16,14 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 import static az.cybernet.usermanagement.exception.ExceptionConstants.INVALID_TAX_ID_EXCEPTION;
 import static az.cybernet.usermanagement.exception.ExceptionConstants.USER_NOT_FOUND;
 
-
+@Log
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,7 +38,6 @@ public class UserServiceImpl implements UserService {
     public void restoreUser(String taxId) {
         var user = fetchUserIfExist(taxId);
         userRepository.restoreUser(user.getTaxId());
-        log.info("User with tax ID {} was restored!",  taxId);
     }
 
     @Transactional
@@ -47,7 +45,6 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String taxId) {
         var user = fetchUserIfExist(taxId);
         userRepository.deleteUser(user.getTaxId());
-        log.info("User with tax ID {} was deleted!",  taxId);
     }
 
     @Override
@@ -59,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponse addUser(CreateUserRequest request) {
+    public UserResponse addUser(UserRequest request) {
         UserEntity userEntity = userMapstruct.toUserEntityFromCreate(request);
 
         String taxId = generateNextTaxId();
@@ -68,19 +65,17 @@ public class UserServiceImpl implements UserService {
         userEntity.setIsActive(true);
         userEntity.setCreatedAt(LocalDateTime.now());
         userRepository.addUser(userEntity);
-        log.info("User was successfully added!");
         return  userMapstruct.toUserResponseFromEntity(userEntity);
     }
 
     @Transactional
     @Override
-    public UserResponse updateUser(String taxId, UpdateUserRequest request) {
+    public UserResponse updateUser(String taxId, UserRequest request) {
         UserEntity userEntity = fetchUserIfExist(taxId);
 
         userEntity.setName(request.getName());
         userEntity.setUpdatedAt(LocalDateTime.now());
         userRepository.updateUser(userEntity);
-        log.info("User with tax ID {} was updated!", taxId);
         return userMapstruct.toUserResponseFromEntity(userEntity);
     }
 
@@ -96,7 +91,6 @@ public class UserServiceImpl implements UserService {
         try {
             lastId = Long.parseLong(lastTaxId);
         } catch (NumberFormatException e) {
-            log.error("Invalid tax ID found in DB: {}", lastTaxId, e);
             throw new InvalidTaxIdException(INVALID_TAX_ID_EXCEPTION.getCode(), INVALID_TAX_ID_EXCEPTION.getMessage());
         }
 
@@ -104,7 +98,7 @@ public class UserServiceImpl implements UserService {
         return String.format("%010d", nextId);
     }
 
-
+    @LogIgnore
     private UserEntity fetchUserIfExist(String taxId) {
         return  userRepository.findUserByTaxId(taxId)
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
