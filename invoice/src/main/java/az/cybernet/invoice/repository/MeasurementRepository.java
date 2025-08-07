@@ -1,5 +1,6 @@
 package az.cybernet.invoice.repository;
 
+
 import az.cybernet.invoice.entity.MeasurementEntity;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -7,7 +8,8 @@ import java.util.List;
 
 @Mapper
 public interface MeasurementRepository {
-    MeasurementEntity findByName(String name);
+
+    MeasurementEntity getByName(String name);
 
     List<MeasurementEntity> findAll();
 
