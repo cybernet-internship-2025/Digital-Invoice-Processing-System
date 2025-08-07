@@ -16,9 +16,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public class CreateOperationRequest {
     OperationStatus status;
-    String comment;
     Long invoiceId;
-    List<Long> itemIds;
     List<CreateOperationDetailsRequest> items;
 }
 
