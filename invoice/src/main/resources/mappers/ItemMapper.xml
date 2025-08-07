@@ -75,13 +75,6 @@
         WHERE id = #{id}
     </update>
 
-    <update id="restoreItem" parameterType="long">
-        UPDATE items
-        SET is_active  = true,
-            updated_at = NOW()
-        WHERE id = #{id}
-    </update>
-
     <update id="deleteItemsByItemsId">
         UPDATE invoice.items
         SET is_active = false,
@@ -97,7 +90,6 @@
             updated_at = NOW()
         WHERE invoice_id = #{invoiceId}
     </update>
-
 
 
     <resultMap id="ItemEntityResultMap" type="az.cybernet.invoice.entity.ItemEntity">
