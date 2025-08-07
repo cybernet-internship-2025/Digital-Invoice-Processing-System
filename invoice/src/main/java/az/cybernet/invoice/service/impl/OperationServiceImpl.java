@@ -105,15 +105,10 @@ public class OperationServiceImpl implements OperationService {
                 .orElseThrow(() -> new RuntimeException("Operation not found with ID: " + id));
 
         op.setStatus(newStatus);
-
         if (op.getItemDetails() != null) {
             for (OperationDetailsEntity detail : op.getItemDetails()) {
                 detail.setComment(comment);
-            }
-        }
-
-
-
+            }}
         operationRepository.save(op);
         return operationMapStruct.toResponse(op);
     }
