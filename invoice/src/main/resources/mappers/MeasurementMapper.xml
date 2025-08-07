@@ -5,6 +5,12 @@
 
 <mapper namespace="az.cybernet.invoice.repository.MeasurementRepository">
 
+
+    <insert id="saveMeasurement" parameterType="az.cybernet.invoice.entity.MeasurementEntity">
+        INSERT INTO invoice.measurements (name, created_at, is_active)
+        VALUES (#{name}, #{createdAt}, #{isActive})
+    </insert>
+
     <select id="getByName" resultMap="MeasurementMap">
         SELECT * FROM invoice.measurements
         WHERE name = #{name}
