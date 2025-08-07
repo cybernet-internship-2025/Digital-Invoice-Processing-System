@@ -1,6 +1,5 @@
 package az.cybernet.usermanagement.service;
-import az.cybernet.usermanagement.dto.request.CreateUserRequest;
-import az.cybernet.usermanagement.dto.request.UpdateUserRequest;
+import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 
 import az.cybernet.usermanagement.entity.UserEntity;
@@ -45,7 +44,7 @@ public class UserServiceTest {
             .updatedAt(null)
             .build();
 
-    CreateUserRequest CREATE_USER_REQUEST= CreateUserRequest.builder()
+    UserRequest CREATE_USER_REQUEST= UserRequest.builder()
             .name("Test")
             .build();
 
@@ -57,7 +56,7 @@ public class UserServiceTest {
             .createdAt(LocalDateTime.now())
             .updatedAt(null)
             .build();
-    UpdateUserRequest UPDATE_USER_REQUEST= UpdateUserRequest.builder()
+    UserRequest UPDATE_USER_REQUEST= UserRequest.builder()
             .name("Test")
             .build();
 
@@ -93,7 +92,7 @@ public class UserServiceTest {
                 .updatedAt(null)
                 .build();
 
-        CreateUserRequest CREATE_USER_REQUEST= CreateUserRequest.builder()
+        UserRequest CREATE_USER_REQUEST= UserRequest.builder()
                 .name("Test")
                 .build();
 
@@ -105,12 +104,11 @@ public class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .build();
-        UpdateUserRequest UPDATE_USER_REQUEST= UpdateUserRequest.builder()
+        UserRequest UPDATE_USER_REQUEST= UserRequest.builder()
                 .name("Test")
                 .build();
 
         when(userRepository.findUserByTaxId(taxId)).thenReturn(Optional.of(USER_ENTITY));
-//        doReturn(userRepository.findUserByTaxId(taxId)).when(Optional.of(USER_ENTITY));
         USER_ENTITY.setUpdatedAt(LocalDateTime.now());
         USER_ENTITY.setName(UPDATE_USER_REQUEST.getName());
         willDoNothing().given(userRepository).updateUser(USER_ENTITY);
