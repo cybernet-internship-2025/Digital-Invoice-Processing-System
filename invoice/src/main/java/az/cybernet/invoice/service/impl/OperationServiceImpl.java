@@ -41,7 +41,6 @@ public class OperationServiceImpl implements OperationService {
 
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(request.getInvoiceId());
-
         entity.setInvoice(invoiceEntity);
 
 
@@ -126,7 +125,6 @@ public class OperationServiceImpl implements OperationService {
     @Transactional
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
-
 
 
     @Transactional

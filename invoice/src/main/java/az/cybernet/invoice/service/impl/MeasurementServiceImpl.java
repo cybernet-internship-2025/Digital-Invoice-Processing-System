@@ -11,13 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static az.cybernet.invoice.exception.ExceptionConstants.MEASUREMENT_NOT_FOUND;
-
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +34,9 @@ public class MeasurementServiceImpl implements MeasurementService {
         mapper.saveMeasurement(entity);
     }
 
-
-
     @Override
     public MeasurementResponse findByName(String name) {
-        MeasurementEntity entity = mapper.getByName(name);
+        MeasurementEntity entity = mapper.findByName(name);
         return mapStruct.toResponse(entity);
     }
 
@@ -54,7 +49,7 @@ public class MeasurementServiceImpl implements MeasurementService {
     @Override
     @Transactional
     public void updateMeasurement(Long id, MeasurementRequest request) {
-        MeasurementEntity entity = mapper.getByName(request.getName());
+        MeasurementEntity entity = mapper.findByName(request.getName());
 
         if (entity == null || !entity.getId().equals(id)) {
             throw new NotFoundException(MEASUREMENT_NOT_FOUND.getCode(), MEASUREMENT_NOT_FOUND.getMessage());
@@ -77,5 +72,3 @@ public class MeasurementServiceImpl implements MeasurementService {
         mapper.restoreMeasurement(id);
     }
 }
-
-

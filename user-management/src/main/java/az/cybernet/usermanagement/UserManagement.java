@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @MapperScan("az.cybernet.usermanagement.repository")
 public class UserManagement {
-
     public static void main(String[] args) {
         SpringApplication.run(UserManagement.class, args);
     }
