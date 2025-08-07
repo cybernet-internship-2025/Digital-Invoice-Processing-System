@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
 import static az.cybernet.invoice.enums.OperationStatus.DRAFT;
@@ -138,52 +139,67 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void approveInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request) {
-        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
-
-        if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId()) || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
-            throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
+    public void approveInvoice(ApproveAndCancelInvoiceRequest request) {
+        if (request.getInvoiceIds() == null || request.getInvoiceIds().isEmpty()) {
+            throw new IllegalArgumentException("No invoice IDs provided");
         }
 
-        if (invoiceEntity.getStatus() != PENDING) {
-            throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
+        for (Long invoiceId : request.getInvoiceIds()) {
+            var invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+            if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId())
+                    || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
+                throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
+            }
+
+            if (invoiceEntity.getStatus() != PENDING) {
+                throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
+            }
+
+            invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.APPROVED, LocalDateTime.now());
+
+            List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
+            List<Long> itemIds = items == null
+                    ? List.of()
+                    : items.stream()
+                    .map(ItemResponse::getId)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
         }
-
-        invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.APPROVED, LocalDateTime.now());
-
-        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
-        List<Long> itemIds = items == null ? List.of()
-                : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
-
-        addInvoiceToOperation(invoiceEntity.getId(), "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void cancelInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request) {
-        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
-
-        if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId()) || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
-            throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
+    public void cancelInvoice(ApproveAndCancelInvoiceRequest request) {
+        if (request.getInvoiceIds() == null || request.getInvoiceIds().isEmpty()) {
+            throw new IllegalArgumentException("No invoice IDs provided");
         }
 
-        if (invoiceEntity.getStatus() != PENDING) {
-            throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
-        }
+        for (Long invoiceId : request.getInvoiceIds()) {
+            var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.CANCELED, LocalDateTime.now());
-
-        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
-        List<Long> itemIds = items == null ? List.of()
-                : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
-
-        if (!itemIds.isEmpty()) {
-            itemService.deleteItemsByItemsId(itemIds);
-            for (Long itemId : itemIds) {
-                addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, List.of(itemId));
+            if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId())
+                    || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
+                throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
             }
-        } else {
-            addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, null);
+
+            if (invoiceEntity.getStatus() != PENDING) {
+                throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
+            }
+
+            invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.CANCELED, LocalDateTime.now());
+
+            List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
+            List<Long> itemIds = items == null
+                    ? List.of()
+                    : items.stream()
+                    .map(ItemResponse::getId)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            addInvoiceToOperation(invoiceId, "Invoice canceled", OperationStatus.CANCELED, itemIds.isEmpty() ? null : itemIds);
         }
 
     }
@@ -197,7 +213,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
         }
 
-        if (invoiceEntity.getStatus() != PENDING) {
+        if (invoiceEntity.getStatus() != PENDING || invoiceEntity.getStatus() != APPROVED) {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
 

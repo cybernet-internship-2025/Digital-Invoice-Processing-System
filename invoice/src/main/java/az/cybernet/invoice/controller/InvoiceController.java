@@ -1,12 +1,25 @@
 package az.cybernet.invoice.controller;
 
-import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -28,16 +41,16 @@ public class InvoiceController {
         return invoiceService.saveInvoice(invoiceRequest);
     }
 
-    @PostMapping("/{invoiceId}/approve")
+    @PostMapping("/approve")
     @ResponseStatus(NO_CONTENT)
-    public void approveInvoice(@PathVariable Long invoiceId, @RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
-        invoiceService.approveInvoice(invoiceId, request);
+    public void approveInvoice(@RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
+        invoiceService.approveInvoice(request);
     }
 
-    @PostMapping("/{invoiceId}/cancel")
+    @PostMapping("/cancel")
     @ResponseStatus(NO_CONTENT)
-    public void cancelInvoice(@PathVariable Long invoiceId, @RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
-        invoiceService.cancelInvoice(invoiceId, request);
+    public void cancelInvoice(@RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
+        invoiceService.cancelInvoice(request);
     }
 
     @PostMapping("/{invoiceId}/correction")
@@ -88,7 +101,7 @@ public class InvoiceController {
     }
 
     @PutMapping
-    public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request){
+    public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
         return invoiceService.updateInvoiceItems(request);
     }
 
