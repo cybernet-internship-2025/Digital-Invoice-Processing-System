@@ -5,43 +5,27 @@
 
 <mapper namespace="az.cybernet.invoice.repository.ItemRepository">
 
-    <!-- RESULT MAPS -->
-    <resultMap id="ItemResultMap" type="az.cybernet.invoice.entity.ItemEntity">
-        <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="unitPrice" column="unit_price"/>
-        <result property="quantity" column="quantity"/>
-        <result property="totalPrice" column="total_price"/>
-        <result property="isActive" column="is_active"/>
-        <result property="createdAt" column="created_at"/>
-        <result property="updatedAt" column="updated_at"/>
-
-        <association property="measurement" javaType="az.cybernet.invoice.entity.MeasurementEntity">
-            <id property="id" column="measurement_id"/>
-        </association>
-
-        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
-            <id property="id" column="invoice_id"/>
-        </association>
-    </resultMap>
-
     <!-- INSERT -->
-    <insert id="addItem"
-            parameterType="az.cybernet.invoice.entity.ItemEntity"
-            useGeneratedKeys="true"
-            keyProperty="id">
-        INSERT INTO items (name, unit_price, quantity, total_price,
-                           is_active, created_at, updated_at,
-                           measurement_id, invoice_id)
-        VALUES (#{name},
-                #{unitPrice},
-                #{quantity},
-                #{totalPrice},
-                #{isActive},
-                #{createdAt},
-                #{updatedAt},
-                #{measurement.id},
-                #{invoice.id})
+    <insert id="addItems">
+        INSERT INTO invoice_items (
+        invoice_id,
+        product_name,
+        unit_price,
+        quantity,
+        total_price,
+        measurement_name
+        )
+        VALUES
+        <foreach collection="itemsRequest.itemsRequest" item="item" separator=",">
+            (
+            #{itemsRequest.invoiceId},
+            #{item.productName},
+            #{item.unitPrice},
+            #{item.quantity},
+            #{item.unitPrice} * #{item.quantity},
+            #{item.measurementName}
+            )
+        </foreach>
     </insert>
 
     <!-- SELECT -->
@@ -98,9 +82,8 @@
         WHERE id = #{id}
     </update>
 
-    <!-- SOFT DELETE -->
-    <update id="deleteItem" parameterType="list">
-        UPDATE items
+    <update id="deleteItemsByItemsId">
+        UPDATE invoice.items
         SET is_active = false,
         updated_at = NOW()
         WHERE id IN
@@ -108,5 +91,30 @@
             #{id}
         </foreach>
     </update>
+    <update id="deleteItemsByInvoiceId">
+        UPDATE invoice.items
+        SET is_active  = false,
+            updated_at = NOW()
+        WHERE invoice_id = #{invoiceId}
+    </update>
+
+
+
+    <resultMap id="ItemEntityResultMap" type="az.cybernet.invoice.entity.ItemEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="product_name"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="quantity" column="quantity"/>
+        <result property="isActive" column="is_active"/>
+        <result property="totalPrice" column="total_price"/>
+
+        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="invoice_id"/>
+        </association>
+
+        <association property="measurement" javaType="az.cybernet.invoice.entity.MeasurementEntity">
+            <result property="name" column="measurement_name"/>
+        </association>
+    </resultMap>
 
 </mapper>
