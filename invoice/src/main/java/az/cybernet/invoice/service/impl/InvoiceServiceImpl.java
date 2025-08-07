@@ -10,12 +10,14 @@ import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
+import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
+import az.cybernet.invoice.enums.ItemStatus;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.exception.InvalidStatusException;
 import az.cybernet.invoice.exception.NotFoundException;
@@ -77,7 +79,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         addInvoiceToOperation(invoiceId, "Invoice created", OperationStatus.DRAFT, null);
 
-        if (invoiceRequest.getItems() != null && invoiceRequest.getItems().getItemsRequest() != null && !invoiceRequest.getItems().getItemsRequest().isEmpty()) {
+        if (invoiceRequest.getItems() != null && invoiceRequest.getItems().getItemsRequest() != null &&
+                !invoiceRequest.getItems().getItemsRequest().isEmpty()) {
 
             var items = invoiceRequest.getItems();
             items.setInvoiceId(invoiceId);
@@ -219,11 +222,24 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status, List<Long> itemIds) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+        List<CreateOperationDetailsRequest> items = itemIds != null
+                ? itemIds.stream()
+                .map(itemId -> {
+                    itemService.findById(itemId);
+                    return CreateOperationDetailsRequest.builder()
+                            .itemId(itemId)
+                            .itemStatus(ItemStatus.CREATED)
+                            .comment(comment)
+                            .build();
+                })
+                .toList()
+                : Collections.emptyList();
+
         CreateOperationRequest operationRequest = CreateOperationRequest.builder()
-                .comment(comment)
                 .status(status)
                 .invoiceId(invoiceEntity.getId())
-                .itemIds(itemIds != null ? itemIds : Collections.emptyList())
+                .items(items)
                 .build();
 
         operationService.saveOperation(operationRequest);

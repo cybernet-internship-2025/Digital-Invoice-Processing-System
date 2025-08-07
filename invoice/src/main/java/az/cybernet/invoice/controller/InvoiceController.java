@@ -52,12 +52,6 @@ public class InvoiceController {
         return invoiceService.findById(invoiceId);
     }
 
-    @PostMapping("/{invoiceId}/restore")
-    @ResponseStatus(NO_CONTENT)
-    public void restoreInvoice(@PathVariable Long invoiceId) {
-        invoiceService.restoreInvoice(invoiceId);
-    }
-
     @GetMapping("/inbox/{recipientTaxId}")
     @ResponseStatus(OK)
     public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(@PathVariable String recipientTaxId) {
