@@ -30,5 +30,5 @@ public class OperationDetailsController {
         return service.findAll();
     }
 
-   
+
 }
