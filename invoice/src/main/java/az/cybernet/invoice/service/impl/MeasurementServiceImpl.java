@@ -26,9 +26,21 @@ public class MeasurementServiceImpl implements MeasurementService {
     private final MeasurementRepository mapper;
     private final MeasurementMapStruct mapStruct;
 
+    @Override
+    @Transactional
+    public void addMeasurement(MeasurementRequest request) {
+        MeasurementEntity entity = new MeasurementEntity();
+        entity.setName(request.getName());
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setIsActive(true);
+
+        mapper.saveMeasurement(entity);
+    }
+
+
 
     @Override
-    public MeasurementResponse getByNameResponse(String name) {
+    public MeasurementResponse findByName(String name) {
         MeasurementEntity entity = mapper.getByName(name);
         return mapStruct.toResponse(entity);
     }
@@ -49,7 +61,7 @@ public class MeasurementServiceImpl implements MeasurementService {
         }
 
         entity.setName(request.getName());
-        entity.setUpdateAt(LocalDateTime.now());
+        entity.setUpdatedAt(LocalDateTime.now());
         mapper.updateMeasurement(entity);
     }
 

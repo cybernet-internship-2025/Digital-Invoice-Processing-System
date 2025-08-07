@@ -17,11 +17,10 @@ public interface ItemMapStruct {
     ItemResponse toResponse(ItemEntity item);
     List<ItemResponse> toResponseList(List<ItemEntity> items);
 
-    @Mapping(target = "name", source = "request.productName")
-    @Mapping(target = "price", source = "request.unitPrice")
-    @Mapping(target = "quantity", source = "request.quantity")
-    @Mapping(target = "totalPrice", expression = "java(request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity())))")
-    @Mapping(target = "measurement", source = "measurement")
-    @Mapping(target = "invoice", source = "invoice")
-    ItemEntity buildItemEntity(ItemRequest request, InvoiceEntity invoice, MeasurementEntity measurement);
+    @Mapping(source = "name", target = "productName")
+    @Mapping(source = "invoice.id", target = "invoiceId")
+    @Mapping(source = "measurement.name", target = "measurementName")
+    ItemResponse map(ItemEntity entity);
+
+    List<ItemResponse> map(List<ItemEntity> entities);
 }

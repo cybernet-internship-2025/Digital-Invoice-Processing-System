@@ -1,8 +1,12 @@
 package az.cybernet.invoice.service.impl;
 
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.response.operation.OperationResponse;
+import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.OperationEntity;
+import az.cybernet.invoice.entity.OperationDetailsEntity;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.mapper.OperationMapStruct;
 import az.cybernet.invoice.repository.OperationRepository;
@@ -29,30 +33,33 @@ public class OperationServiceImpl implements OperationService {
 
 
     @Override
+    @Transactional
     public void saveOperation(CreateOperationRequest request) {
-        OperationEntity entity = operationMapStruct.toEntity(request);
+        OperationEntity entity = new OperationEntity();
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setTaxId(request.getTaxId());
-        System.out.println("Tax ID: " + request.getTaxId());
+        entity.setStatus(request.getStatus());
+        entity.setComment(request.getComment());
+        InvoiceEntity invoiceEntity = new InvoiceEntity();
+        invoiceEntity.setId(request.getInvoiceId());
 
-        System.out.println("Invoice ID:" + request.getInvoiceId());
-        System.out.println("Item IDs:" + request.getItemIds());
+        entity.setInvoice(invoiceEntity);
 
+
+        List<OperationDetailsEntity> detailsList = new ArrayList<>();
+        for (CreateOperationDetailsRequest detail : request.getItems()) {
+            OperationDetailsEntity operationDetail = OperationDetailsEntity.builder()
+                    .item(ItemEntity.builder()
+                            .id(detail.getItemId())
+                            .build())
+                    .itemStatus(detail.getItemStatus())
+                    .operation(entity)
+                    .build();
+
+            detailsList.add(operationDetail);
+        }
+
+        entity.setItemDetails(detailsList);
         operationRepository.save(entity);
-    }
-
-
-    public List<Long> itemIds(CreateOperationRequest request) {
-        List<Long> ids = new ArrayList<>();
-
-        if (request.getInvoiceId() != null) {
-            ids.add(request.getInvoiceId());
-        }
-        if (request.getItemIds() != null && !request.getItemIds().isEmpty()) {
-            ids.addAll(request.getItemIds());
-        }
-
-        return ids;
     }
 
 
@@ -92,33 +99,38 @@ public class OperationServiceImpl implements OperationService {
 
 
     @Transactional
-    public OperationResponse changeStatus(Long operationId, OperationStatus newStatus, String comment) {
-        OperationEntity op = operationRepository.findById(operationId)
-
-                .orElseThrow(() -> new RuntimeException("Operation is not found: " + operationId));
+    public OperationResponse changeStatus(Long id, OperationStatus newStatus, String comment) {
+        OperationEntity op = operationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Operation not found with ID: " + id));
 
         op.setStatus(newStatus);
         op.setComment(comment);
 
         operationRepository.save(op);
-
         return operationMapStruct.toResponse(op);
     }
 
 
-@Transactional
+
+    @Transactional
     public OperationResponse  approve(Long id, String comment)    {
         return changeStatus(id, OperationStatus.APPROVED, comment); }
-@Transactional
+
+    @Transactional
     public OperationResponse cancel(Long id, String comment)     {
         return changeStatus(id, OperationStatus.CANCELED, comment); }
-@Transactional
+
+    @Transactional
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
-@Transactional
+
+
+
+    @Transactional
     public OperationResponse correction(Long id, String comment) {
         return changeStatus(id, OperationStatus.CORRECTION, comment); }
-@Transactional
+
+    @Transactional
     public OperationResponse pending(Long id, String comment)    {
         return changeStatus(id, OperationStatus.PENDING,comment);}
 

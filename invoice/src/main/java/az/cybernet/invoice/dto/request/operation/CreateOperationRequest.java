@@ -11,16 +11,14 @@ import static lombok.AccessLevel.PRIVATE;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 @FieldDefaults(level = PRIVATE)
 public class CreateOperationRequest {
     OperationStatus status;
     String comment;
     Long invoiceId;
-    String taxId;
     List<Long> itemIds;
-
-
-
-
+    List<CreateOperationDetailsRequest> items;
 }
+

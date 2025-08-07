@@ -9,6 +9,8 @@ import java.util.List;
 @Mapper
 public interface MeasurementRepository {
 
+    void saveMeasurement(MeasurementEntity entity);
+
     MeasurementEntity getByName(String name);
 
     List<MeasurementEntity> findAll();

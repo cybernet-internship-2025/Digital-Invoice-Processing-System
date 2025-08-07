@@ -1,5 +1,6 @@
 package az.cybernet.invoice.entity;
 
+import az.cybernet.invoice.enums.ItemStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -33,4 +34,5 @@ public class ItemEntity {
     List<OperationEntity> operations;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    ItemStatus status;
 }

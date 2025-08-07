@@ -12,5 +12,8 @@ public abstract class UserMapstruct {
     public abstract UserResponse toUserResponseFromEntity(UserEntity userEntity);
     public abstract UserEntity toUserEntityFromCreate(UserRequest createUserRequest);
     public abstract List<UserResponse> toUserResponseList(List<UserEntity> entityList);
+
+//    public abstract UserEntity toUserEntityFromResponse(UserResponse userResponse);
+//    public abstract UserEntity toUserEntityFromUpdate(UpdateUserRequest updateUserRequest);
 }
 

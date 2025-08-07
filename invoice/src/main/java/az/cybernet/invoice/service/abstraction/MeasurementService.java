@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface MeasurementService {
 
+    void addMeasurement(MeasurementRequest request);
 
     List<MeasurementResponse> findAll();
 
@@ -17,7 +18,7 @@ public interface MeasurementService {
 
     void restoreMeasurement(Long id);
 
-    MeasurementResponse getByNameResponse(String name);
+    MeasurementResponse findByName(String name);
 
 }
 

@@ -23,22 +23,11 @@ databaseChangeLog:
                     nullable: false
 
               - column:
-                  name: item_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-
-              - column:
-                  name: status
+                  name: operation_status
                   type: VARCHAR(50)
                   constraints:
                     nullable: false
 
-              - column:
-                  name: comment
-                  type: TEXT
-                  constraints:
-                    nullable: false
 
               - column:
                   name: created_at
@@ -52,10 +41,3 @@ databaseChangeLog:
             referencedTableName: invoices
             referencedColumnNames: id
             constraintName: fk_operation_invoice
-
-        - addForeignKeyConstraint:
-            baseTableName: operations
-            baseColumnNames: item_id
-            referencedTableName: items
-            referencedColumnNames: id
-            constraintName: fk_operation_item
