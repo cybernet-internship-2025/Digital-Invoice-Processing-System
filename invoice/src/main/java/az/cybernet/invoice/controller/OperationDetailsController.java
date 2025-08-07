@@ -30,13 +30,5 @@ public class OperationDetailsController {
         return service.findAll();
     }
 
-    @PutMapping
-    public OperationDetailsResponse update(@RequestBody OperationDetailsEntity entity) {
-        return service.update(entity);
-    }
-
-    @DeleteMapping("/{itemId}")
-    public void delete(@PathVariable Long itemId) {
-        service.delete(itemId);
-    }
+   
 }

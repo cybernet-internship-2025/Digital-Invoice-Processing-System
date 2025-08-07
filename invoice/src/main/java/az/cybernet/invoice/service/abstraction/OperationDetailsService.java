@@ -10,6 +10,5 @@ public interface OperationDetailsService {
     OperationDetailsResponse save(OperationDetailsEntity entity);
     OperationDetailsResponse findByItemId(Long itemId);
     List<OperationDetailsResponse> findAll();
-    OperationDetailsResponse update(OperationDetailsEntity entity);
-    void delete(Long itemId);
+
 }

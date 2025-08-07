@@ -11,7 +11,6 @@ public interface OperationDetailsRepository {
     void save(OperationDetailsEntity entity);
     OperationDetailsEntity findByItemId(@Param("itemId") Long itemId);
     List<OperationDetailsEntity> findAll();
-    void update(OperationDetailsEntity entity);
-    void delete(@Param("itemId") Long itemId);
+
 
 }

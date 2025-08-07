@@ -64,16 +64,6 @@
     </select>
 
 
-    <update id="update" parameterType="az.cybernet.invoice.entity.OperationDetailsEntity">
-        UPDATE operation_details
-        SET
-            operation_id = #{operation.id},
-            item_status = #{itemStatus}
-        WHERE item_id = #{item.id}
-    </update>
 
-    <delete id="delete" parameterType="long">
-        DELETE FROM operation_details WHERE item_id = #{itemId}
-    </delete>
 
 </mapper>

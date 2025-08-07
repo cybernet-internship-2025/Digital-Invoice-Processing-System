@@ -41,14 +41,5 @@ public class OperationDetailsServiceImpl implements OperationDetailsService {
 
         }
 
-        @Override
-        public OperationDetailsResponse update(OperationDetailsEntity entity) {
-                operationDetailsRepository.update(entity);
-                return operationDetailsMapStruct.toResponse(entity);
-        }
 
-        @Override
-        public void delete(Long itemId) {
-                operationDetailsRepository.delete(itemId);
-        }
 }
