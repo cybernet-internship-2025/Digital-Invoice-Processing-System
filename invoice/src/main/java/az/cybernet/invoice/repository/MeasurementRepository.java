@@ -11,7 +11,7 @@ public interface MeasurementRepository {
 
     void saveMeasurement(MeasurementEntity entity);
 
-    MeasurementEntity getByName(String name);
+    MeasurementEntity findByName(String name);
 
     List<MeasurementEntity> findAll();
 
