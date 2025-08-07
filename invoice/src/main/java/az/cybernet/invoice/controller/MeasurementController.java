@@ -4,7 +4,6 @@ import az.cybernet.invoice.dto.request.measurement.MeasurementRequest;
 import az.cybernet.invoice.dto.response.measurement.MeasurementResponse;
 import az.cybernet.invoice.service.abstraction.MeasurementService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,18 +13,23 @@ import java.util.List;
 @RequestMapping("/api/v1/measurements")
 @RequiredArgsConstructor
 public class MeasurementController {
+
     private final MeasurementService measurementService;
 
+    // Ad ilə ölçü vahidi
+    @GetMapping("/by-name")
+    public ResponseEntity<MeasurementResponse> getByName(@RequestParam String name) {
+        return ResponseEntity.ok(measurementService.getByNameResponse(name));
+    }
+
+    //butun olcu vahidlerini elde edir
     @GetMapping
     public ResponseEntity<List<MeasurementResponse>> findAll() {
         return ResponseEntity.ok(measurementService.findAll());
     }
 
-    @GetMapping("/{measurementName}")
-    public ResponseEntity<MeasurementResponse> findByName(@PathVariable String measurementName) {
-        return ResponseEntity.ok(measurementService.findByName(measurementName));
-    }
 
+    //  Ölçü vahidini redaktə et
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                                        @RequestBody MeasurementRequest request) {
@@ -33,15 +37,17 @@ public class MeasurementController {
         return ResponseEntity.noContent().build();
     }
 
+    // Ölçü vahidini sil (soft delete)
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         measurementService.deleteMeasurement(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/restore")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void restore(@PathVariable Long id) {
+    //  Ölçü vahidini geri qaytar (restore)
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<Void> restore(@PathVariable Long id) {
         measurementService.restoreMeasurement(id);
+        return ResponseEntity.noContent().build();
     }
 }
