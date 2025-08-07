@@ -15,6 +15,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class OperationDetailsEntity {
     OperationEntity operation;
     ItemEntity item;
+    String comment;
     ItemStatus itemStatus;
     Long operationId;
 

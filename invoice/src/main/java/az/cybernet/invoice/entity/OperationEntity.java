@@ -24,10 +24,8 @@ import static lombok.AccessLevel.PRIVATE;
 public class OperationEntity {
     Long id;
     OperationStatus status;
-    String comment;
     LocalDateTime createdAt;
     InvoiceEntity invoice;
-
 
     List<OperationDetailsEntity> itemDetails;
 
