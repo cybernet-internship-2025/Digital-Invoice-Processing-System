@@ -224,6 +224,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .build();
 
         operationService.saveOperation(operationRequest);
+
     }
 
     @Override

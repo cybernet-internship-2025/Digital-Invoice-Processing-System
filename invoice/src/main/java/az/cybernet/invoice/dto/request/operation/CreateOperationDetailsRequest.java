@@ -12,7 +12,6 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class CreateOperationDetailsRequest {
-
     Long itemId;
     Long operationId;
     ItemStatus itemStatus;

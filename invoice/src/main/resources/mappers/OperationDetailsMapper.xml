@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="az.cybernet.invoice.repository.OperationDetailsRepository">
+
+    <resultMap id="OperationDetailsResultMap" type="az.cybernet.invoice.entity.OperationDetailsEntity">
+        <id property="id" column="id"/>
+
+        <result property="itemStatus" column="item_status" javaType="az.cybernet.invoice.enums.ItemStatus"/>
+
+        <association property="operation" javaType="az.cybernet.invoice.entity.OperationEntity">
+            <id property="id" column="operation_id"/>
+            <result property="status" column="operation_status"/>
+        </association>
+
+        <association property="item" javaType="az.cybernet.invoice.entity.ItemEntity">
+            <id property="id" column="item_id"/>
+            <result property="name" column="item_name"/>
+        </association>
+    </resultMap>
+
+
+    <insert id="save" parameterType="az.cybernet.invoice.entity.OperationDetailsEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO operation_details (operation_id, item_id, item_status)
+        VALUES (#{operation.id}, #{item.id}, #{itemStatus})
+    </insert>
+
+    <select id="findByItemId" parameterType="long" resultMap="OperationDetailsResultMap">
+        SELECT
+            od.id,
+            od.operation_id,
+            od.item_id,
+            od.item_status,
+
+            o.id AS operation_id,
+            o.status AS operation_status,
+
+            i.id AS item_id,
+            i.name AS item_name
+
+        FROM operation_details od
+                 LEFT JOIN operation o ON od.operation_id = o.id
+                 LEFT JOIN item i ON od.item_id = i.id
+        WHERE od.item_id = #{itemId}
+    </select>
+
+    <select id="findAll" resultMap="OperationDetailsResultMap">
+        SELECT
+            od.id,
+            od.operation_id,
+            od.item_id,
+            od.item_status,
+
+            o.id AS operation_id,
+            o.status AS operation_status,
+
+            i.id AS item_id,
+            i.name AS item_name
+
+        FROM operation_details od
+                 LEFT JOIN operation o ON od.operation_id = o.id
+                 LEFT JOIN item i ON od.item_id = i.id
+    </select>
+
+
+    <update id="update" parameterType="az.cybernet.invoice.entity.OperationDetailsEntity">
+        UPDATE operation_details
+        SET
+            operation_id = #{operation.id},
+            item_status = #{itemStatus}
+        WHERE item_id = #{item.id}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM operation_details WHERE item_id = #{itemId}
+    </delete>
+
+</mapper>
