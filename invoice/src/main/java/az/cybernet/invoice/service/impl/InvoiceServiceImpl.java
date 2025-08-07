@@ -192,14 +192,17 @@ public class InvoiceServiceImpl implements InvoiceService {
             invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.CANCELED, LocalDateTime.now());
 
             List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
-            List<Long> itemIds = items == null
-                    ? List.of()
-                    : items.stream()
-                    .map(ItemResponse::getId)
-                    .filter(Objects::nonNull)
-                    .toList();
+            List<Long> itemIds = items == null ? List.of()
+                    : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
 
-            addInvoiceToOperation(invoiceId, "Invoice canceled", OperationStatus.CANCELED, itemIds.isEmpty() ? null : itemIds);
+            if (!itemIds.isEmpty()) {
+                itemService.deleteItemsByItemsId(itemIds);
+                for (Long itemId : itemIds) {
+                    addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, List.of(itemId));
+                }
+            } else {
+                addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, null);
+            }
         }
 
     }
