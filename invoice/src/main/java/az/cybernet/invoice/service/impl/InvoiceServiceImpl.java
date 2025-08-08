@@ -3,12 +3,7 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
@@ -63,6 +58,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     InvoiceMapper invoiceMapper;
     ItemService itemService;
     OperationService operationService;
+    static int MAX_SIZE = 50;
+    static int MIN_SIZE = 10;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -272,9 +269,25 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
+    public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId,
+                                                             InvoiceFilterRequest filter,
+                                                             Integer page,
+                                                             Integer size) {
+        if (page == null || page < 0) {
+            page = 0;
+        }
+        if (size == null || size <= 0) {
+            size = MIN_SIZE;
+        } else if (size > MAX_SIZE) {
+            size = MAX_SIZE;
+        }
+
+        filter.setOffset(page * size);
+        filter.setLimit(size);
+
         var userResponse = findRecipientByTaxId(recipientTaxId);
-        var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
+        var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+
         return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
     }
 
