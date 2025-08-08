@@ -66,8 +66,9 @@ public class InvoiceController {
 
 
     @GetMapping("/outbox/{senderTaxId}")
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable("senderTaxId") String senderTaxId) {
-        return invoiceService.findInvoicesBySenderTaxId(senderTaxId);
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable String senderTaxId,
+                                                           @RequestBody FilterInvoiceRequest filter) {
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
 

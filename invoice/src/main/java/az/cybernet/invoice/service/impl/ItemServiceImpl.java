@@ -86,11 +86,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse findById(Long id) {
-
-        ItemEntity item = itemRepository.findById(id).orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
-
-        return itemMapStruct.toResponse(item);
+        return null;
     }
+
+//    @Override
+//    public ItemResponse findById(Long id) {
+//
+//        ItemEntity item = itemRepository.findById(id).orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
+//
+//        return itemMapStruct.toResponse(item);
+//    }
 
     @Override
     public void deleteItemsByInvoiceId(Long invoiceId) {

@@ -1,6 +1,7 @@
 package az.cybernet.invoice.mapper;
 
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.FilterInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.exception.InvalidTaxIdException;
@@ -31,6 +32,9 @@ public interface InvoiceMapper {
 //                .map(itemMapper::buildItemEntity)
 //                .collect(Collectors.toList());
 //    }
+    List<InvoiceResponse> allInvoicesBySenderTaxId(List<InvoiceEntity> invoiceEntities);
+
+
 
     InvoiceResponse fromEntityToResponse(InvoiceEntity invoice);
 

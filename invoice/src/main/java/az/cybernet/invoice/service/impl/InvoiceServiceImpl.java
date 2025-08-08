@@ -216,20 +216,25 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status, List<Long> itemIds) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
-        CreateOperationRequest operationRequest = CreateOperationRequest.builder()
-                .comment(comment)
-                .status(status)
-                .invoiceId(invoiceEntity.getId())
-                .itemIds(itemIds != null ? itemIds : Collections.emptyList())
-                .build();
-
-        operationService.saveOperation(operationRequest);
+//        CreateOperationRequest operationRequest = CreateOperationRequest.builder()
+//                .comment(comment)
+//                .status(status)
+//                .invoiceId(invoiceEntity.getId())
+//                .itemIds(itemIds != null ? itemIds : Collections.emptyList())
+//                .build();
+//
+//        operationService.saveOperation(operationRequest);
     }
 
     @Override
     public InvoiceResponse findById(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
+    }
+
+    @Override
+    public void restoreInvoice(Long id) {
+
     }
 
     @Override
@@ -361,12 +366,15 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId) {
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, FilterInvoiceRequest filter) {
         //TODO: check senderTaxId equals to current user ID
-        return invoiceRepository.findInvoicesBySenderTaxId(senderTaxId)
-                .stream()
-                .map(invoiceMapper::fromEntityToResponse)
-                .toList();
+        filter.setOffset(filter.getOffset() != null ? filter.getOffset() : 0);
+        filter.setLimit(filter.getLimit() != null ? filter.getLimit() : 10);
+
+        // Fetch invoices filtered by senderTaxId and filter
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
+
+        return invoiceMapper.allInvoicesBySenderTaxId(entities);
     }
 
     @Override

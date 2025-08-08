@@ -27,7 +27,7 @@ public interface InvoiceService {
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
+    List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, FilterInvoiceRequest filter);
 
 
     List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
@@ -39,5 +39,7 @@ public interface InvoiceService {
     void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
 
     InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request);
+
+
 
 }

@@ -30,7 +30,7 @@
         <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
             <id property="id" column="o_id"/>
             <result property="status" column="o_status"/>
-            <result property="comment" column="o_comment"/>
+<!--            <result property="comment" column="o_comment"/>-->
             <result property="createdAt" column="o_created_at"/>
         </collection>
 
@@ -210,31 +210,72 @@
         and c.is_active = true
     </select>
 
-    <select id="findInvoicesBySenderTaxId" resultMap="InvoiceResultMap">
-        SELECT c.id               AS c_id,
-        c.sender_tax_id    AS c_sender_tax_id,
-        c.recipient_tax_id AS c_recipient_tax_id,
-        c.total_price      AS c_total_price,
-        c.is_active        AS c_is_active,
-        c.invoice_number   AS c_invoice_number,
-        c.invoice_series   AS c_invoice_series,
-        c.status           AS c_status,
-        c.created_at       AS c_created_at,
-        c.updated_at       AS c_updated_at,
+<!--    <select id="findInvoicesBySenderTaxId" resultMap="InvoiceResultMap">-->
+<!--        -->
+<!--    </select>-->
 
-        i.id               AS i_id,
-        i.name             AS i_name,
-        i.unit_price       AS i_unit_price,
-        i.is_active        AS i_is_active,
-        i.quantity         AS i_quantity,
-        i.total_price      AS i_total_price,
-        i.invoice_id       AS i_invoice_id
-        from invoices c
-        left join items i
-        on i.invoice_id = c.id
-               and i.is_active = true
-        where c.sender_tax_id = #{senderTaxId}
-        and c.is_active = true
+    <select id="findInvoicesBySenderTaxId"
+            resultMap="InvoiceResultMap">
+
+
+            SELECT
+            c.id               AS c_id,
+            c.sender_tax_id    AS c_sender_tax_id,
+            c.recipient_tax_id AS c_recipient_tax_id,
+            c.total_price      AS c_total_price,
+            c.is_active        AS c_is_active,
+            c.invoice_number   AS c_invoice_number,
+            c.invoice_series   AS c_invoice_series,
+            c.status           AS c_status,
+            c.created_at       AS c_created_at,
+            c.updated_at       AS c_updated_at,
+
+            i.id               AS i_id,
+            i.name             AS i_name,
+            i.unit_price       AS i_unit_price,
+            i.is_active        AS i_is_active,
+            i.quantity         AS i_quantity,
+            i.total_price      AS i_total_price,
+            i.invoice_id       AS i_invoice_id
+
+            FROM invoices c
+            LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
+
+            WHERE c.is_active = true
+            AND c.sender_tax_id = #{senderTaxId}
+
+            <if test="filter.status != null">
+                AND LOWER(c.status) = LOWER(#{filter.status})
+            </if>
+
+            <if test="filter.fromDate != null">
+                AND c.created_at &gt;= #{filter.fromDate}
+            </if>
+
+            <if test="filter.toDate != null">
+                AND c.created_at &lt;= #{filter.toDate}
+            </if>
+
+            <if test="filter.year != null">
+                AND EXTRACT(YEAR FROM c.created_at) = #{filter.year}
+            </if>
+
+            <if test="filter.series != null">
+                AND c.invoice_series = #{filter.series}
+            </if>
+
+            <if test="filter.number != null">
+                AND c.invoice_number = #{filter.number}
+            </if>
+
+            ORDER BY c.created_at DESC
+
+            <if test="filter.limit != null and filter.offset != null">
+                LIMIT #{filter.limit} OFFSET #{filter.offset}
+            </if>
+
+
+
     </select>
 
     <update id="refreshInvoice" parameterType="Long">
@@ -242,4 +283,6 @@
         set updated_at = current_timestamp
         where id = #{invoiceId}
     </update>
+
+
 </mapper>
