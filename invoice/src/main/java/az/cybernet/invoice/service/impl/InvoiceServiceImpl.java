@@ -268,7 +268,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId,
-                                                             InvoiceFilterRequest filter) {
+                                                             InvoiceFilterRequest filter,
+                                                             Integer page,
+                                                             Integer size) {
+        filter.setOffset(page * size);
+        filter.setLimit(size);
+
         var userResponse = findRecipientByTaxId(recipientTaxId);
         var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
 

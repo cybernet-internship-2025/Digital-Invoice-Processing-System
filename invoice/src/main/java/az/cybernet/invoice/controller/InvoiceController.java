@@ -59,10 +59,7 @@ public class InvoiceController {
             @ModelAttribute InvoiceFilterRequest filter,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-
-        filter.setOffset(page * size);
-        filter.setLimit(size);
-        return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter);
+        return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
 }
 
 

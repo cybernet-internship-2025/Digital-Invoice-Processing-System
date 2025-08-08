@@ -23,7 +23,10 @@ public interface InvoiceService {
     List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
 
 
-    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId, InvoiceFilterRequest filter);
+    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId,
+                                                      InvoiceFilterRequest filter,
+                                                      Integer page,
+                                                      Integer size);
 
     void approveInvoice(ApproveAndCancelInvoiceRequest request);
 
