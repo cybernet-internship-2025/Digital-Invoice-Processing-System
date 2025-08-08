@@ -4,7 +4,6 @@ import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.FilterInvoiceRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
-import az.cybernet.invoice.exception.InvalidTaxIdException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -24,26 +23,10 @@ public interface InvoiceMapper {
     @Mapping(target = "items", ignore = true)
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
 
-
     List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
 
-//    default List<ItemEntity> mapItemResponsesToEntities(List<ItemResponse> responses) {
-//        return responses.stream()
-//                .map(itemMapper::buildItemEntity)
-//                .collect(Collectors.toList());
-//    }
     List<InvoiceResponse> allInvoicesBySenderTaxId(List<InvoiceEntity> invoiceEntities);
 
-
-
     InvoiceResponse fromEntityToResponse(InvoiceEntity invoice);
-
-    default Long parseTaxIdToLong(String taxId) {
-        try {
-            return Long.parseLong(taxId);
-        } catch (NumberFormatException e) {
-            throw new InvalidTaxIdException(taxId);
-        }
-    }
 
 }

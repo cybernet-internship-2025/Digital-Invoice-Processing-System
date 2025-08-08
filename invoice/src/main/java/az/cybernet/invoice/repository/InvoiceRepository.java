@@ -21,8 +21,6 @@ public interface InvoiceRepository {
 
     void updateInvoiceStatus(@Param("id") Long id, @Param("status") InvoiceStatus status, @Param("updatedAt") LocalDateTime updatedAt);
 
-    void restoreInvoice(Long id);
-
 
     void deleteInvoiceById(Long id);
 
@@ -31,6 +29,7 @@ public interface InvoiceRepository {
 
     void changeStatus(@Param("invoiceId") Long invoiceId,
                       @Param("status") String status);
+
     Optional<InvoiceEntity> findBySenderTaxIdAndInvoiceId(
             @Param("senderTaxId") String senderTaxId,
             @Param("invoiceId") Long invoiceId

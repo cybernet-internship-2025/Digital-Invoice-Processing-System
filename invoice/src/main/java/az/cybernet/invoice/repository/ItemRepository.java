@@ -17,11 +17,7 @@ public interface ItemRepository {
 
     List<ItemEntity> findAllItemsByInvoiceId(Long invoiceId);
 
-    //void deleteItem(@Param("list") List<Long> ids);
-
     Optional<ItemEntity> findById(Long id);
-
-    void restoreItem(Long id);
 
     void deleteItemsByInvoiceId(Long invoiceId);
 

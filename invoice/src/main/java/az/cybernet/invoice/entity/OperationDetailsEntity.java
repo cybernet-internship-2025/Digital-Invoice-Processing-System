@@ -13,6 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE  )
 public class OperationDetailsEntity {
+    Long id;
     OperationEntity operation;
     ItemEntity item;
     String comment;

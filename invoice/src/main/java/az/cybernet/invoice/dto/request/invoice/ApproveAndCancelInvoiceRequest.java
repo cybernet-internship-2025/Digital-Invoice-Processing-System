@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
@@ -15,4 +17,5 @@ import static lombok.AccessLevel.PRIVATE;
 public class ApproveAndCancelInvoiceRequest {
     @NotBlank String senderTaxId;
     @NotBlank String recipientTaxId;
+    List<Long> invoiceIds;
 }
