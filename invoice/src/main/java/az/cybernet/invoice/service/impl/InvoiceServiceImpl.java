@@ -323,7 +323,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         return prefix + sequence;
     }
 
-    private InvoiceEntity fetchInvoiceIfExist(Long invoiceId) {
+    @Override
+    public InvoiceEntity fetchInvoiceIfExist(Long invoiceId) {
         return invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new NotFoundException(INVOICE_NOT_FOUND.getCode(), INVOICE_NOT_FOUND.getMessage()));
     }
@@ -435,7 +436,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         if (!isNullOrEmpty(request.getUpdatedItems())) {
-            itemService.updateItem(request.getUpdatedItems());
+            itemService.updateItems(request.getUpdatedItems());
         }
 
         if (!isNullOrEmpty(request.getDeletedItemsId())) {

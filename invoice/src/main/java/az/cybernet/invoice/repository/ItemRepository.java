@@ -13,7 +13,7 @@ public interface ItemRepository {
 
     void addItems(@Param("itemsRequest") ItemsRequest itemsRequest);
 
-    void updateItem(ItemEntity item);
+    void updateItems(ItemEntity item);
 
     List<ItemEntity> findAllItemsByInvoiceId(Long invoiceId);
 

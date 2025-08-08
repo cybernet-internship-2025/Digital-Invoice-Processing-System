@@ -2,6 +2,7 @@ package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.entity.InvoiceEntity;
 
 import java.util.List;
 
@@ -11,6 +12,8 @@ public interface InvoiceService {
     InvoiceResponse findById(Long id);
 
     void deleteInvoiceById(Long invoiceId);
+
+    InvoiceEntity fetchInvoiceIfExist(Long invoiceId);
 
     InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
 
