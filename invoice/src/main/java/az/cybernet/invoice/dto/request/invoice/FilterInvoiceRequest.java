@@ -10,8 +10,7 @@ public class FilterInvoiceRequest {
     private LocalDate toDate;
     private String status;
     private String type;
-    private String series;
-    private String number;
+    private String invoiceNumber;
     private String senderTaxId;
     private String recipientTaxId;
     private Integer offset;

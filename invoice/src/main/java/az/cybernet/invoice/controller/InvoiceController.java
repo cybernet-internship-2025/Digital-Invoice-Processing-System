@@ -6,8 +6,10 @@ import az.cybernet.invoice.service.abstraction.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -67,7 +69,22 @@ public class InvoiceController {
 
     @GetMapping("/outbox/{senderTaxId}")
     public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable String senderTaxId,
-                                                           @RequestBody FilterInvoiceRequest filter) {
+                                                           @RequestParam(required = false) String status,
+                                                           @RequestParam(required = false) Integer year,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+                                                           @RequestParam(required = false) String invoiceNumber,
+                                                           @RequestParam(defaultValue = "0") Integer offset,
+                                                           @RequestParam(defaultValue = "10") Integer limit) {
+        FilterInvoiceRequest filter = new FilterInvoiceRequest();
+        filter.setStatus(status);
+        filter.setYear(year);
+        filter.setFromDate(fromDate);
+        filter.setToDate(toDate);
+        filter.setInvoiceNumber(invoiceNumber);
+        filter.setOffset(offset);
+        filter.setLimit(limit);
+
         return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
