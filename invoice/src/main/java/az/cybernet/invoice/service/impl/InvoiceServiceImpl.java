@@ -58,6 +58,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     InvoiceMapper invoiceMapper;
     ItemService itemService;
     OperationService operationService;
+    static int MAX_SIZE = 50;
+    static int MIN_SIZE = 10;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -271,6 +273,15 @@ public class InvoiceServiceImpl implements InvoiceService {
                                                              InvoiceFilterRequest filter,
                                                              Integer page,
                                                              Integer size) {
+        if (page == null || page < 0) {
+            page = 0;
+        }
+        if (size == null || size <= 0) {
+            size = MIN_SIZE;
+        } else if (size > MAX_SIZE) {
+            size = MAX_SIZE;
+        }
+
         filter.setOffset(page * size);
         filter.setLimit(size);
 

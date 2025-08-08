@@ -21,8 +21,7 @@ public class InvoiceFilterRequest {
     LocalDateTime toDate;
     Integer year;
     String type;
-    String series;
-    String number;
+    String invoiceNumber;
 
     Integer offset;
     Integer limit;

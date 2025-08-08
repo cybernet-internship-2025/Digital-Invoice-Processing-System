@@ -95,20 +95,17 @@
         </if>
 
         <if test="filter.fromDate != null">
-            AND c.created_at >= #{filter.fromDate}
+            AND c.created_at &gt;= #{filter.fromDate}
         </if>
 
         <if test="filter.toDate != null">
             AND c.created_at &lt;= #{filter.toDate}
         </if>
 
-        <if test="filter.series != null">
-            AND c.invoice_series = #{filter.series}
+        <if test="filter.invoiceNumber != null">
+            AND (c.invoice_series || c.invoice_number) = #{filter.invoiceNumber}
         </if>
 
-        <if test="filter.number != null">
-            AND c.invoice_number = #{filter.number}
-        </if>
 
         <if test="filter.year != null">
             AND EXTRACT(YEAR FROM c.created_at) = #{filter.year}

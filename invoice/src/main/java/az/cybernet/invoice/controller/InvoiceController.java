@@ -56,7 +56,7 @@ public class InvoiceController {
     @ResponseStatus(OK)
     public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(
             @PathVariable String recipientTaxId,
-            @ModelAttribute InvoiceFilterRequest filter,
+            @RequestParam InvoiceFilterRequest filter,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
