@@ -1,26 +1,15 @@
 package az.cybernet.invoice.controller;
 
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -41,16 +30,16 @@ public class InvoiceController {
         return invoiceService.saveInvoice(invoiceRequest);
     }
 
-    @PostMapping("/approve")
+    @PostMapping("/{invoiceId}/approve")
     @ResponseStatus(NO_CONTENT)
-    public void approveInvoice(@RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
-        invoiceService.approveInvoice(request);
+    public void approveInvoice(@PathVariable Long invoiceId, @RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
+        invoiceService.approveInvoice(invoiceId, request);
     }
 
-    @PostMapping("/cancel")
+    @PostMapping("/{invoiceId}/cancel")
     @ResponseStatus(NO_CONTENT)
-    public void cancelInvoice(@RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
-        invoiceService.cancelInvoice(request);
+    public void cancelInvoice(@PathVariable Long invoiceId, @RequestBody @Valid ApproveAndCancelInvoiceRequest request) {
+        invoiceService.cancelInvoice(invoiceId, request);
     }
 
     @PostMapping("/{invoiceId}/correction")
@@ -65,6 +54,12 @@ public class InvoiceController {
         return invoiceService.findById(invoiceId);
     }
 
+    @PostMapping("/{invoiceId}/restore")
+    @ResponseStatus(NO_CONTENT)
+    public void restoreInvoice(@PathVariable Long invoiceId) {
+        invoiceService.restoreInvoice(invoiceId);
+    }
+
     @GetMapping("/inbox/{recipientTaxId}")
     @ResponseStatus(OK)
     public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(@PathVariable String recipientTaxId) {
@@ -73,8 +68,24 @@ public class InvoiceController {
 
 
     @GetMapping("/outbox/{senderTaxId}")
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable("senderTaxId") String senderTaxId) {
-        return invoiceService.findInvoicesBySenderTaxId(senderTaxId);
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable String senderTaxId,
+                                                           @RequestParam(required = false) String status,
+                                                           @RequestParam(required = false) Integer year,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+                                                           @RequestParam(required = false) String invoiceNumber,
+                                                           @RequestParam(defaultValue = "0") Integer offset,
+                                                           @RequestParam(defaultValue = "10") Integer limit) {
+        FilterInvoiceRequest filter = new FilterInvoiceRequest();
+        filter.setStatus(status);
+        filter.setYear(year);
+        filter.setFromDate(fromDate);
+        filter.setToDate(toDate);
+        filter.setInvoiceNumber(invoiceNumber);
+        filter.setOffset(offset);
+        filter.setLimit(limit);
+
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
 
@@ -101,7 +112,7 @@ public class InvoiceController {
     }
 
     @PutMapping
-    public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
+    public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request){
         return invoiceService.updateInvoiceItems(request);
     }
 

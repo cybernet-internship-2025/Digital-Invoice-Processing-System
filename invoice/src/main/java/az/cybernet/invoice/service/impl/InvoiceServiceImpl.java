@@ -3,12 +3,7 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
@@ -401,12 +396,15 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId) {
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, FilterInvoiceRequest filter) {
         //TODO: check senderTaxId equals to current user ID
-        return invoiceRepository.findInvoicesBySenderTaxId(senderTaxId)
-                .stream()
-                .map(invoiceMapper::fromEntityToResponse)
-                .toList();
+        filter.setOffset(filter.getOffset() != null ? filter.getOffset() : 0);
+        filter.setLimit(filter.getLimit() != null ? filter.getLimit() : 10);
+
+        // Fetch invoices filtered by senderTaxId and filter
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
+
+        return invoiceMapper.allInvoicesBySenderTaxId(entities);
     }
 
     @Override
