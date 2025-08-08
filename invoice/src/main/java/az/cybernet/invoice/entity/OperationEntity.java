@@ -26,7 +26,5 @@ public class OperationEntity {
     OperationStatus status;
     LocalDateTime createdAt;
     InvoiceEntity invoice;
-
     List<OperationDetailsEntity> itemDetails;
-
 }
