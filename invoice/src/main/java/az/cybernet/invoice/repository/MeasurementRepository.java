@@ -9,6 +9,8 @@ import java.util.List;
 public interface MeasurementRepository {
     MeasurementEntity findByName(String name);
 
+    void saveMeasurement(MeasurementEntity entity);
+
     List<MeasurementEntity> findAll();
 
     void updateMeasurement(MeasurementEntity entity);

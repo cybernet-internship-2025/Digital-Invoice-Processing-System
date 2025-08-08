@@ -29,7 +29,7 @@
     </insert>
 
     <!-- SELECT -->
-    <select id="findById" parameterType="long" resultMap="ItemResultMap">
+    <select id="findById" parameterType="long" resultMap="ItemEntityResultMap">
         SELECT id,
                name,
                unit_price,
@@ -44,7 +44,7 @@
         WHERE id = #{id}
     </select>
 
-    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemResultMap">
+    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemEntityResultMap">
         SELECT id,
                name,
                unit_price,
