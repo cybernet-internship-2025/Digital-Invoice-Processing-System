@@ -194,7 +194,6 @@
         c.total_price      AS c_total_price,
         c.is_active        AS c_is_active,
         c.invoice_number   AS c_invoice_number,
-        c.invoice_series   AS c_invoice_series,
         c.status           AS c_status,
         c.created_at       AS c_created_at,
         c.updated_at       AS c_updated_at,
@@ -228,11 +227,6 @@
         <if test="filter.year != null">
             AND EXTRACT(YEAR FROM c.created_at) = #{filter.year}
         </if>
-
-        <if test="filter.series != null">
-            AND c.invoice_series = #{filter.series}
-        </if>
-
         <if test="filter.number != null">
             AND c.invoice_number = #{filter.number}
         </if>
