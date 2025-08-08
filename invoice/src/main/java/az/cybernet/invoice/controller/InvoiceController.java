@@ -85,7 +85,7 @@ public class InvoiceController {
     }
 
     @PutMapping("/send-invoice")
-    public InvoiceResponse sendInvoice(@RequestBody SendInvoiceRequest request) {
+    public List<InvoiceResponse> sendInvoice(@RequestBody SendInvoiceRequest request) {
         return invoiceService.sendInvoice(request);
     }
 
@@ -94,21 +94,15 @@ public class InvoiceController {
         return invoiceService.sendInvoiceToCorrection(request);
     }
 
-    @PutMapping("/rollback/{invoiceId}/{senderTaxId}")
-    public InvoiceResponse rollbackInvoice(@PathVariable("invoiceId") Long invoiceId,
-                                           @PathVariable("senderTaxId") String senderTaxId) {
-        return invoiceService.rollbackInvoice(invoiceId, senderTaxId);
-    }
-
     @PutMapping
     public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
         return invoiceService.updateInvoiceItems(request);
     }
 
 
-    @DeleteMapping("/{invoiceId}")
-    public void deleteInvoiceById(@PathVariable("invoiceId") Long invoiceId) {
-        invoiceService.deleteInvoiceById(invoiceId);
+    @DeleteMapping
+    public void deleteInvoiceById(@RequestBody DeleteInvoicesRequest request) {
+        invoiceService.deleteInvoiceById(request);
     }
 
 

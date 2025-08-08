@@ -132,10 +132,13 @@
     </update>
 
 
-    <update id="deleteInvoiceById" parameterType="long">
+    <update id="deleteInvoicesById" parameterType="list">
         update invoices
         set is_active = false
-        where id = #{id}
+        where id in
+        <foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </update>
 
     <update id="updateInvoiceRecipientTaxId">
@@ -240,5 +243,44 @@
         update invoices
         set updated_at = current_timestamp
         where id = #{invoiceId}
+    </update>
+
+    <select id="findInvalidInvoiceIdsBySenderTaxId" resultMap="long">
+        select id
+        from invoices
+        where id in
+        <foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
+        #{id}
+        </foreach>
+        and sender_tax_id != #{senderTaxId}
+    </select>
+
+    <select id="findAllInvalidInvoicesById" resultType="long">
+        SELECT t.id
+        FROM (
+        <foreach collection="invoiceIds" item="id" separator=",">
+            select #{id} as id
+        </foreach>
+        ) AS t
+        LEFT JOIN invoices i ON i.id = t.id
+        WHERE i.id IS NULL
+    </select>
+
+    <select id="findAllByInvoiceIds" resultType="InvoiceResultMap">
+        select *
+        from invoices
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <update id="updateStatuses">
+        update invoices
+        set status = #{status}
+        where id in
+        <foreach collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </update>
 </mapper>
