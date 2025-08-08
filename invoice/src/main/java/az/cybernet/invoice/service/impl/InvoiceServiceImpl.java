@@ -392,6 +392,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         doesntMatchInvoiceStatus(invoice, CORRECTION);
 
+        addInvoiceToOperation(request.getInvoiceId(), "Invoice updated", UPDATE, null);
+
         if (!isNullOrEmpty(request.getCreatedItems().getItemsRequest())) {
             itemService.addItems(request.getCreatedItems());
         }
@@ -406,8 +408,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.refreshInvoice(request.getInvoiceId());
         invoice = fetchInvoiceIfExist(request.getInvoiceId());
-
-        addInvoiceToOperation(request.getInvoiceId(), "Invoice updated", UPDATE, null);
 
         return invoiceMapper.fromEntityToResponse(invoice);
     }
