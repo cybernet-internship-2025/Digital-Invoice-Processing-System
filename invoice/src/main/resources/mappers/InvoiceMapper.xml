@@ -266,7 +266,7 @@
         WHERE i.id IS NULL
     </select>
 
-    <select id="findAllByInvoiceIds" resultType="InvoiceResultMap">
+    <select id="findAllByInvoiceIds" resultMap="InvoiceResultMap">
         select *
         from invoices
         where id in
