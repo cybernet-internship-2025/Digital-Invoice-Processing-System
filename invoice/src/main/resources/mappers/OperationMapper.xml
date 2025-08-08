@@ -55,7 +55,7 @@
         od.operation_id AS operation_id,
         od.item_id AS item_id,
         od.item_status AS item_status
-        -- od.comment AS comment -- SİLİNDİ
+
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
     </select>
@@ -84,7 +84,6 @@
         od.operation_id AS operation_id,
         od.item_id AS item_id,
         od.item_status AS item_status
-        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE od.item_id = #{itemId}
@@ -99,7 +98,6 @@
         od.operation_id AS operation_id,
         od.item_id AS item_id,
         od.item_status AS item_status
-        -- od.comment AS comment -- SİLİNDİ
         FROM operations o
         LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE o.invoice_id = #{invoiceId}
