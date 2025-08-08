@@ -5,7 +5,6 @@ import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.request.item.UpdateItemRequest;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
-import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.MeasurementEntity;
 import az.cybernet.invoice.enums.ItemStatus;
@@ -37,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
     private final MeasurementRepository measurementRepository;
     private final InvoiceService invoiceService;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ItemResponse> addItems(ItemsRequest itemsRequest) {
         if (itemsRequest == null || itemsRequest.getItemsRequest() == null || itemsRequest.getItemsRequest().isEmpty()) {
@@ -54,7 +53,7 @@ public class ItemServiceImpl implements ItemService {
         return findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateItems(List<UpdateItemRequest> itemRequests) {
         for (UpdateItemRequest request : itemRequests) {
@@ -75,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> findAllItemsByInvoiceId(Long invoiceId) {
-        invoiceService.fetchInvoiceIfExists(invoiceId);
+        invoiceService.fetchInvoiceIfExist(invoiceId);
 
         return itemRepository.findAllItemsByInvoiceId(invoiceId).stream()
                 .map(itemMapStruct::toResponse)
