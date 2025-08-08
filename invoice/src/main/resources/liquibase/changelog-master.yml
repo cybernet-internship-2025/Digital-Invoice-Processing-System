@@ -15,4 +15,4 @@ databaseChangeLog:
       file: liquibase/1.0/20251002-create-operations-table.yml
 
   - include:
-      file: liquibase/1.0/20251005-insert-default-measurements.yaml
+      file: liquibase/1.0/20251005-insert-default-measurements.yml
