@@ -5,25 +5,43 @@
 
 <mapper namespace="az.cybernet.invoice.repository.OperationRepository">
 
-    <resultMap id="OperationEntityDetailsMap" type="az.cybernet.invoice.entity.OperationDetailsEntity">
-        <association property="operation" javaType="az.cybernet.invoice.entity.OperationEntity">
-            <id property="id" column="operation_id"/>
-        </association>
-        <association property="item" javaType="az.cybernet.invoice.entity.ItemEntity">
-            <id property="id" column="item_id"/>
-        </association>
-        <result property="itemStatus" column="item_status" javaType="az.cybernet.invoice.enums.ItemStatus"/>
 
+    <resultMap id="OperationDetailsMap" type="az.cybernet.invoice.entity.OperationDetailsEntity">
+        <id property="id" column="od_id"/>
+        <result property="comment" column="od_comment"/>
+        <result property="itemStatus" column="od_item_status" javaType="az.cybernet.invoice.enums.ItemStatus"/>
+        <result property="operationId" column="od_operation_id"/>
+
+
+        <association property="item" javaType="az.cybernet.invoice.entity.ItemEntity">
+            <id property="id" column="it_id"/>
+            <result property="name" column="it_name"/>
+            <result property="unitPrice" column="it_unit_price"/>
+            <result property="quantity" column="it_quantity"/>
+        </association>
     </resultMap>
 
+
     <resultMap id="OperationEntityMap" type="az.cybernet.invoice.entity.OperationEntity">
-        <id property="id" column="id"/>
-        <result property="status" column="status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
-        <result property="createdAt" column="created_at"/>
+        <id property="id" column="o_id"/>
+        <result property="status" column="o_status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
+        <result property="createdAt" column="o_created_at"/>
+
+
         <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
-            <id property="id" column="invoice_id"/>
+            <id property="id" column="i_id"/>
+            <result property="invoiceNumber" column="i_invoice_number"/>
+            <result property="invoiceSeries" column="i_invoice_series"/>
+            <result property="totalPrice" column="i_total_price"/>
+            <result property="senderTaxId" column="i_sender_tax_id"/>
+            <result property="recipientTaxId" column="i_recipient_tax_id"/>
+            <result property="status" column="i_status" javaType="az.cybernet.invoice.enums.InvoiceStatus"/>
+            <result property="createdAt" column="i_created_at"/>
         </association>
-        <collection property="itemDetails" ofType="az.cybernet.invoice.entity.OperationDetailsEntity" resultMap="OperationEntityDetailsMap"/>
+
+
+        <collection property="itemDetails" ofType="az.cybernet.invoice.entity.OperationDetailsEntity"
+                    resultMap="OperationDetailsMap"/>
     </resultMap>
 
     <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity">
@@ -32,8 +50,7 @@
     </insert>
 
     <select id="findById" parameterType="long" resultMap="OperationEntityMap">
-        SELECT
-        o.id AS id,
+        SELECT o.id AS id,
         o.status AS status,
         o.created_at AS created_at,
         o.invoice_id AS invoice_id,
@@ -47,8 +64,7 @@
     </select>
 
     <select id="findAll" resultMap="OperationEntityMap">
-        SELECT
-        o.id AS id,
+        SELECT o.id AS id,
         o.status AS status,
         o.created_at AS created_at,
         o.invoice_id AS invoice_id,
@@ -61,8 +77,7 @@
     </select>
 
     <select id="findByStatus" parameterType="az.cybernet.invoice.enums.OperationStatus" resultMap="OperationEntityMap">
-        SELECT
-        o.id AS id,
+        SELECT o.id AS id,
         o.status AS status,
         o.created_at AS created_at,
         o.invoice_id AS invoice_id,
@@ -76,8 +91,7 @@
     </select>
 
     <select id="findAllItemsById" parameterType="long" resultMap="OperationEntityMap">
-        SELECT
-        o.id AS id,
+        SELECT o.id AS id,
         o.status AS status,
         o.created_at AS created_at,
         o.invoice_id AS invoice_id,
@@ -90,8 +104,7 @@
     </select>
 
     <select id="findAllInvoicesById" parameterType="long" resultMap="OperationEntityMap">
-        SELECT
-        o.id AS id,
+        SELECT o.id AS id,
         o.status AS status,
         o.created_at AS created_at,
         o.invoice_id AS invoice_id,
