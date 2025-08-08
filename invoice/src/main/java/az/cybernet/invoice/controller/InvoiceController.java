@@ -1,25 +1,12 @@
 package az.cybernet.invoice.controller;
 
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -67,9 +54,16 @@ public class InvoiceController {
 
     @GetMapping("/inbox/{recipientTaxId}")
     @ResponseStatus(OK)
-    public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(@PathVariable String recipientTaxId) {
-        return invoiceService.findAllByRecipientUserTaxId(recipientTaxId);
-    }
+    public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(
+            @PathVariable String recipientTaxId,
+            @ModelAttribute InvoiceFilterRequest filter,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+
+        filter.setOffset(page * size);
+        filter.setLimit(size);
+        return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter);
+}
 
 
     @GetMapping("/outbox/{senderTaxId}")
