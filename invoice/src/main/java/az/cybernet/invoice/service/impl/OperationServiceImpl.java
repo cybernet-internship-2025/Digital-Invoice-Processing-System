@@ -10,6 +10,7 @@ import az.cybernet.invoice.entity.OperationDetailsEntity;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.mapper.OperationMapStruct;
 import az.cybernet.invoice.repository.OperationRepository;
+import az.cybernet.invoice.service.abstraction.OperationDetailsService;
 import az.cybernet.invoice.service.abstraction.OperationService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,6 +32,9 @@ public class OperationServiceImpl implements OperationService {
     OperationRepository operationRepository;
     OperationMapStruct operationMapStruct;
 
+    OperationDetailsService operationDetailsService;
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -41,7 +45,6 @@ public class OperationServiceImpl implements OperationService {
 
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(request.getInvoiceId());
-
         entity.setInvoice(invoiceEntity);
 
 
@@ -105,15 +108,10 @@ public class OperationServiceImpl implements OperationService {
                 .orElseThrow(() -> new RuntimeException("Operation not found with ID: " + id));
 
         op.setStatus(newStatus);
-
         if (op.getItemDetails() != null) {
             for (OperationDetailsEntity detail : op.getItemDetails()) {
                 detail.setComment(comment);
-            }
-        }
-
-
-
+            }}
         operationRepository.save(op);
         return operationMapStruct.toResponse(op);
     }
@@ -131,7 +129,6 @@ public class OperationServiceImpl implements OperationService {
     @Transactional
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
-
 
 
     @Transactional
