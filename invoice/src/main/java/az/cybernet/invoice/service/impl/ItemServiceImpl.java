@@ -15,6 +15,7 @@ import az.cybernet.invoice.mapper.ItemMapStruct;
 import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.repository.ItemRepository;
 import az.cybernet.invoice.repository.MeasurementRepository;
+import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final InvoiceRepository invoiceRepository;
     private final MeasurementRepository measurementRepository;
+    private final InvoiceService invoiceService;
 
     @Transactional
     @Override
@@ -73,6 +75,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> findAllItemsByInvoiceId(Long invoiceId) {
+        invoiceService.fetchInvoiceIfExists(invoiceId);
+
         return itemRepository.findAllItemsByInvoiceId(invoiceId).stream()
                 .map(itemMapStruct::toResponse)
                 .collect(Collectors.toList());
