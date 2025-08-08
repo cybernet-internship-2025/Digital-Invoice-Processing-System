@@ -267,11 +267,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public void restoreInvoice(Long id) {
-
-    }
-
-    @Override
     public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
         var userResponse = findRecipientByTaxId(recipientTaxId);
         var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
