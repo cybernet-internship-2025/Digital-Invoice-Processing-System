@@ -30,9 +30,9 @@ public interface InvoiceService {
 
     List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
 
-    void approveInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request);
+    void approveInvoice(ApproveAndCancelInvoiceRequest request);
 
-    void cancelInvoice(Long invoiceId, ApproveAndCancelInvoiceRequest request);
+    void cancelInvoice(ApproveAndCancelInvoiceRequest request);
 
     void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
 
