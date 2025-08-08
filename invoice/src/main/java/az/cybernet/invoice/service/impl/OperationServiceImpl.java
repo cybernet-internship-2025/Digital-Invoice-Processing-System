@@ -10,6 +10,7 @@ import az.cybernet.invoice.entity.OperationDetailsEntity;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.mapper.OperationMapStruct;
 import az.cybernet.invoice.repository.OperationRepository;
+import az.cybernet.invoice.service.abstraction.OperationDetailsService;
 import az.cybernet.invoice.service.abstraction.OperationService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,6 +31,9 @@ public class OperationServiceImpl implements OperationService {
 
     OperationRepository operationRepository;
     OperationMapStruct operationMapStruct;
+
+    OperationDetailsService operationDetailsService;
+
 
 
     @Override
