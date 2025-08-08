@@ -386,7 +386,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         if (!isNullOrEmpty(request.getUpdatedItems())) {
-            itemService.updateItem(request.getUpdatedItems());
+            itemService.updateItems(request.getUpdatedItems());
         }
 
         if (!isNullOrEmpty(request.getDeletedItemsId())) {

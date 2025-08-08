@@ -1,18 +1,24 @@
 package az.cybernet.invoice.service.impl;
 
+import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.request.item.UpdateItemRequest;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
+import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.MeasurementEntity;
 import az.cybernet.invoice.enums.ItemStatus;
+import az.cybernet.invoice.exception.ExceptionConstants;
+import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.mapper.ItemMapStruct;
+import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.repository.ItemRepository;
 import az.cybernet.invoice.repository.MeasurementRepository;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,11 +28,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Log
 public class ItemServiceImpl implements ItemService {
     private final ItemMapStruct itemMapStruct;
     private final ItemRepository itemRepository;
+    private final InvoiceRepository invoiceRepository;
     private final MeasurementRepository measurementRepository;
 
+    @Transactional
     @Override
     public List<ItemResponse> addItems(ItemsRequest itemsRequest) {
         if (itemsRequest == null || itemsRequest.getItemsRequest() == null || itemsRequest.getItemsRequest().isEmpty()) {
@@ -43,26 +52,22 @@ public class ItemServiceImpl implements ItemService {
         return findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
     }
 
+    @Transactional
     @Override
-    public void updateItem(List<UpdateItemRequest> itemRequests) {
+    public void updateItems(List<UpdateItemRequest> itemRequests) {
         for (UpdateItemRequest request : itemRequests) {
             ItemEntity item = itemRepository.findById(request.getId()).orElseThrow();
 
-            if (request.getName() != null) item.setName(request.getName());
-            if (request.getUnitPrice() != null) item.setUnitPrice(request.getUnitPrice());
-            if (request.getQuantity() != null) item.setQuantity(request.getQuantity());
-            if (request.getMeasurementName() != null) {
-                MeasurementEntity measurement = measurementRepository.findByName(request.getMeasurementName());
-                if (measurement == null) {
-                    throw new IllegalArgumentException("Measurement with name '" + request.getMeasurementName() + "' not found");
-                }
-                item.setMeasurement(measurement);
+            MeasurementEntity measurement = measurementRepository.findByName(request.getMeasurementName());
+            if (measurement == null) {
+                throw new NotFoundException(ExceptionConstants.MEASUREMENT_NOT_FOUND.getMessage(),
+                        ExceptionConstants.MEASUREMENT_NOT_FOUND.getCode());
             }
 
             item.setTotalPrice(request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
             item.setUpdatedAt(LocalDateTime.now());
             item.setStatus(ItemStatus.UPDATED);
-            itemRepository.updateItem(item);
+            itemRepository.updateItems(item);
         }
     }
 

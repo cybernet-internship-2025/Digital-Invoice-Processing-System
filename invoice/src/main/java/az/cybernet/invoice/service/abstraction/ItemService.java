@@ -9,7 +9,7 @@ import java.util.List;
 public interface ItemService {
     List<ItemResponse> addItems(ItemsRequest requests);
 
-    void updateItem(List<UpdateItemRequest> itemRequests);
+    void updateItems(List<UpdateItemRequest> itemRequests);
 
     List<ItemResponse> findAllItemsByInvoiceId(Long invoiceId);
 
