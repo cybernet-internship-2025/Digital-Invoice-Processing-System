@@ -22,4 +22,6 @@ public class UserResponse {
     Boolean isActive;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+
+
 }

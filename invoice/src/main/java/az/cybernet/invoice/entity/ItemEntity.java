@@ -1,5 +1,6 @@
 package az.cybernet.invoice.entity;
 
+import az.cybernet.invoice.enums.ItemStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -30,4 +32,7 @@ public class ItemEntity {
     MeasurementEntity measurement;
     InvoiceEntity invoice;
     List<OperationEntity> operations;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
+    ItemStatus status;
 }
