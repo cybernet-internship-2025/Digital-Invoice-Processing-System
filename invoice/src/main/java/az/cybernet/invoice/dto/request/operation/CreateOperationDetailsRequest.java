@@ -4,7 +4,6 @@ import az.cybernet.invoice.enums.ItemStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -18,7 +17,7 @@ public class CreateOperationDetailsRequest {
     Long itemId;
     Long operationId;
     ItemStatus itemStatus;
-    String comment;
+
 
 
 }
