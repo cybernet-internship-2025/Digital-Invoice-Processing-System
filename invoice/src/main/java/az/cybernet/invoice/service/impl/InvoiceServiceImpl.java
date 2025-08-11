@@ -3,12 +3,7 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
@@ -275,7 +270,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
         var userResponse = findRecipientByTaxId(recipientTaxId);
         var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
-        return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
+        return invoiceMapper.allByRecipientOrSenderUserTaxId(allByRecipientUserTaxId);
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {
@@ -401,13 +396,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId) {
-        //TODO: check senderTaxId equals to current user ID
-        return invoiceRepository.findInvoicesBySenderTaxId(senderTaxId)
-                .stream()
-                .map(invoiceMapper::fromEntityToResponse)
-                .toList();
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter) {
+        if (filter.getOffset() == null) filter.setOffset(0);
+        if (filter.getLimit() == null) filter.setLimit(10);
+        var entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
+        return invoiceMapper.allByRecipientOrSenderUserTaxId(entities);
     }
+
 
     @Override
     public InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request) {
