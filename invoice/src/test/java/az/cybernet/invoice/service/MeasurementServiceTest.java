@@ -54,7 +54,7 @@ class MeasurementServiceTest {
         entity.setId(id);
         entity.setName("kg");
 
-        when(measurementRepository.getByName(request.getName())).thenReturn(entity);
+        when(measurementRepository.findByName(request.getName())).thenReturn(entity);
         doNothing().when(measurementRepository).updateMeasurement(entity);
 
         measurementService.updateMeasurement(id, request);
@@ -76,14 +76,14 @@ class MeasurementServiceTest {
         expectedResponse.setId(1L);
         expectedResponse.setName(name);
 
-        when(measurementRepository.getByName(name)).thenReturn(entity);
+        when(measurementRepository.findByName(name)).thenReturn(entity);
         when(mapStruct.toResponse(entity)).thenReturn(expectedResponse);
 
 
         MeasurementResponse actualResponse = measurementService.findByName(name);
 
 
-        verify(measurementRepository, times(1)).getByName(name);
+        verify(measurementRepository, times(1)).findByName(name);
         verify(mapStruct, times(1)).toResponse(entity);
 
         assertNotNull(actualResponse);
@@ -98,7 +98,7 @@ class MeasurementServiceTest {
         request.setName("kg");
 
 
-        when(measurementRepository.getByName(request.getName())).thenReturn(null);
+        when(measurementRepository.findByName(request.getName())).thenReturn(null);
 
         assertThrows(NotFoundException.class, () -> measurementService.updateMeasurement(id, request));
     }
