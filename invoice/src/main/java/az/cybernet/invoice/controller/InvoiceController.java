@@ -3,11 +3,13 @@ package az.cybernet.invoice.controller;
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
+import feign.Param;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -65,8 +67,29 @@ public class InvoiceController {
 
 
     @GetMapping("/outbox/{senderTaxId}")
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(@PathVariable("senderTaxId") String senderTaxId) {
-        return invoiceService.findInvoicesBySenderTaxId(senderTaxId);
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(
+            @PathVariable String senderTaxId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false, name = "invoiceNumber") String invoiceNumber,
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
+            @RequestParam(required = false, defaultValue = "10") Integer limit
+    ) {
+        FilterInvoiceRequest filter = new FilterInvoiceRequest();
+        filter.setYear(year);
+        filter.setFromDate(fromDate);
+        filter.setToDate(toDate);
+        filter.setStatus(status);
+        filter.setType(type);
+        filter.setInvoiceNumber(invoiceNumber);
+        filter.setSenderTaxId(senderTaxId);
+        filter.setOffset(offset);
+        filter.setLimit(limit);
+
+        return invoiceService.findInvoicesBySenderTaxId(filter);
     }
 
 

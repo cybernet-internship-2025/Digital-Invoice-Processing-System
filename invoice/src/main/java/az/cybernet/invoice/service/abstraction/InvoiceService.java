@@ -23,7 +23,7 @@ public interface InvoiceService {
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
+    List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
