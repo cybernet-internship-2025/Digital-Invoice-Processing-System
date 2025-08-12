@@ -52,13 +52,14 @@ public class InvoiceController {
         return invoiceService.findById(invoiceId);
     }
 
-    @GetMapping("/inbox/{recipientTaxId}")
+    @PostMapping("/inbox/{recipientTaxId}")
     @ResponseStatus(OK)
-    public List<InvoiceResponse> findAllInvoicesByRecipientUserTaxId(
+    public PaginatedInvoiceResponse findAllInvoicesByRecipientUserTaxId(
             @PathVariable String recipientTaxId,
-            @RequestParam InvoiceFilterRequest filter,
+            @RequestBody InvoiceFilterRequest filter,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
+
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
 }
 

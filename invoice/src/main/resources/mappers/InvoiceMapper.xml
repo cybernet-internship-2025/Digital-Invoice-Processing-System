@@ -120,6 +120,34 @@
 
     </select>
 
+    <select id="countInvoicesByRecipientUserTaxId" resultType="long">
+        SELECT COUNT(*)
+        FROM invoices c
+        WHERE c.recipient_tax_id = #{recipientTaxId}
+        AND c.is_active = true
+        AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
+
+        <if test="filter.status != null">
+            AND LOWER(c.status) = LOWER(#{filter.status})
+        </if>
+
+        <if test="filter.fromDate != null">
+            AND c.created_at &gt;= #{filter.fromDate}
+        </if>
+
+        <if test="filter.toDate != null">
+            AND c.created_at &lt;= #{filter.toDate}
+        </if>
+
+        <if test="filter.invoiceNumber != null">
+            AND (c.invoice_series || c.invoice_number) = #{filter.invoiceNumber}
+        </if>
+
+        <if test="filter.year != null">
+            AND EXTRACT(YEAR FROM c.created_at) = #{filter.year}
+        </if>
+    </select>
+
     <!-- SELECT BY ID -->
     <select id="findById" resultMap="InvoiceResultMap" parameterType="long">
         SELECT c.id               AS c_id,

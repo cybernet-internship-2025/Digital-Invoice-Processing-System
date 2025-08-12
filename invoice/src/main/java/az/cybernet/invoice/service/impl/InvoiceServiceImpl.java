@@ -269,7 +269,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId,
+    public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
                                                              InvoiceFilterRequest filter,
                                                              Integer page,
                                                              Integer size) {
@@ -286,9 +286,22 @@ public class InvoiceServiceImpl implements InvoiceService {
         filter.setLimit(size);
 
         var userResponse = findRecipientByTaxId(recipientTaxId);
-        var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+        var allByRecipientUserTaxId = invoiceRepository
+                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
 
-        return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
+        var count = invoiceRepository
+                .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+        boolean hasNext = count > (long) (page + 1) * size ;
+
+        List<InvoiceResponse> invoiceResponses = invoiceMapper
+                .allByRecipientUserTaxId(allByRecipientUserTaxId);
+
+
+
+        return PaginatedInvoiceResponse.builder()
+                .invoices(invoiceResponses)
+                .hasNext(hasNext)
+                .build();
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {

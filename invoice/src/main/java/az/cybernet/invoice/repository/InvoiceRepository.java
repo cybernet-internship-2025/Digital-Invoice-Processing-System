@@ -42,6 +42,9 @@ public interface InvoiceRepository {
     List<InvoiceEntity> findAllInvoicesByRecipientUserTaxId(@Param("recipientTaxId") String recipientTaxId,
                                                             @Param("filter") InvoiceFilterRequest filter);
 
+    Long countInvoicesByRecipientUserTaxId(@Param("recipientTaxId") String recipientTaxId,
+                                           @Param("filter") InvoiceFilterRequest filter);
+
     void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
 
     List<InvoiceEntity> findInvoicesBySenderTaxId(String senderTaxId);

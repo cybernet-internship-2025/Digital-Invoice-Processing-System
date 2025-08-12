@@ -26,7 +26,7 @@ public interface InvoiceService {
     List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
 
 
-    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId,
+    PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
                                                       InvoiceFilterRequest filter,
                                                       Integer page,
                                                       Integer size);
