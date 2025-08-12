@@ -16,6 +16,7 @@ import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
+import az.cybernet.invoice.enums.ItemStatus;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.exception.InvalidStatusException;
 import az.cybernet.invoice.exception.NotFoundException;
@@ -75,8 +76,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.saveInvoice(invoiceEntity);
         Long invoiceId = invoiceEntity.getId();
-
-        addInvoiceToOperation(invoiceId, "Invoice created", OperationStatus.DRAFT);
 
         if (invoiceRequest.getItems() != null && invoiceRequest.getItems().getItemsRequest() != null &&
                 !invoiceRequest.getItems().getItemsRequest().isEmpty()) {
@@ -143,6 +142,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.APPROVED, LocalDateTime.now());
 
+            var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
+
+            for (var item : itemResponses) {
+                itemService.updateItemStatus(item.getId(), ItemStatus.CREATED);
+            }
+
             addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
     }
@@ -168,7 +173,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.CANCELED, LocalDateTime.now());
 
-            itemService.addItemsToOperation(invoiceId, "Invoice canceled", OperationStatus.CANCELED);
+            var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
+
+            for (var item : itemResponses) {
+                itemService.updateItemStatus(item.getId(), ItemStatus.DELETED);
+            }
+
+            addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
 
     }
@@ -191,6 +202,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         String opComment = (request.getComment() == null || request.getComment().isBlank())
                 ? "Correction requested"
                 : request.getComment();
+
+        var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
+
+        for (var item : itemResponses) {
+            itemService.updateItemStatus(item.getId(), ItemStatus.UPDATED);
+        }
 
         itemService.addItemsToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION);
     }
