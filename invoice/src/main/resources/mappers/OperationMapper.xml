@@ -14,8 +14,6 @@
         </association>
     </resultMap>
 
-
-
     <resultMap id="OperationMap" type="az.cybernet.invoice.entity.OperationEntity">
         <id property="id" column="op_id"/>
         <result property="status" column="op_status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
@@ -28,7 +26,6 @@
                     resultMap="OperationDetailsMap"/>
     </resultMap>
 
-
     <select id="findById" parameterType="long" resultMap="OperationMap">
         SELECT
         op.id AS op_id,
@@ -38,7 +35,7 @@
         op.invoice_id,
         od.id AS od_id,
         od.item_id,
-        od.item_status,
+        od.item_status AS item_status,
         od.operation_id,
         i.id AS item_id
         FROM operations op
@@ -47,7 +44,7 @@
         WHERE op.id = #{id}
     </select>
 
-    <select id="findAll" resultMap="OperationMap">
+    <select id="findAll" parameterType="map" resultMap="OperationMap">
         SELECT
         op.id AS op_id,
         op.status AS op_status,
@@ -56,12 +53,23 @@
         op.invoice_id,
         od.id AS od_id,
         od.item_id,
-        od.item_status,
+        od.item_status AS item_status,
         od.operation_id,
         i.id AS item_id
         FROM operations op
         LEFT JOIN operation_details od ON op.id = od.operation_id
         LEFT JOIN items i ON od.item_id = i.id
+        <where>
+            <if test="status != null">
+                op.status = #{status}
+            </if>
+            <if test="invoiceId != null">
+                AND op.invoice_id = #{invoiceId}
+            </if>
+            <if test="itemStatus != null">
+                AND od.item_status = #{itemStatus}
+            </if>
+        </where>
     </select>
 
     <select id="findByStatus" parameterType="az.cybernet.invoice.enums.OperationStatus" resultMap="OperationMap">
@@ -73,7 +81,7 @@
         op.invoice_id,
         od.id AS od_id,
         od.item_id,
-        od.item_status,
+        od.item_status AS item_status,
         od.operation_id,
         i.id AS item_id
         FROM operations op
@@ -91,7 +99,7 @@
         op.invoice_id,
         od.id AS od_id,
         od.item_id,
-        od.item_status,
+        od.item_status AS item_status,
         od.operation_id,
         i.id AS item_id
         FROM operations op
@@ -109,7 +117,7 @@
         op.invoice_id,
         od.id AS od_id,
         od.item_id,
-        od.item_status,
+        od.item_status AS item_status,
         od.operation_id,
         i.id AS item_id
         FROM operations op
@@ -117,7 +125,6 @@
         LEFT JOIN items i ON od.item_id = i.id
         WHERE op.invoice_id = #{invoiceId}
     </select>
-
 
     <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO operations (status, created_at, invoice_id, comment)
