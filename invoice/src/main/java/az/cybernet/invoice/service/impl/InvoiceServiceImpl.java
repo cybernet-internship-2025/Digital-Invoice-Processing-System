@@ -8,6 +8,7 @@ import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
@@ -270,7 +271,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
         var userResponse = findRecipientByTaxId(recipientTaxId);
         var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
-        return invoiceMapper.allByRecipientOrSenderUserTaxId(allByRecipientUserTaxId);
+        return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {
@@ -396,11 +397,23 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter) {
-        if (filter.getOffset() == null) filter.setOffset(0);
-        if (filter.getLimit() == null) filter.setLimit(10);
-        var entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
-        return invoiceMapper.allByRecipientOrSenderUserTaxId(entities);
+    public  PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter) {
+        int queryLimit = filter.getLimit() + 1;
+        filter.setLimit(queryLimit);
+
+
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
+
+        boolean hasNext = entities.size() > filter.getLimit()-1;
+
+        PagedResponse<InvoiceResponse> response = new PagedResponse<>();
+        response.setContent(invoiceMapper.allByRecipientUserTaxId(entities));
+        response.setHasNext(hasNext);
+        response.setOffset(filter.getOffset());
+        response.setLimit(filter.getLimit() - 1);
+        return response;
+
+
     }
 
 
