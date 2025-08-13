@@ -60,6 +60,7 @@
         LEFT JOIN operation_details od ON op.id = od.operation_id
         LEFT JOIN items i ON od.item_id = i.id
         <where>
+            1=1
             <if test="status != null">
                 op.status = #{status}
             </if>
