@@ -30,4 +30,11 @@ public enum ExceptionConstants {
         }
         return this.message;
     }
+
+    public String getMessage(String name) {
+        if (this == MEASUREMENT_NOT_FOUND && name != null) {
+            return String.format("No measurement with name (NAME: %s) was found", name);
+        }
+        return this.message;
+    }
 }

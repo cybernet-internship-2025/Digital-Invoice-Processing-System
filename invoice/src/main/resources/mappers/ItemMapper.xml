@@ -29,7 +29,7 @@
     </insert>
 
     <!-- SELECT -->
-    <select id="findById" parameterType="long" resultMap="ItemResultMap">
+    <select id="findById" parameterType="long" resultMap="ItemEntityResultMap">
         SELECT id,
                name,
                unit_price,
@@ -44,7 +44,7 @@
         WHERE id = #{id}
     </select>
 
-    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemResultMap">
+    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemEntityResultMap">
         SELECT id,
                name,
                unit_price,
@@ -62,7 +62,7 @@
     </select>
 
     <!-- UPDATE -->
-    <update id="updateItem" parameterType="az.cybernet.invoice.entity.ItemEntity">
+    <update id="updateItems" parameterType="az.cybernet.invoice.entity.ItemEntity">
         UPDATE items
         SET name           = #{name},
             unit_price     = #{unitPrice},

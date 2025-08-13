@@ -4,6 +4,7 @@ import az.cybernet.usermanagement.dto.response.UserResponse;
 
 import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.ExceptionConstants;
+import az.cybernet.usermanagement.exception.InvalidTaxIdException;
 import az.cybernet.usermanagement.exception.UserNotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
@@ -135,7 +136,90 @@ public class UserServiceTest {
 
     }
 
+    @Test
+    void test_findUserByTaxId_ReturnSuccess() {
+        when(userRepository.findUserByTaxId(taxId)).thenReturn(Optional.of(USER_ENTITY));
+        when(userMapstruct.toUserResponseFromEntity(USER_ENTITY)).thenReturn(USER_RESPONSE);
 
+        UserResponse result = userService.findUserByTaxId(taxId);
 
+        assertEquals(USER_RESPONSE, result);
+        verify(userRepository).findUserByTaxId(taxId);
+        verify(userMapstruct).toUserResponseFromEntity(USER_ENTITY);
+    }
+
+    @Test
+    void test_restoreUser_ReturnSuccess() {
+        when(userRepository.findUserByTaxId(taxId)).thenReturn(Optional.of(USER_ENTITY));
+        willDoNothing().given(userRepository).restoreUser(taxId);
+
+        userService.restoreUser(taxId);
+
+        verify(userRepository).findUserByTaxId(taxId);
+        verify(userRepository).restoreUser(taxId);
+    }
+
+    @Test
+    void test_deleteUser_ReturnSuccess() {
+        when(userRepository.findUserByTaxId(taxId)).thenReturn(Optional.of(USER_ENTITY));
+        willDoNothing().given(userRepository).deleteUser(taxId);
+
+        userService.deleteUser(taxId);
+
+        verify(userRepository).findUserByTaxId(taxId);
+        verify(userRepository).deleteUser(taxId);
+    }
+
+    @Test
+    void test_addUser_ShouldThrowException_WhenTaxIdNotValid() {
+        when(userMapstruct.toUserEntityFromCreate(CREATE_USER_REQUEST)).thenReturn(USER_ENTITY);
+        when(userRepository.findMaxTaxId()).thenReturn("INVALID_TAX_ID");
+
+        InvalidTaxIdException exception = Assertions.assertThrows(InvalidTaxIdException.class, () -> {
+            userService.addUser(CREATE_USER_REQUEST);
+        });
+
+        assertEquals(ExceptionConstants.INVALID_TAX_ID_EXCEPTION.getCode(), exception.getCode());
+        assertEquals(ExceptionConstants.INVALID_TAX_ID_EXCEPTION.getMessage(), exception.getMessage());
+    }
+
+    @Test
+    void test_addUser_ShouldSetGeneratedTaxId() {
+        when(userMapstruct.toUserEntityFromCreate(CREATE_USER_REQUEST)).thenReturn(USER_ENTITY);
+        when(userRepository.findMaxTaxId()).thenReturn("0000000005");
+        willDoNothing().given(userRepository).addUser(USER_ENTITY);
+        when(userMapstruct.toUserResponseFromEntity(USER_ENTITY)).thenReturn(USER_RESPONSE);
+
+        userService.addUser(CREATE_USER_REQUEST);
+
+        Assertions.assertEquals("0000000006", USER_ENTITY.getTaxId());
+    }
+
+    @Test
+    void test_addUser_WhenFindMaxTaxIdIsNull_ShouldStartFromOne() {
+        when(userMapstruct.toUserEntityFromCreate(CREATE_USER_REQUEST)).thenReturn(USER_ENTITY);
+        when(userRepository.findMaxTaxId()).thenReturn(null);
+        willDoNothing().given(userRepository).addUser(any(UserEntity.class));
+        when(userMapstruct.toUserResponseFromEntity(any(UserEntity.class))).thenReturn(USER_RESPONSE);
+
+        UserResponse result = userService.addUser(CREATE_USER_REQUEST);
+
+        assertEquals(USER_RESPONSE, result);
+        verify(userRepository).addUser(any(UserEntity.class));
+    }
+
+    @Test
+    void test_updateUser_ShouldSetUpdatedAtField() {
+        when(userRepository.findUserByTaxId(taxId)).thenReturn(Optional.of(USER_ENTITY));
+        willDoNothing().given(userRepository).updateUser(USER_ENTITY);
+        when(userMapstruct.toUserResponseFromEntity(USER_ENTITY)).thenReturn(USER_RESPONSE);
+
+        LocalDateTime beforeUpdate = LocalDateTime.now();
+        userService.updateUser(taxId, UPDATE_USER_REQUEST);
+        LocalDateTime afterUpdate = USER_ENTITY.getUpdatedAt();
+
+        Assertions.assertNotNull(afterUpdate);
+        Assertions.assertTrue(afterUpdate.isAfter(beforeUpdate));
+    }
 
 }

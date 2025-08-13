@@ -2,6 +2,7 @@ package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.entity.InvoiceEntity;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public interface InvoiceService {
 
     void deleteInvoiceById(DeleteInvoicesRequest request);
 
+    InvoiceEntity fetchInvoiceIfExist(Long invoiceId);
+
     InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
 
     List<InvoiceResponse> sendInvoice(SendInvoiceRequest request);
@@ -19,7 +22,7 @@ public interface InvoiceService {
     InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
+    List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
 
 
     List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
