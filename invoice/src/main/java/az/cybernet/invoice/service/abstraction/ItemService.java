@@ -13,10 +13,10 @@ public interface ItemService {
     List<ItemResponse> addItems(ItemsRequest requests);
 
     void addItemsToOperation(AddItemsToOperationRequest request);
-
+  
+    void updateItems(List<UpdateItemRequest> itemRequests, Long invoiceId);
+  
     void updateItemStatus(Long itemId, ItemStatus status);
-
-    void updateItems(List<UpdateItemRequest> itemRequests);
 
     List<ItemResponse> findAllItemsByInvoiceId(Long invoiceId);
 
