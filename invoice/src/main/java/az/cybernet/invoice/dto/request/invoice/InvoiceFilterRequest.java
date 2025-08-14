@@ -22,7 +22,6 @@ public class InvoiceFilterRequest {
     Integer year;
     String type;
     String invoiceNumber;
-
     Integer offset;
     Integer limit;
 }

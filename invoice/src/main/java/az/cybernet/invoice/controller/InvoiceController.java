@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -71,22 +72,21 @@ public class InvoiceController {
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
             @PathVariable String senderTaxId,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) LocalDate fromDate,
-            @RequestParam(required = false) LocalDate toDate,
+            @RequestParam(required = false) LocalDateTime fromDate,
+            @RequestParam(required = false) LocalDateTime toDate,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String type,
             @RequestParam(required = false, name = "invoiceNumber") String invoiceNumber,
             @RequestParam(required = false, defaultValue = "0") Integer offset,
             @RequestParam(required = false, defaultValue = "10") Integer limit
     ) {
-        FilterInvoiceRequest filter = new FilterInvoiceRequest();
+        InvoiceFilterRequest filter = new InvoiceFilterRequest();
         filter.setYear(year);
         filter.setFromDate(fromDate);
         filter.setToDate(toDate);
         filter.setStatus(status);
         filter.setType(type);
         filter.setInvoiceNumber(invoiceNumber);
-        filter.setSenderTaxId(senderTaxId);
         filter.setOffset(offset);
         filter.setLimit(limit);
 
