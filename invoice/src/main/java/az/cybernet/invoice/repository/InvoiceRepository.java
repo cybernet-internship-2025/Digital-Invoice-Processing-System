@@ -1,5 +1,6 @@
 package az.cybernet.invoice.repository;
 
+import az.cybernet.invoice.dto.request.invoice.FilterInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
