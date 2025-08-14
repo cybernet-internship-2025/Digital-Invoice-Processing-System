@@ -316,7 +316,7 @@
         </if>
 
         <if test="filter.invoiceNumber != null">
-            AND c.invoice_number = #{filter.invoiceNumber}
+            AND (c.invoice_series || c.invoice_number) = #{filter.invoiceNumber}
         </if>
 
         ORDER BY c.created_at DESC
