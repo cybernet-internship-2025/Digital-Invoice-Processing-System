@@ -50,13 +50,13 @@ public class ItemServiceImpl implements ItemService {
 
         for (ItemRequest itemRequest : itemsRequest.getItemsRequest()) {
             MeasurementEntity measurement = measurementRepository.findByName(itemRequest.getMeasurementName());
+            itemRequest.setStatus(ItemStatus.CREATED);
             if (measurement == null) {
                 throw new IllegalArgumentException(
                         "Measurement with name '" + itemRequest.getMeasurementName() + "' not found"
                 );
             }
         }
-
 
         itemRepository.addItems(itemsRequest);
         List<ItemResponse> itemResponses = findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
@@ -69,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
                 AddItemsToOperationRequest.builder()
                         .invoiceId(itemsRequest.getInvoiceId())
                         .comment("Items added")
-                        .status(OperationStatus.UPDATE)
+                        .status(OperationStatus.DRAFT)
                         .itemIds(itemIds)
                         .build()
         );
