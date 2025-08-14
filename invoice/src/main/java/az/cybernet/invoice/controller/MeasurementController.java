@@ -16,12 +16,18 @@ import java.util.List;
 public class MeasurementController {
     private final MeasurementService measurementService;
 
+    @PostMapping
+    public ResponseEntity<Void> addMeasurement(@RequestBody MeasurementRequest request) {
+        measurementService.addMeasurement(request);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<MeasurementResponse>> findAll() {
         return ResponseEntity.ok(measurementService.findAll());
     }
 
-    @GetMapping("/{measurementName}")
+    @GetMapping("/{measurement-name}")
     public ResponseEntity<MeasurementResponse> findByName(@PathVariable String measurementName) {
         return ResponseEntity.ok(measurementService.findByName(measurementName));
     }

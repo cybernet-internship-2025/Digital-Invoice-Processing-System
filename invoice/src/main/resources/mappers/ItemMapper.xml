@@ -7,13 +7,15 @@
 
     <!-- INSERT -->
     <insert id="addItems">
-        INSERT INTO invoice_items (
+        INSERT INTO items (
         invoice_id,
         product_name,
         unit_price,
         quantity,
         total_price,
-        measurement_name
+        measurement_name,
+        is_active,
+        created_at
         )
         VALUES
         <foreach collection="itemsRequest.itemsRequest" item="item" separator=",">
@@ -23,13 +25,15 @@
             #{item.unitPrice},
             #{item.quantity},
             #{item.unitPrice} * #{item.quantity},
-            #{item.measurementName}
+            #{item.measurementName},
+            true,
+            NOW()
             )
         </foreach>
     </insert>
 
     <!-- SELECT -->
-    <select id="findById" parameterType="long" resultMap="ItemResultMap">
+    <select id="findById" parameterType="long" resultMap="ItemEntityResultMap">
         SELECT id,
                name,
                unit_price,
@@ -44,7 +48,7 @@
         WHERE id = #{id}
     </select>
 
-    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemResultMap">
+    <select id="findAllItemsByInvoiceId" parameterType="long" resultMap="ItemEntityResultMap">
         SELECT id,
                name,
                unit_price,

@@ -17,14 +17,15 @@ public enum ExceptionConstants {
     INVALID_STATUS("INVALID_STATUS", "Only PENDING invoices can be ..."),
     UNAUTHORIZED("UNAUTHORIZED", "You are not allowed to perform surgery"),
     HTTP_METHOD_IS_NOT_CORRECT("HTTP_METHOD_IS_NOT_CORRECT", "http method is not correct"),
-    RECIPIENT_NOT_FOUND("RECIPIENT_NOT_FOUND", "no recipient with id found");
+    RECIPIENT_NOT_FOUND("RECIPIENT_NOT_FOUND", "no recipient with id found"),
+    ITEM_NOT_FOUND("ITEM_NOT_FOUND","item not found");
 
     String code;
     String message;
 
     public String getMessage(Long id) {
         if ((this == SENDER_NOT_FOUND || this == RECIPIENT_NOT_FOUND
-                || this == INVOICE_NOT_FOUND) || this==MEASUREMENT_NOT_FOUND && id != null) {
+                || this == INVOICE_NOT_FOUND) || this==MEASUREMENT_NOT_FOUND && id != null || this==ITEM_NOT_FOUND) {
             return String.format("No %s with id (ID: %s) was found",
                     this.name().toLowerCase().replace("_not_found", ""), id);
         }

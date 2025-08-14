@@ -16,7 +16,6 @@ public class OperationDetailsEntity {
     Long id;
     OperationEntity operation;
     ItemEntity item;
-    String comment;
     ItemStatus itemStatus;
     Long operationId;
 
