@@ -411,7 +411,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         if (!isNullOrEmpty(request.getDeletedItemsId())) {
-            itemService.deleteItem(request.getDeletedItemsId());
+            itemService.deleteItemsByItemsId(request.getDeletedItemsId());
         }
 
         //TODO: update invoice updatedAt field when one of items related with invoice updated
