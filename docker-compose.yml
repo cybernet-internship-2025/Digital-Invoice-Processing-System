@@ -10,6 +10,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD_INVOICE}
     ports:
       - "5433:5432"
+    volumes:
+      - invoice-db-data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -23,6 +25,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD_USER}
     ports:
       - "5434:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -67,3 +71,7 @@ services:
 networks:
   backend:
     driver: bridge
+
+volumes:
+  invoice-db-data:
+  user-db-data:

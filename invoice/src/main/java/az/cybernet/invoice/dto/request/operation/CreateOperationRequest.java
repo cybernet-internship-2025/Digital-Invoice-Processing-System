@@ -18,5 +18,6 @@ public class CreateOperationRequest {
     OperationStatus status;
     Long invoiceId;
     List<CreateOperationDetailsRequest> items;
+    String comment;
 }
 

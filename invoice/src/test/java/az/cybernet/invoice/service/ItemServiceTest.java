@@ -1,5 +1,7 @@
 package az.cybernet.invoice.service;
 
+import az.cybernet.invoice.dto.request.item.ItemRequest;
+import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.request.item.UpdateItemRequest;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.ItemEntity;
@@ -110,5 +112,51 @@ class ItemServiceTest {
         verify(itemMapStruct).toResponse(item1);
         verify(itemMapStruct).toResponse(item2);
         verify(itemMapStruct, times(2)).toResponse(any(ItemEntity.class));
+    }
+
+    @Test
+    void addItemsTest() {
+        ItemsRequest itemsRequest = new ItemsRequest();
+        ItemRequest itemRequest = new ItemRequest();
+        itemRequest.setMeasurementName("kq"); // measurement name təyin edilir
+        itemRequest.setUnitPrice(BigDecimal.valueOf(10));
+        itemRequest.setQuantity(5);
+        itemRequest.setProductName("Alma");
+        itemsRequest.setItemsRequest(List.of(itemRequest));
+
+        MeasurementEntity measurementEntity = new MeasurementEntity();
+        measurementEntity.setId(1L);
+
+
+        when(measurementRepository.findByName("kq")).thenReturn(measurementEntity);
+        doNothing().when(itemRepository).addItems(any(ItemsRequest.class));
+
+        List<ItemResponse> result = itemService.addItems(itemsRequest);
+
+        assertNotNull(result);  // Make sure the result is not null
+        verify(itemRepository).addItems(any(ItemsRequest.class)); // ensure addItems is called
+    }
+
+    @Test
+    void deleteItemsTest() {
+
+        Long invoiceId = 1L;
+        doNothing().when(itemRepository).deleteItemsByInvoiceId(invoiceId);
+
+        itemService.deleteItemsByInvoiceId(invoiceId);
+
+        verify(itemRepository, times(1)).deleteItemsByInvoiceId(invoiceId); // ensure deleteItemsByInvoiceId is called
+    }
+
+    @Test
+    void deleteItemsByItemsIdTest() {
+
+        List<Long> ids = List.of(1L, 2L, 3L);
+        doNothing().when(itemRepository).deleteItemsByItemsId(ids);
+
+        itemService.deleteItemsByItemsId(ids);
+
+
+        verify(itemRepository, times(1)).deleteItemsByItemsId(ids);
     }
 }
