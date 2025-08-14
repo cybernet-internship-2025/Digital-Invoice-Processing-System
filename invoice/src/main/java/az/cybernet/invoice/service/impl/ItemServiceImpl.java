@@ -8,6 +8,7 @@ import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.MeasurementEntity;
 import az.cybernet.invoice.enums.ItemStatus;
+import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.exception.ExceptionConstants;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.mapper.ItemMapStruct;
@@ -24,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +57,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateItems(List<UpdateItemRequest> itemRequests) {
+    public void updateItems(List<UpdateItemRequest> itemRequests, Long invoiceId) {
         for (UpdateItemRequest request : itemRequests) {
             ItemEntity item = itemRepository.findById(request.getId()).orElseThrow();
 
@@ -70,6 +72,21 @@ public class ItemServiceImpl implements ItemService {
             item.setStatus(ItemStatus.UPDATED);
             itemRepository.updateItems(item);
         }
+
+        List<ItemResponse> itemResponses = findAllItemsByInvoiceId(invoiceId);
+        List<Long> itemIds = itemResponses.stream()
+                .map(ItemResponse::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        addItemsToOperation(
+                AddItemsToOperationRequest.builder()
+                        .invoiceId(invoiceId)
+                        .comment("Items updated")
+                        .status(OperationStatus.UPDATE)
+                        .itemIds(itemIds)
+                        .build()
+        );
     }
 
     @Override
