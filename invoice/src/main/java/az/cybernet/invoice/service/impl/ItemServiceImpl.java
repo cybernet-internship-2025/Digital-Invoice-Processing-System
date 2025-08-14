@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -41,7 +42,7 @@ public class ItemServiceImpl implements ItemService {
     private final OperationService operationService;
     private final OperationDetailsService operationDetailsService;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ItemResponse> addItems(ItemsRequest itemsRequest) {
         if (itemsRequest == null || itemsRequest.getItemsRequest() == null || itemsRequest.getItemsRequest().isEmpty()) {
@@ -124,9 +125,9 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.updateItems(item);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateItems(List<UpdateItemRequest> itemRequests) {
+    public void updateItems(List<UpdateItemRequest> itemRequests, Long invoiceId) {
         for (UpdateItemRequest request : itemRequests) {
             ItemEntity item = itemRepository.findById(request.getId()).orElseThrow();
 
@@ -141,11 +142,26 @@ public class ItemServiceImpl implements ItemService {
             item.setStatus(ItemStatus.UPDATED);
             itemRepository.updateItems(item);
         }
+
+        List<ItemResponse> itemResponses = findAllItemsByInvoiceId(invoiceId);
+        List<Long> itemIds = itemResponses.stream()
+                .map(ItemResponse::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        addItemsToOperation(
+                AddItemsToOperationRequest.builder()
+                        .invoiceId(invoiceId)
+                        .comment("Items updated")
+                        .status(OperationStatus.UPDATE)
+                        .itemIds(itemIds)
+                        .build()
+        );
     }
 
     @Override
     public List<ItemResponse> findAllItemsByInvoiceId(Long invoiceId) {
-//        invoiceService.fetchInvoiceIfExists(invoiceId);
+        invoiceService.fetchInvoiceIfExist(invoiceId);
 
         return itemRepository.findAllItemsByInvoiceId(invoiceId).stream()
                 .map(itemMapStruct::toResponse)
