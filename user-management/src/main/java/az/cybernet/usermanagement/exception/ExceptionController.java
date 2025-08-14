@@ -1,7 +1,6 @@
 package az.cybernet.usermanagement.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,15 +10,18 @@ import java.util.List;
 
 import static az.cybernet.usermanagement.exception.ExceptionConstants.INVALID_TAX_ID_EXCEPTION;
 import static az.cybernet.usermanagement.exception.ExceptionConstants.VALIDATION_EXCEPTION;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @RestControllerAdvice
 public class ExceptionController {
 
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ExceptionResponse handleUserNotFound(UserNotFoundException ex) {
-        log.error("User not found", ex);
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(NOT_FOUND)
+    public ExceptionResponse handleUserNotFound(NotFoundException ex) {
+        log.error("NotFoundException", ex);
         return ExceptionResponse.builder()
                 .code(ex.getCode())
                 .message(ex.getMessage())
@@ -27,7 +29,7 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(BAD_REQUEST)
     public ExceptionResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         log.error("MethodArgumentNotValidException", ex);
         List<ValidationException> exceptions = ex.getBindingResult()
@@ -40,10 +42,10 @@ public class ExceptionController {
                 .message(VALIDATION_EXCEPTION.getMessage())
                 .validationErrors(exceptions)
                 .build();
-
     }
+
     @ExceptionHandler(InvalidTaxIdException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(BAD_REQUEST)
     public ExceptionResponse handleInvalidTaxIdException(InvalidTaxIdException ex) {
         log.error("InvalidTaxIdException", ex);
         return ExceptionResponse.builder()
@@ -54,7 +56,7 @@ public class ExceptionController {
 
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
     public ExceptionResponse handleUnhandledExceptions(Exception ex) {
         log.error("Unhandled exception occurred", ex);
         return ExceptionResponse.builder()
@@ -62,6 +64,5 @@ public class ExceptionController {
                 .message(ex.getMessage())
                 .build();
     }
-
 
 }

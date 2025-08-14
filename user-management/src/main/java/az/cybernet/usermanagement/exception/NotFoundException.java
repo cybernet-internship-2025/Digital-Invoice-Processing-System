@@ -3,10 +3,10 @@ package az.cybernet.usermanagement.exception;
 import lombok.Getter;
 
 @Getter
-public class UserNotFoundException extends RuntimeException {
+public class NotFoundException extends RuntimeException {
     private final String code;
 
-    public UserNotFoundException(String code, String message) {
+    public NotFoundException(String code, String message) {
         super(message);
         this.code = code;
     }
