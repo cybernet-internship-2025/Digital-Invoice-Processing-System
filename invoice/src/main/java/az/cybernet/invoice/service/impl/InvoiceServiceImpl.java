@@ -3,14 +3,8 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
-import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
@@ -63,6 +57,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     InvoiceMapper invoiceMapper;
     ItemService itemService;
     OperationService operationService;
+    static int MAX_SIZE = 50;
+    static int MIN_SIZE = 10;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -78,8 +74,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepository.saveInvoice(invoiceEntity);
         Long invoiceId = invoiceEntity.getId();
 
-        addInvoiceToOperation(invoiceId, "Invoice created", OperationStatus.DRAFT, null);
-
         if (invoiceRequest.getItems() != null && invoiceRequest.getItems().getItemsRequest() != null &&
                 !invoiceRequest.getItems().getItemsRequest().isEmpty()) {
 
@@ -90,20 +84,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 validateItem(i);
             }
 
-            List<ItemResponse> savedItems = itemService.addItems(items);
-
-            List<Long> itemIds = savedItems.stream()
-                    .map(ItemResponse::getId)
-                    .toList();
-
-            for (ItemResponse item : savedItems) {
-                addInvoiceToOperation(
-                        invoiceId,
-                        "Item added: " + item.getProductName() + ", item size: " + itemIds.size(),
-                        OperationStatus.DRAFT,
-                        List.of(item.getId())
-                );
-            }
+            itemService.addItems(items);
 
             var totalPrice = updateInvoiceTotalPrice(invoiceId);
             invoiceEntity.setTotalPrice(totalPrice);
@@ -158,15 +139,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.APPROVED, LocalDateTime.now());
 
-            List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
-            List<Long> itemIds = items == null
-                    ? List.of()
-                    : items.stream()
-                    .map(ItemResponse::getId)
-                    .filter(Objects::nonNull)
-                    .toList();
+            var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
 
-            addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED, itemIds.isEmpty() ? null : itemIds);
+            for (var item : itemResponses) {
+                itemService.updateItemStatus(item.getId(), ItemStatus.CREATED);
+            }
+
+            addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
     }
 
@@ -191,18 +170,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.CANCELED, LocalDateTime.now());
 
-            List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
-            List<Long> itemIds = items == null ? List.of()
-                    : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
+            var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
 
-            if (!itemIds.isEmpty()) {
-                itemService.deleteItemsByItemsId(itemIds);
-                for (Long itemId : itemIds) {
-                    addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, List.of(itemId));
-                }
-            } else {
-                addInvoiceToOperation(invoiceEntity.getId(), "Invoice canceled", OperationStatus.CANCELED, null);
+            for (var item : itemResponses) {
+                itemService.updateItemStatus(item.getId(), ItemStatus.DELETED);
             }
+
+            addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
 
     }
@@ -222,43 +196,26 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.CORRECTION, LocalDateTime.now());
 
-        List<ItemResponse> items = itemService.findAllItemsByInvoiceId(invoiceId);
-        List<Long> itemIds = (items == null) ? List.of()
-                : items.stream().map(ItemResponse::getId).filter(Objects::nonNull).toList();
-
         String opComment = (request.getComment() == null || request.getComment().isBlank())
                 ? "Correction requested"
                 : request.getComment();
 
-        if (!itemIds.isEmpty()) {
-            for (Long itemId : itemIds) {
-                addInvoiceToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION, List.of(itemId));
-            }
-        } else {
-            addInvoiceToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION, null);
+        var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
+
+        for (var item : itemResponses) {
+            itemService.updateItemStatus(item.getId(), ItemStatus.UPDATED);
         }
+
+        itemService.addItemsToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION);
     }
 
-    private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status, List<Long> itemIds) {
+    private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
-
-        List<CreateOperationDetailsRequest> items = itemIds != null
-                ? itemIds.stream()
-                .map(itemId -> {
-                    itemService.findById(itemId);
-                    return CreateOperationDetailsRequest.builder()
-                            .itemId(itemId)
-                            .itemStatus(ItemStatus.CREATED)
-                            .comment(comment)
-                            .build();
-                })
-                .toList()
-                : Collections.emptyList();
 
         CreateOperationRequest operationRequest = CreateOperationRequest.builder()
                 .status(status)
                 .invoiceId(invoiceEntity.getId())
-                .items(items)
+                .comment(comment)
                 .build();
 
         operationService.saveOperation(operationRequest);
@@ -272,10 +229,37 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
+    public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
+                                                             InvoiceFilterRequest filter,
+                                                             Integer page,
+                                                             Integer size) {
+        if (page == null || page < 0) {
+            page = 0;
+        }
+        if (size == null || size <= 0) {
+            size = MIN_SIZE;
+        } else if (size > MAX_SIZE) {
+            size = MAX_SIZE;
+        }
+
+        filter.setOffset(page * size);
+        filter.setLimit(size);
+
         var userResponse = findRecipientByTaxId(recipientTaxId);
-        var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
-        return invoiceMapper.allByRecipientUserTaxId(allByRecipientUserTaxId);
+        var allByRecipientUserTaxId = invoiceRepository
+                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+
+        var count = invoiceRepository
+                .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+        boolean hasNext = count > (long) (page + 1) * size ;
+
+        List<InvoiceResponse> invoiceResponses = invoiceMapper
+                .allByRecipientUserTaxId(allByRecipientUserTaxId);
+
+        return PaginatedInvoiceResponse.builder()
+                .invoices(invoiceResponses)
+                .hasNext(hasNext)
+                .build();
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {
@@ -401,13 +385,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId) {
-        //TODO: check senderTaxId equals to current user ID
-        return invoiceRepository.findInvoicesBySenderTaxId(senderTaxId)
-                .stream()
-                .map(invoiceMapper::fromEntityToResponse)
-                .toList();
+    public List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter) {
+        if (filter.getOffset() == null) filter.setOffset(0);
+        if (filter.getLimit() == null) filter.setLimit(10);
+        var entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
+        return invoiceMapper.allByRecipientOrSenderUserTaxId(entities);
     }
+
 
     @Override
     public InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request) {

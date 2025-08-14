@@ -4,6 +4,9 @@ import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.request.item.UpdateItemRequest;
+import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
+import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
+import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.MeasurementEntity;
@@ -12,11 +15,10 @@ import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.exception.ExceptionConstants;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.mapper.ItemMapStruct;
-import az.cybernet.invoice.repository.InvoiceRepository;
-import az.cybernet.invoice.repository.ItemRepository;
-import az.cybernet.invoice.repository.MeasurementRepository;
-import az.cybernet.invoice.service.abstraction.InvoiceService;
+import az.cybernet.invoice.repository.*;
 import az.cybernet.invoice.service.abstraction.ItemService;
+import az.cybernet.invoice.service.abstraction.OperationDetailsService;
+import az.cybernet.invoice.service.abstraction.OperationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,15 +30,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 @Log
 public class ItemServiceImpl implements ItemService {
     private final ItemMapStruct itemMapStruct;
     private final ItemRepository itemRepository;
-    private final InvoiceRepository invoiceRepository;
     private final MeasurementRepository measurementRepository;
-    private final InvoiceService invoiceService;
+    private final OperationService operationService;
+    private final OperationDetailsService operationDetailsService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -44,15 +48,81 @@ public class ItemServiceImpl implements ItemService {
         if (itemsRequest == null || itemsRequest.getItemsRequest() == null || itemsRequest.getItemsRequest().isEmpty()) {
             return Collections.emptyList();
         }
+
         for (ItemRequest itemRequest : itemsRequest.getItemsRequest()) {
             MeasurementEntity measurement = measurementRepository.findByName(itemRequest.getMeasurementName());
+            itemRequest.setStatus(ItemStatus.CREATED);
             if (measurement == null) {
-                throw new IllegalArgumentException("Measurement with name '" + itemRequest.getMeasurementName() + "' not found");
+                throw new IllegalArgumentException(
+                        "Measurement with name '" + itemRequest.getMeasurementName() + "' not found"
+                );
             }
         }
+
         itemRepository.addItems(itemsRequest);
-//      operationRepository.addItems(itemsRequest);
-        return findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
+        List<ItemResponse> itemResponses = findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
+        List<Long> itemIds = itemResponses.stream()
+                .map(ItemResponse::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        addItemsToOperation(
+                AddItemsToOperationRequest.builder()
+                        .invoiceId(itemsRequest.getInvoiceId())
+                        .comment("Items added")
+                        .status(OperationStatus.DRAFT)
+                        .itemIds(itemIds)
+                        .build()
+        );
+        return itemResponses;
+    }
+
+    @Transactional
+    @Override
+    public void addItemsToOperation(AddItemsToOperationRequest request) {
+        final Long invoiceId = request.getInvoiceId();
+        List<Long> itemIds = request.getItemIds();
+        if (itemIds == null) {
+            itemIds = findAllItemsByInvoiceId(invoiceId).stream()
+                    .map(ItemResponse::getId)
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
+
+        List<CreateOperationDetailsRequest> details = itemIds.stream()
+                .map(itemId -> CreateOperationDetailsRequest.builder()
+                        .itemId(itemId)
+                        .itemStatus(ItemStatus.CREATED)
+                        .build())
+                        .toList();
+
+        List<CreateOperationDetailsRequest> itemsForOp =
+                details.isEmpty() ? null : details;
+
+        CreateOperationRequest opReq = CreateOperationRequest.builder()
+                .invoiceId(invoiceId)
+                .status(request.getStatus())
+                .comment(request.getComment())
+                .items(itemsForOp)
+                .build();
+
+        //buradaki save metodundaki mentiq ele qurulmalidirki hem operation hemde operationDetailse save olunsun
+        operationService.saveOperation(opReq);
+    }
+
+    @Transactional
+    @Override
+    public void updateItemStatus(Long itemId, ItemStatus status) {
+           ItemEntity item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Item not found with id: " + itemId,
+                        ExceptionConstants.ITEM_NOT_FOUND.getCode()
+                ));
+           item.setStatus(status);
+           item.setUpdatedAt(LocalDateTime.now());
+
+
+        itemRepository.updateItems(item);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -95,7 +165,7 @@ public class ItemServiceImpl implements ItemService {
 
         return itemRepository.findAllItemsByInvoiceId(invoiceId).stream()
                 .map(itemMapStruct::toResponse)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override

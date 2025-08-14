@@ -22,7 +22,7 @@ public interface InvoiceMapper {
     @Mapping(target = "items", ignore = true)
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
 
-    List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
+    List<InvoiceResponse> allByRecipientOrSenderUserTaxId(List<InvoiceEntity> invoiceEntities);
 
     InvoiceResponse fromEntityToResponse(InvoiceEntity invoice);
 

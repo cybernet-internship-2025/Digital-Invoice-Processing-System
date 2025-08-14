@@ -47,8 +47,8 @@ databaseChangeLog:
                     nullable: false
 
               - column:
-                  name: measurement_id
-                  type: BIGINT
+                  name: measurement_name
+                  type: VARCHAR(128)
                   constraints:
                     nullable: false
 
@@ -86,7 +86,7 @@ databaseChangeLog:
 
         - addForeignKeyConstraint:
             baseTableName: items
-            baseColumnNames: measurement_id
+            baseColumnNames: measurement_name
             referencedTableName: measurements
-            referencedColumnNames: id
+            referencedColumnNames: name
             constraintName: fk_items_measurement

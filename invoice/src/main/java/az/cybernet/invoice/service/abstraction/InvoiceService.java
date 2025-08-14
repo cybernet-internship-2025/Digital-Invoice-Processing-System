@@ -1,11 +1,6 @@
 package az.cybernet.invoice.service.abstraction;
 
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 
@@ -28,10 +23,13 @@ public interface InvoiceService {
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId);
+    List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
 
 
-    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
+    PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
+                                                      InvoiceFilterRequest filter,
+                                                      Integer page,
+                                                      Integer size);
 
     void approveInvoice(ApproveAndCancelInvoiceRequest request);
 
