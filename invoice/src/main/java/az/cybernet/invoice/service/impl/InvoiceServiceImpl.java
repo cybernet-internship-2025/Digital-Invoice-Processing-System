@@ -57,6 +57,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     InvoiceMapper invoiceMapper;
     ItemService itemService;
     OperationService operationService;
+    static int MAX_SIZE = 50;
+    static int MIN_SIZE = 10;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -227,10 +229,37 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId) {
+    public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
+                                                             InvoiceFilterRequest filter,
+                                                             Integer page,
+                                                             Integer size) {
+        if (page == null || page < 0) {
+            page = 0;
+        }
+        if (size == null || size <= 0) {
+            size = MIN_SIZE;
+        } else if (size > MAX_SIZE) {
+            size = MAX_SIZE;
+        }
+
+        filter.setOffset(page * size);
+        filter.setLimit(size);
+
         var userResponse = findRecipientByTaxId(recipientTaxId);
-        var allByRecipientUserTaxId = invoiceRepository.findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId());
-        return invoiceMapper.allByRecipientOrSenderUserTaxId(allByRecipientUserTaxId);
+        var allByRecipientUserTaxId = invoiceRepository
+                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+
+        var count = invoiceRepository
+                .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+        boolean hasNext = count > (long) (page + 1) * size ;
+
+        List<InvoiceResponse> invoiceResponses = invoiceMapper
+                .allByRecipientUserTaxId(allByRecipientUserTaxId);
+
+        return PaginatedInvoiceResponse.builder()
+                .invoices(invoiceResponses)
+                .hasNext(hasNext)
+                .build();
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {

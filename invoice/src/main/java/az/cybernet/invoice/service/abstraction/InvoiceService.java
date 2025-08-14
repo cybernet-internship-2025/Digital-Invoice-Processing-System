@@ -26,7 +26,10 @@ public interface InvoiceService {
     List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
 
 
-    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
+    PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
+                                                      InvoiceFilterRequest filter,
+                                                      Integer page,
+                                                      Integer size);
 
     void approveInvoice(ApproveAndCancelInvoiceRequest request);
 
