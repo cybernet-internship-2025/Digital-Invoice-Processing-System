@@ -2,6 +2,7 @@ package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 
 import java.util.List;
@@ -22,10 +23,13 @@ public interface InvoiceService {
     InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
+    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter);
 
 
-    List<InvoiceResponse> findAllByRecipientUserTaxId(String recipientTaxId);
+    PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
+                                                      InvoiceFilterRequest filter,
+                                                      Integer page,
+                                                      Integer size);
 
     void approveInvoice(ApproveAndCancelInvoiceRequest request);
 

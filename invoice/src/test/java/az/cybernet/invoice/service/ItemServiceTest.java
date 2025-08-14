@@ -121,14 +121,11 @@ class ItemServiceTest {
         itemRequest.setMeasurementName("kq"); // measurement name təyin edilir
         itemRequest.setUnitPrice(BigDecimal.valueOf(10));
         itemRequest.setQuantity(5);
+        itemRequest.setProductName("Alma");
         itemsRequest.setItemsRequest(List.of(itemRequest));
 
         MeasurementEntity measurementEntity = new MeasurementEntity();
         measurementEntity.setId(1L);
-
-        ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setId(1L);
-        itemEntity.setName("Test Item");
 
 
         when(measurementRepository.findByName("kq")).thenReturn(measurementEntity);

@@ -42,6 +42,8 @@ public class OperationServiceImpl implements OperationService {
         OperationEntity entity = new OperationEntity();
         entity.setCreatedAt(LocalDateTime.now());
         entity.setStatus(request.getStatus());
+        entity.setComment(request.getComment());
+
 
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(request.getInvoiceId());
@@ -49,12 +51,13 @@ public class OperationServiceImpl implements OperationService {
 
 
         List<OperationDetailsEntity> detailsList = new ArrayList<>();
+
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
         for (CreateOperationDetailsRequest detail : request.getItems()) {
             OperationDetailsEntity operationDetail = OperationDetailsEntity.builder()
                     .item(ItemEntity.builder()
                             .id(detail.getItemId())
                             .build())
-                    .comment(detail.getComment())
                     .itemStatus(detail.getItemStatus())
                     .operation(entity)
                     .build();
@@ -64,7 +67,7 @@ public class OperationServiceImpl implements OperationService {
 
         entity.setItemDetails(detailsList);
         operationRepository.save(entity);
-    }
+    }}
 
 
     @Override
@@ -108,13 +111,12 @@ public class OperationServiceImpl implements OperationService {
                 .orElseThrow(() -> new RuntimeException("Operation not found with ID: " + id));
 
         op.setStatus(newStatus);
-        if (op.getItemDetails() != null) {
-            for (OperationDetailsEntity detail : op.getItemDetails()) {
-                detail.setComment(comment);
-            }}
+        op.setComment(comment);
+
         operationRepository.save(op);
         return operationMapStruct.toResponse(op);
     }
+
 
 
 

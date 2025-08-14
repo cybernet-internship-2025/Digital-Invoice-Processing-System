@@ -1,6 +1,6 @@
 package az.cybernet.invoice.repository;
 
-import az.cybernet.invoice.dto.request.invoice.FilterInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import org.apache.ibatis.annotations.Mapper;
@@ -39,11 +39,15 @@ public interface InvoiceRepository {
                                                      @Param("receiverTaxId") String receiverTaxId);
 
 
-    List<InvoiceEntity> findAllInvoicesByRecipientUserTaxId(String recipientTaxId);
+    List<InvoiceEntity> findAllInvoicesByRecipientUserTaxId(@Param("recipientTaxId") String recipientTaxId,
+                                                            @Param("filter") InvoiceFilterRequest filter);
+
+    Long countInvoicesByRecipientUserTaxId(@Param("recipientTaxId") String recipientTaxId,
+                                           @Param("filter") InvoiceFilterRequest filter);
 
     void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
 
-    List<InvoiceEntity> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
+    List<InvoiceEntity> findInvoicesBySenderTaxId(@Param("filter") InvoiceFilterRequest filter);
 
     void refreshInvoice(Long invoiceId);
 

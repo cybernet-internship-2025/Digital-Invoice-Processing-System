@@ -1,69 +1,118 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="az.cybernet.invoice.repository.OperationDetailsRepository">
+<mapper namespace="az.cybernet.invoice.repository.OperationRepository">
 
-    <resultMap id="OperationDetailsResultMap" type="az.cybernet.invoice.entity.OperationDetailsEntity">
-        <id property="id" column="id"/>
+    <resultMap id="OperationDetailsMap" type="az.cybernet.invoice.entity.OperationDetailsEntity">
+        <id property="id" column="od_id"/>
+        <result property="comment" column="od_comment"/>
+        <result property="itemStatus" column="od_item_status" javaType="az.cybernet.invoice.enums.ItemStatus"/>
+        <result property="operationId" column="od_operation_id"/>
 
-        <result property="itemStatus" column="item_status" javaType="az.cybernet.invoice.enums.ItemStatus"/>
-
-        <association property="operation" javaType="az.cybernet.invoice.entity.OperationEntity">
-            <id property="id" column="operation_id"/>
-            <result property="status" column="operation_status"/>
-        </association>
 
         <association property="item" javaType="az.cybernet.invoice.entity.ItemEntity">
-            <id property="id" column="item_id"/>
-            <result property="name" column="item_name"/>
+            <id property="id" column="it_id"/>
+            <result property="name" column="it_name"/>
+            <result property="unitPrice" column="it_unit_price"/>
+            <result property="quantity" column="it_quantity"/>
         </association>
     </resultMap>
 
 
-    <insert id="save" parameterType="az.cybernet.invoice.entity.OperationDetailsEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO operation_details (operation_id, item_id, item_status)
-        VALUES (#{operation.id}, #{item.id}, #{itemStatus})
+    <resultMap id="OperationEntityMap" type="az.cybernet.invoice.entity.OperationEntity">
+        <id property="id" column="o_id"/>
+        <result property="status" column="o_status" javaType="az.cybernet.invoice.enums.OperationStatus"/>
+        <result property="createdAt" column="o_created_at"/>
+
+
+        <association property="invoice" javaType="az.cybernet.invoice.entity.InvoiceEntity">
+            <id property="id" column="i_id"/>
+            <result property="invoiceNumber" column="i_invoice_number"/>
+            <result property="invoiceSeries" column="i_invoice_series"/>
+            <result property="totalPrice" column="i_total_price"/>
+            <result property="senderTaxId" column="i_sender_tax_id"/>
+            <result property="recipientTaxId" column="i_recipient_tax_id"/>
+            <result property="status" column="i_status" javaType="az.cybernet.invoice.enums.InvoiceStatus"/>
+            <result property="createdAt" column="i_created_at"/>
+        </association>
+
+
+        <collection property="itemDetails" ofType="az.cybernet.invoice.entity.OperationDetailsEntity"
+                    resultMap="OperationDetailsMap"/>
+    </resultMap>
+
+    <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity">
+        INSERT INTO operations (status, created_at, invoice_id)
+        VALUES (#{op.status}, #{op.createdAt}, #{op.invoice.id})
     </insert>
 
-    <select id="findByItemId" parameterType="long" resultMap="OperationDetailsResultMap">
-        SELECT
-            od.id,
-            od.operation_id,
-            od.item_id,
-            od.item_status,
+    <select id="findById" parameterType="long" resultMap="OperationEntityMap">
+        SELECT o.id            AS id,
+        o.status        AS status,
+        o.created_at    AS created_at,
+        o.invoice_id    AS invoice_id,
+        od.operation_id AS operation_id,
+        od.item_id      AS item_id,
+        od.item_status  AS item_status
+        -- od.comment AS comment -- SİLİNDİ
+        FROM operations o
+        LEFT JOIN operation_details od ON o.id = od.operation_id
+        WHERE o.id = #{id}
+    </select>
 
-            o.id AS operation_id,
-            o.status AS operation_status,
+    <select id="findAll" resultMap="OperationEntityMap">
+        SELECT o.id            AS id,
+        o.status        AS status,
+        o.created_at    AS created_at,
+        o.invoice_id    AS invoice_id,
+        od.operation_id AS operation_id,
+        od.item_id      AS item_id,
+        od.item_status  AS item_status
 
-            i.id AS item_id,
-            i.name AS item_name
+        FROM operations o
+        LEFT JOIN operation_details od ON o.id = od.operation_id
+    </select>
 
-        FROM operation_details od
-                 LEFT JOIN operation o ON od.operation_id = o.id
-                 LEFT JOIN item i ON od.item_id = i.id
+    <select id="findByStatus" parameterType="az.cybernet.invoice.enums.OperationStatus" resultMap="OperationEntityMap">
+        SELECT o.id            AS id,
+        o.status        AS status,
+        o.created_at    AS created_at,
+        o.invoice_id    AS invoice_id,
+        od.operation_id AS operation_id,
+        od.item_id      AS item_id,
+        od.item_status  AS item_status
+        -- od.comment AS comment -- SİLİNDİ
+        FROM operations o
+        LEFT JOIN operation_details od ON o.id = od.operation_id
+        WHERE o.status = #{status}
+    </select>
+
+    <select id="findAllItemsById" parameterType="long" resultMap="OperationEntityMap">
+        SELECT o.id            AS id,
+        o.status        AS status,
+        o.created_at    AS created_at,
+        o.invoice_id    AS invoice_id,
+        od.operation_id AS operation_id,
+        od.item_id      AS item_id,
+        od.item_status  AS item_status
+        FROM operations o
+        LEFT JOIN operation_details od ON o.id = od.operation_id
         WHERE od.item_id = #{itemId}
     </select>
 
-    <select id="findAll" resultMap="OperationDetailsResultMap">
-        SELECT
-            od.id,
-            od.operation_id,
-            od.item_id,
-            od.item_status,
-
-            o.id AS operation_id,
-            o.status AS operation_status,
-
-            i.id AS item_id,
-            i.name AS item_name
-
-        FROM operation_details od
-                 LEFT JOIN operation o ON od.operation_id = o.id
-                 LEFT JOIN item i ON od.item_id = i.id
+    <select id="findAllInvoicesById" parameterType="long" resultMap="OperationEntityMap">
+        SELECT o.id            AS id,
+        o.status        AS status,
+        o.created_at    AS created_at,
+        o.invoice_id    AS invoice_id,
+        od.operation_id AS operation_id,
+        od.item_id      AS item_id,
+        od.item_status  AS item_status
+        FROM operations o
+        LEFT JOIN operation_details od ON o.id = od.operation_id
+        WHERE o.invoice_id = #{invoiceId}
     </select>
-
-
-
 
 </mapper>
