@@ -7,6 +7,7 @@ import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
@@ -385,11 +386,27 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter) {
-        if (filter.getOffset() == null) filter.setOffset(0);
-        if (filter.getLimit() == null) filter.setLimit(10);
-        var entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
-        return invoiceMapper.allByRecipientOrSenderUserTaxId(entities);
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
+        int queryLimit = filter.getLimit() + 1;
+        filter.setLimit(queryLimit);
+
+
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
+
+        boolean hasNext = entities.size() > filter.getLimit()-1;
+
+
+        if (hasNext) {
+            entities.removeLast(); // remove last item
+        }
+
+        PagedResponse<InvoiceResponse> response = new PagedResponse<>();
+        response.setContent(invoiceMapper.allByRecipientUserTaxId(entities));
+        response.setHasNext(hasNext);
+        response.setOffset(filter.getOffset());
+        response.setLimit(filter.getLimit() - 1);
+        return response;
+
     }
 
 

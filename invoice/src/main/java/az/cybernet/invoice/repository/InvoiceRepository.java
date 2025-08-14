@@ -47,7 +47,7 @@ public interface InvoiceRepository {
 
     void updateTotalPrice(@Param("invoiceId") Long invoiceId, @Param("totalPrice") BigDecimal totalPrice);
 
-    List<InvoiceEntity> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
+    List<InvoiceEntity> findInvoicesBySenderTaxId(@Param("filter") InvoiceFilterRequest filter);
 
     void refreshInvoice(Long invoiceId);
 }

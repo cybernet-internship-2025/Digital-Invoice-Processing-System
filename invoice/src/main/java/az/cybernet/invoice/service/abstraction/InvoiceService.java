@@ -2,6 +2,7 @@ package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface InvoiceService {
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    List<InvoiceResponse> findInvoicesBySenderTaxId(FilterInvoiceRequest filter);
+    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
