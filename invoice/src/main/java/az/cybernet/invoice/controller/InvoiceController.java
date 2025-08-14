@@ -2,6 +2,7 @@ package az.cybernet.invoice.controller;
 
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import feign.Param;
 import jakarta.validation.Valid;
@@ -67,7 +68,7 @@ public class InvoiceController {
 
 
     @GetMapping("/outbox/{senderTaxId}")
-    public List<InvoiceResponse> findInvoicesBySenderTaxId(
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
             @PathVariable String senderTaxId,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) LocalDate fromDate,
