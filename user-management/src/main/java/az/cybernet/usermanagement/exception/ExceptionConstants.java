@@ -12,5 +12,13 @@ public enum ExceptionConstants {
 
     private final String code;
     private final String message;
+
+    public String getMessage(String taxId) {
+        if ((this == USER_NOT_FOUND)) {
+            return String.format("No %s with id (ID: %s) was found",
+                    this.name().toLowerCase().replace("_not_found", ""), taxId);
+        }
+        return this.message;
+    }
 }
 

@@ -6,41 +6,35 @@ import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.InvalidTaxIdException;
-import az.cybernet.usermanagement.exception.UserNotFoundException;
+import az.cybernet.usermanagement.exception.NotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
 import az.cybernet.usermanagement.service.abstraction.UserService;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
-
 import static az.cybernet.usermanagement.exception.ExceptionConstants.INVALID_TAX_ID_EXCEPTION;
 import static az.cybernet.usermanagement.exception.ExceptionConstants.USER_NOT_FOUND;
+import static lombok.AccessLevel.PRIVATE;
 
 @Log
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
-
     UserRepository userRepository;
     UserMapstruct userMapstruct;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void restoreUser(String taxId) {
         var user = fetchUserIfExist(taxId);
         userRepository.restoreUser(user.getTaxId());
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteUser(String taxId) {
         var user = fetchUserIfExist(taxId);
@@ -53,28 +47,25 @@ public class UserServiceImpl implements UserService {
         return userMapstruct.toUserResponseFromEntity(user);
     }
 
-
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public UserResponse addUser(UserRequest request) {
-        UserEntity userEntity = userMapstruct.toUserEntityFromCreate(request);
+        var userEntity = userMapstruct.toUserEntityFromCreate(request);
 
-        String taxId = generateNextTaxId();
+        var taxId = generateNextTaxId();
 
         userEntity.setTaxId(taxId);
-        userEntity.setIsActive(true);
-        userEntity.setCreatedAt(LocalDateTime.now());
         userRepository.addUser(userEntity);
-        return  userMapstruct.toUserResponseFromEntity(userEntity);
+        return userMapstruct.toUserResponseFromEntity(userEntity);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public UserResponse updateUser(String taxId, UserRequest request) {
-        UserEntity userEntity = fetchUserIfExist(taxId);
+        var userEntity = fetchUserIfExist(taxId);
 
-        userEntity.setName(request.getName());
-        userEntity.setUpdatedAt(LocalDateTime.now());
+        userMapstruct.updateUserFromRequest(request, userEntity);
+
         userRepository.updateUser(userEntity);
         return userMapstruct.toUserResponseFromEntity(userEntity);
     }
@@ -100,7 +91,7 @@ public class UserServiceImpl implements UserService {
 
     @LogIgnore
     private UserEntity fetchUserIfExist(String taxId) {
-        return  userRepository.findUserByTaxId(taxId)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
+        return userRepository.findUserByTaxId(taxId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage(taxId)));
     }
 }

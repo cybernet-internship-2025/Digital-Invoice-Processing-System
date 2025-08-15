@@ -5,7 +5,7 @@ import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.ExceptionConstants;
 import az.cybernet.usermanagement.exception.InvalidTaxIdException;
-import az.cybernet.usermanagement.exception.UserNotFoundException;
+import az.cybernet.usermanagement.exception.NotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
 import az.cybernet.usermanagement.service.impl.UserServiceImpl;
@@ -127,7 +127,7 @@ public class UserServiceTest {
     }
     @Test
     void Should_ThrowException_When_TaxId_NotFound() {
-        UserNotFoundException exception = Assertions.assertThrows(UserNotFoundException.class, () -> {
+        NotFoundException exception = Assertions.assertThrows(NotFoundException.class, () -> {
             userService.findUserByTaxId("0000000003");
         });
 
