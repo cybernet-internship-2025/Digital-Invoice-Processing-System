@@ -5,6 +5,8 @@ import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,7 +22,6 @@ public interface InvoiceRepository {
     Long getNextInvoiceSequence();
 
     void updateInvoiceStatus(@Param("id") Long id, @Param("status") InvoiceStatus status, @Param("updatedAt") LocalDateTime updatedAt);
-
 
     void deleteInvoiceById(Long id);
 
@@ -50,4 +51,28 @@ public interface InvoiceRepository {
     List<InvoiceEntity> findInvoicesBySenderTaxId(@Param("filter") InvoiceFilterRequest filter);
 
     void refreshInvoice(Long invoiceId);
+
+    @Update("""
+        UPDATE invoice
+        SET previous_status = #{previousStatus},
+            status = #{status},
+            last_pending_at = #{lastPendingAt},
+            comment = #{comment},
+            updated_at = NOW()
+        WHERE id = #{id}
+    """)
+    void updateInvoiceStatus(InvoiceEntity invoice);
+
+    @Select("""
+        SELECT * FROM invoice
+        WHERE status = 'PENDING' AND last_pending_at <= #{deadline}
+    """)
+    List<InvoiceEntity> findPendingInvoicesOlderThan(@Param("deadline") LocalDateTime deadline);
+
+    @Update("""
+        UPDATE invoice
+        SET status = 'APPROVED', updated_at = NOW()
+        WHERE id = #{id}
+    """)
+    void approveInvoiceById(@Param("id") Long id);
 }

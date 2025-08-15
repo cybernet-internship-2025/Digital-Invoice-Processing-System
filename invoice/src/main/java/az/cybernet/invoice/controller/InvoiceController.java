@@ -4,15 +4,12 @@ import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
-import feign.Param;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -125,6 +122,21 @@ public class InvoiceController {
     @DeleteMapping("/{invoiceId}")
     public void deleteInvoiceById(@PathVariable("invoiceId") Long invoiceId) {
         invoiceService.deleteInvoiceById(invoiceId);
+    }
+
+
+    @PutMapping("/{id}/pending")
+    public ResponseEntity<Void> markAsPending(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "Səhvlər var") String comment) {
+        invoiceService.markAsPending(id, comment);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/approve-timeout")
+    public ResponseEntity<Void> approvePendingInvoicesAfterTimeout() {
+        invoiceService.approvePendingInvoicesAfterTimeout();
+        return ResponseEntity.ok().build();
     }
 
 
