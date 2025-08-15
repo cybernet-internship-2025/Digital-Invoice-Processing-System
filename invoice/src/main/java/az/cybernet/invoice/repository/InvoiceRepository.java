@@ -52,27 +52,4 @@ public interface InvoiceRepository {
 
     void refreshInvoice(Long invoiceId);
 
-    @Update("""
-        UPDATE invoice
-        SET previous_status = #{previousStatus},
-            status = #{status},
-            last_pending_at = #{lastPendingAt},
-            comment = #{comment},
-            updated_at = NOW()
-        WHERE id = #{id}
-    """)
-    void updateInvoiceStatus(InvoiceEntity invoice);
 
-    @Select("""
-        SELECT * FROM invoice
-        WHERE status = 'PENDING' AND last_pending_at <= #{deadline}
-    """)
-    List<InvoiceEntity> findPendingInvoicesOlderThan(@Param("deadline") LocalDateTime deadline);
-
-    @Update("""
-        UPDATE invoice
-        SET status = 'APPROVED', updated_at = NOW()
-        WHERE id = #{id}
-    """)
-    void approveInvoiceById(@Param("id") Long id);
-}
