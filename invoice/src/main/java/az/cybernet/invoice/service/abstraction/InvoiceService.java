@@ -12,19 +12,18 @@ public interface InvoiceService {
 
     InvoiceResponse findById(Long id);
 
-    void deleteInvoiceById(Long invoiceId);
+    void deleteInvoiceById(DeleteInvoicesRequest request);
 
     InvoiceEntity fetchInvoiceIfExist(Long invoiceId);
 
     InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
 
-    InvoiceResponse sendInvoice(SendInvoiceRequest request);
+    List<InvoiceResponse> sendInvoice(SendInvoiceRequest request);
 
     InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
-    InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter);
+    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
@@ -39,5 +38,10 @@ public interface InvoiceService {
     void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
 
     InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request);
+
+
+    void markAsPending(Long invoiceId, String comment);
+
+    void approvePendingInvoicesAfterTimeout();
 
 }

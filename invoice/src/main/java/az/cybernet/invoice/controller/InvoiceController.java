@@ -4,15 +4,12 @@ import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
-import feign.Param;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -90,7 +87,7 @@ public class InvoiceController {
         filter.setOffset(offset);
         filter.setLimit(limit);
 
-        return invoiceService.findInvoicesBySenderTaxId(filter);
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId,filter);
     }
 
 
@@ -101,7 +98,7 @@ public class InvoiceController {
     }
 
     @PutMapping("/send-invoice")
-    public InvoiceResponse sendInvoice(@RequestBody SendInvoiceRequest request) {
+    public List<InvoiceResponse> sendInvoice(@RequestBody SendInvoiceRequest request) {
         return invoiceService.sendInvoice(request);
     }
 
@@ -110,21 +107,30 @@ public class InvoiceController {
         return invoiceService.sendInvoiceToCorrection(request);
     }
 
-    @PutMapping("/rollback/{invoiceId}/{senderTaxId}")
-    public InvoiceResponse rollbackInvoice(@PathVariable("invoiceId") Long invoiceId,
-                                           @PathVariable("senderTaxId") String senderTaxId) {
-        return invoiceService.rollbackInvoice(invoiceId, senderTaxId);
-    }
-
     @PutMapping
     public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
         return invoiceService.updateInvoiceItems(request);
     }
 
 
-    @DeleteMapping("/{invoiceId}")
-    public void deleteInvoiceById(@PathVariable("invoiceId") Long invoiceId) {
-        invoiceService.deleteInvoiceById(invoiceId);
+    @DeleteMapping
+    public void deleteInvoiceById(@RequestBody DeleteInvoicesRequest request) {
+        invoiceService.deleteInvoiceById(request);
+    }
+
+
+    @PutMapping("/{id}/pending")
+    public ResponseEntity<Void> markAsPending(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "Səhvlər var") String comment) {
+        invoiceService.markAsPending(id, comment);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/approve-timeout")
+    public ResponseEntity<Void> approvePendingInvoicesAfterTimeout() {
+        invoiceService.approvePendingInvoicesAfterTimeout();
+        return ResponseEntity.ok().build();
     }
 
 
