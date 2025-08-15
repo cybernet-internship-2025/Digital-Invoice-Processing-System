@@ -1,6 +1,5 @@
 package az.cybernet.invoice.repository;
 
-import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.entity.ItemEntity;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -10,8 +9,7 @@ import java.util.Optional;
 
 @Mapper
 public interface ItemRepository {
-
-    void addItems(@Param("itemsRequest") ItemsRequest itemsRequest);
+    void addItems(@Param("item") ItemEntity item);
 
     void updateItems(ItemEntity item);
 
@@ -21,5 +19,5 @@ public interface ItemRepository {
 
     void deleteItemsByInvoiceId(Long invoiceId);
 
-    void deleteItemsByItemsId(@Param("list") List<Long> ids);
+    void deleteItemsByItemsId(@Param("ids") List<Long> ids);
 }
