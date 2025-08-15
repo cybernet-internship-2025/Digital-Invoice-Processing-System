@@ -3,8 +3,17 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
+import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
@@ -29,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +51,7 @@ import static az.cybernet.invoice.enums.OperationStatus.DRAFT;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.ITEM_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
@@ -231,9 +242,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
-                                                             InvoiceFilterRequest filter,
-                                                             Integer page,
-                                                             Integer size) {
+                                                                InvoiceFilterRequest filter,
+                                                                Integer page,
+                                                                Integer size) {
         if (page == null || page < 0) {
             page = 0;
         }
@@ -252,7 +263,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var count = invoiceRepository
                 .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
-        boolean hasNext = count > (long) (page + 1) * size ;
+        boolean hasNext = count > (long) (page + 1) * size;
 
         List<InvoiceResponse> invoiceResponses = invoiceMapper
                 .allByRecipientUserTaxId(allByRecipientUserTaxId);
@@ -393,7 +404,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
 
-        boolean hasNext = entities.size() > filter.getLimit()-1;
+        boolean hasNext = entities.size() > filter.getLimit() - 1;
 
 
         if (hasNext) {
@@ -439,6 +450,87 @@ public class InvoiceServiceImpl implements InvoiceService {
         addInvoiceToOperation(request.getInvoiceId(), "Invoice updated", UPDATE, null);
 
         return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public InvoiceResponse createReturnInvoice(ReturnInvoiceRequest invoiceRequest, String currentUserTaxId) {
+        var originalInvoice = fetchInvoiceIfExist(invoiceRequest.getOriginalInvoiceId());
+
+        if (!originalInvoice.getRecipientTaxId().equals(currentUserTaxId)) {
+            throw new IllegalStateException("Only the recipient of the original invoice can create a return invoice");
+        }
+
+        var invoiceEntity = InvoiceEntity.builder()
+                .senderTaxId(originalInvoice.getRecipientTaxId())
+                .recipientTaxId(originalInvoice.getSenderTaxId())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
+                .status(InvoiceStatus.DRAFT)
+                .invoiceSeries("INR")
+                .invoiceNumber(generateInvoiceNumber())
+                .isActive(true)
+                .build();
+
+        List<ItemEntity> returnedItems = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (ReturnItemRequest ri : invoiceRequest.getItems()) {
+            ItemEntity originalItem = originalInvoice.getItems().stream()
+                    .filter(i -> i.getId().equals(ri.getItemId()))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException(ITEM_NOT_FOUND.getCode(), ITEM_NOT_FOUND.getMessage()));
+
+            if (ri.getQuantity().compareTo(originalItem.getQuantity()) > 0) {
+                throw new IllegalArgumentException("Return quantity cannot be greater than original quantity");
+            }
+
+            ItemEntity returnedItem = ItemEntity.builder()
+                    .name(originalItem.getName())
+                    .unitPrice(originalItem.getUnitPrice())
+                    .quantity(ri.getQuantity())
+                    .isActive(true)
+                    .totalPrice(originalItem.getUnitPrice().multiply(BigDecimal.valueOf(ri.getQuantity())))
+                    .measurement(originalItem.getMeasurement())
+                    .invoice(invoiceEntity)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .status(ItemStatus.CREATED)
+                    .build();
+
+            totalPrice = totalPrice.add(returnedItem.getTotalPrice());
+
+            returnedItems.add(returnedItem);
+        }
+
+        invoiceEntity.setItems(returnedItems);
+        invoiceEntity.setTotalPrice(totalPrice);
+
+        return invoiceMapper.fromEntityToResponse(invoiceEntity);
+    }
+
+    @Override
+    public InvoiceResponse sendReturnInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
+        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+        if (!"INR".equals(invoiceEntity.getInvoiceSeries())) {
+            throw new IllegalStateException("This is not a return (INR) invoice");
+        }
+
+        if (!invoiceEntity.getRecipientTaxId().equals(senderTaxId)) {
+            throw new IllegalStateException("Only the sender can send this return invoice");
+        }
+
+        if (!invoiceEntity.getSenderTaxId().equals(recipientTaxId)) {
+            throw new IllegalStateException("Only the sender can send this return invoice");
+        }
+
+        if (!InvoiceStatus.DRAFT.equals(invoiceEntity.getStatus())) {
+            throw new IllegalStateException("Only draft invoices can be sent");
+        }
+
+        invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.PENDING, LocalDateTime.now());
+        return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
 
     private boolean doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
