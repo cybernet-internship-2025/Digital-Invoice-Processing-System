@@ -39,4 +39,9 @@ public interface InvoiceService {
 
     InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request);
 
+
+    void markAsPending(Long invoiceId, String comment);
+
+    void approvePendingInvoicesAfterTimeout();
+
 }

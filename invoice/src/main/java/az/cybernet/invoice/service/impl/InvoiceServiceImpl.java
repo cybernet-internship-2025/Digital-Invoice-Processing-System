@@ -56,6 +56,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
 
+
+
+
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest) {
@@ -443,6 +447,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
+
+
+    private boolean doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
+        return !Arrays.asList(statuses).contains(invoice.getStatus());
+
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
         if(!Arrays.asList(statuses).contains(invoice.getStatus())){
             String statusList = Arrays.stream(statuses)
@@ -451,6 +460,39 @@ public class InvoiceServiceImpl implements InvoiceService {
         throw new RuntimeException("Invoice status must be one of: "+statusList);
         }
 
+
     }
 
+
+    @Override
+    @Transactional
+    public void markAsPending(Long invoiceId, String comment) {
+        InvoiceEntity invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        if (invoice == null) {
+            throw new RuntimeException("Invoice not found");
+        }
+
+        invoice.setPreviousStatus(invoice.getStatus());
+        invoice.setStatus(InvoiceStatus.PENDING);
+        invoice.setLastPendingAt(LocalDateTime.now());
+        invoice.setComment(comment);
+
+        invoiceRepository.updateInvoiceStatus(invoice);
+    }
+
+
+    @Override
+    @Transactional
+    public void approvePendingInvoicesAfterTimeout() {
+        LocalDateTime deadline = LocalDateTime.now().minusMonths(1);
+        List<InvoiceEntity> expiredInvoices = invoiceRepository.findPendingInvoicesOlderThan(deadline);
+
+        for (InvoiceEntity invoice : expiredInvoices) {
+            invoiceRepository.approveInvoiceById(invoice.getId());
+        }
+
+
+    }
 }
