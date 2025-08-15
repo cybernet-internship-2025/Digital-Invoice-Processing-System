@@ -226,9 +226,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
-                                                             InvoiceFilterRequest filter,
-                                                             Integer page,
-                                                             Integer size) {
+                                                                InvoiceFilterRequest filter,
+                                                                Integer page,
+                                                                Integer size) {
         if (page == null || page < 0) {
             page = 0;
         }
@@ -247,7 +247,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var count = invoiceRepository
                 .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
-        boolean hasNext = count > (long) (page + 1) * size ;
+        boolean hasNext = count > (long) (page + 1) * size;
 
         List<InvoiceResponse> invoiceResponses = invoiceMapper
                 .allByRecipientUserTaxId(allByRecipientUserTaxId);
@@ -388,20 +388,15 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
         findSenderByTaxId(senderTaxId);
-
-
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
 
         int queryLimit = filter.getLimit() + 1;
         filter.setLimit(queryLimit);
 
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
 
-        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
-
-        boolean hasNext = entities.size() > filter.getLimit()-1;
-
+        boolean hasNext = entities.size() > filter.getLimit() - 1;
 
         if (hasNext) {
             entities.removeLast(); // remove last item
@@ -444,11 +439,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
-        if(!Arrays.asList(statuses).contains(invoice.getStatus())){
+        if (!Arrays.asList(statuses).contains(invoice.getStatus())) {
             String statusList = Arrays.stream(statuses)
                     .map(Enum::name)
                     .collect(Collectors.joining(" or "));
-        throw new RuntimeException("Invoice status must be one of: "+statusList);
+            throw new RuntimeException("Invoice status must be one of: " + statusList);
         }
 
     }
