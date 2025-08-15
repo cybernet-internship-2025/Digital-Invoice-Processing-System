@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SendInvoiceRequest {
-    String senderUserTaxId;
-    List<Long>invoicesId;
+public class DeleteInvoicesRequest {
+    List<Long>invoicesIds;
+    String senderTaxId;
 }
