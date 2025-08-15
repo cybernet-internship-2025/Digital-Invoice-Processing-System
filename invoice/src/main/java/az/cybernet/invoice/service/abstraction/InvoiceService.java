@@ -24,7 +24,7 @@ public interface InvoiceService {
 
     InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId);
 
-    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter);
+    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,

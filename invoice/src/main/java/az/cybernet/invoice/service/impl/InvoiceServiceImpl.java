@@ -386,12 +386,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
+        findSenderByTaxId(senderTaxId);
+
         int queryLimit = filter.getLimit() + 1;
         filter.setLimit(queryLimit);
 
 
-        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
 
         boolean hasNext = entities.size() > filter.getLimit()-1;
 
@@ -408,7 +410,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return response;
 
     }
-
 
     @Override
     public InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request) {
