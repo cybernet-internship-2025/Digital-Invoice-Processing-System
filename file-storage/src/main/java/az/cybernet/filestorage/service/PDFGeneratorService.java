@@ -16,7 +16,6 @@ import java.io.IOException;
 @Service
 public class PDFGeneratorService {
 
-
     public void export(HttpServletResponse response, InvoiceResponse invoice) throws IOException {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
