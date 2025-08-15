@@ -90,7 +90,7 @@ public class InvoiceController {
         filter.setOffset(offset);
         filter.setLimit(limit);
 
-        return invoiceService.findInvoicesBySenderTaxId(filter);
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId,filter);
     }
 
 

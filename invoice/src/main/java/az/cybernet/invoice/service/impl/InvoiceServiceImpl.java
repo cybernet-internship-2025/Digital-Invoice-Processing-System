@@ -368,12 +368,37 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+
+    @Transactional
+    public InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId) {
+        InvoiceEntity invoice = invoiceRepository.findBySenderTaxIdAndInvoiceId(senderTaxId, invoiceId)
+                .orElseThrow(() -> new RuntimeException("You have not any invoice and given by ID"));
+
+        if (doesntMatchInvoiceStatus(invoice, PENDING)) {
+            throw new RuntimeException("Your invoice isn't on PENDING status!");
+        }
+
+        invoice.setStatus(InvoiceStatus.DRAFT);
+
+        addInvoiceToOperation(invoiceId, "Invoice rolled back", DRAFT, null);
+
+        invoiceRepository.changeStatus(invoiceId, InvoiceStatus.DRAFT.toString());
+
+        return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
+        findSenderByTaxId(senderTaxId);
+
+
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
+
         int queryLimit = filter.getLimit() + 1;
         filter.setLimit(queryLimit);
 
 
-        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(filter);
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
 
         boolean hasNext = entities.size() > filter.getLimit()-1;
 
@@ -390,7 +415,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return response;
 
     }
-
 
     @Override
     public InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request) {

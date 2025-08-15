@@ -23,7 +23,7 @@ public interface InvoiceService {
     InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
-    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter);
+    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
