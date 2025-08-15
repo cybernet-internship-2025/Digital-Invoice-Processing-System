@@ -22,7 +22,7 @@ public interface InvoiceRepository {
     void updateInvoiceStatus(@Param("id") Long id, @Param("status") InvoiceStatus status, @Param("updatedAt") LocalDateTime updatedAt);
 
 
-    void deleteInvoiceById(Long id);
+    void deleteInvoicesById(List<Long> invoiceIds);
 
     void updateInvoiceRecipientTaxId(@Param("invoiceId") Long InvoiceId,
                                      @Param("recipientTaxId") String recipientTaxId);
@@ -52,4 +52,14 @@ public interface InvoiceRepository {
 
 
     void refreshInvoice(Long invoiceId);
+
+    List<Long> findInvalidInvoiceIdsBySenderTaxId(@Param("senderTaxId") String senderTaxId,
+                                   @Param("invoicesId") List<Long> invoiceIds);
+
+    List<Long>findAllInvalidInvoicesById(@Param("invoiceIds") List<Long> invoiceIds);
+
+    List<InvoiceEntity>findInvoicesByIds(@Param("ids") List<Long>ids);
+
+    void updateStatuses(@Param("ids") List<Long> invoiceIds,
+                        @Param("status") String status);
 }
