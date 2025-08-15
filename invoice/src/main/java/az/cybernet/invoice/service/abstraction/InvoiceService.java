@@ -4,6 +4,7 @@ import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
@@ -43,5 +44,11 @@ public interface InvoiceService {
     void markAsPending(Long invoiceId, String comment);
 
     void approvePendingInvoicesAfterTimeout();
+
+    void exportReceivedInvoicesToExcel(
+            String recipientTaxId,
+            InvoiceFilterRequest filter,
+            HttpServletResponse response
+    );
 
 }

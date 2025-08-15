@@ -4,9 +4,11 @@ import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
@@ -63,7 +65,30 @@ public class InvoiceController {
 
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
 }
+    @GetMapping("/invoices/export/received")
+    public void exportReceived(
+            @RequestParam String recipientTaxId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String invoiceNumber,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
+            @RequestParam(required = false) Integer year,
+            HttpServletResponse response
+    ) {
+        var filter = InvoiceFilterRequest.builder()
+                .status(status)
+                .type(type)
+                .invoiceNumber(invoiceNumber)
+                .fromDate(fromDate)
+                .toDate(toDate)
+                .year(year)
+                .build();
 
+        invoiceService.exportReceivedInvoicesToExcel(recipientTaxId, filter, response);
+    }
 
     @GetMapping("/outbox/{senderTaxId}")
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
