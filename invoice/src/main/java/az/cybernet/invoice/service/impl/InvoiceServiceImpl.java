@@ -3,8 +3,17 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
+import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
@@ -38,7 +47,11 @@ import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
-import static az.cybernet.invoice.exception.ExceptionConstants.*;
+import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
+import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
@@ -55,10 +68,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     OperationService operationService;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
-
-
-
-
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -112,7 +121,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal total = items.stream()
                 .map(ItemResponse::getTotalPrice)
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(ZERO, BigDecimal::add);
 
         invoiceRepository.updateTotalPrice(invoiceId, total);
         return total;
@@ -206,7 +215,18 @@ public class InvoiceServiceImpl implements InvoiceService {
             itemService.updateItemStatus(item.getId(), ItemStatus.UPDATED);
         }
 
-        itemService.addItemsToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION);
+        List<Long> itemIds = itemResponses.stream()
+                .map(ItemResponse::getId)
+                .collect(Collectors.toList());
+
+        AddItemsToOperationRequest items = AddItemsToOperationRequest.builder()
+                .invoiceId(invoiceEntity.getId())
+                .comment(opComment)
+                .status(OperationStatus.CORRECTION)
+                .itemIds(itemIds)
+                .build();
+
+        itemService.addItemsToOperation(items);
     }
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
@@ -230,9 +250,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
-                                                             InvoiceFilterRequest filter,
-                                                             Integer page,
-                                                             Integer size) {
+                                                                InvoiceFilterRequest filter,
+                                                                Integer page,
+                                                                Integer size) {
         if (page == null || page < 0) {
             page = 0;
         }
@@ -251,7 +271,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var count = invoiceRepository
                 .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
-        boolean hasNext = count > (long) (page + 1) * size ;
+        boolean hasNext = count > (long) (page + 1) * size;
 
         List<InvoiceResponse> invoiceResponses = invoiceMapper
                 .allByRecipientUserTaxId(allByRecipientUserTaxId);
@@ -263,7 +283,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private UserResponse findSenderByTaxId(String senderTaxId) {
-        UserResponse sender = userClient.findUserByTaxId(senderTaxId);
+        var sender = userClient.findUserByTaxId(senderTaxId);
 
         if (sender == null) {
             throw new NotFoundException(SENDER_NOT_FOUND.getCode(), SENDER_NOT_FOUND.getMessage());
@@ -273,7 +293,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private UserResponse findRecipientByTaxId(String recipientTaxId) {
-        UserResponse recipient = userClient.findUserByTaxId(recipientTaxId);
+        var recipient = userClient.findUserByTaxId(recipientTaxId);
 
         if (recipient == null) {
             throw new NotFoundException(RECIPIENT_NOT_FOUND.getCode(), RECIPIENT_NOT_FOUND.getMessage());
@@ -372,7 +392,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-
     @Transactional
     public InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId) {
         InvoiceEntity invoice = invoiceRepository.findBySenderTaxIdAndInvoiceId(senderTaxId, invoiceId)
@@ -391,9 +410,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
-    @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
-        findSenderByTaxId(senderTaxId);
+//    @Override
+//    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
+//        findSenderByTaxId(senderTaxId);
 
 
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
@@ -402,9 +421,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         filter.setLimit(queryLimit);
 
 
-        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
 
-        boolean hasNext = entities.size() > filter.getLimit()-1;
+        boolean hasNext = entities.size() > filter.getLimit() - 1;
 
 
         if (hasNext) {
@@ -448,21 +467,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
-
     private boolean doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
         return !Arrays.asList(statuses).contains(invoice.getStatus());
+    }
 
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
-        if(!Arrays.asList(statuses).contains(invoice.getStatus())){
+        if (!Arrays.asList(statuses).contains(invoice.getStatus())) {
             String statusList = Arrays.stream(statuses)
                     .map(Enum::name)
                     .collect(Collectors.joining(" or "));
-        throw new RuntimeException("Invoice status must be one of: "+statusList);
+            throw new RuntimeException("Invoice status must be one of: " + statusList);
         }
-
-
     }
-
 
     @Override
     @Transactional
@@ -492,7 +508,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         for (InvoiceEntity invoice : expiredInvoices) {
             invoiceRepository.approveInvoiceById(invoice.getId());
         }
-
 
     }
 }
