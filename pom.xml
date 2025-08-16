@@ -57,6 +57,7 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -147,6 +148,7 @@
             <artifactId>hibernate-validator</artifactId>
             <version>8.0.0.Final</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.mapstruct</groupId>
