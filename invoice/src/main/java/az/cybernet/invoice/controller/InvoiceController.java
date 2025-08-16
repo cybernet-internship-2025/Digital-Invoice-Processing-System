@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -94,7 +95,7 @@ public class InvoiceController {
     @PutMapping("/{recipientTaxId}/{invoiceId}")
     public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
                                                     @PathVariable("invoiceId") Long invoiceId) {
-        return invoiceService.updateInvoiceRecipientId(recipientTaxId, invoiceId);
+        return invoiceService.updateInvoiceRecipientTaxId(recipientTaxId, invoiceId);
     }
 
     @PutMapping("/send-invoice")
@@ -102,10 +103,6 @@ public class InvoiceController {
         return invoiceService.sendInvoice(request);
     }
 
-    @PutMapping("/correction")
-    public InvoiceResponse sendInvoiceToCorrection(@RequestBody SendInvoiceToCorrectionRequest request) {
-        return invoiceService.sendInvoiceToCorrection(request);
-    }
 
     @PutMapping
     public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
@@ -132,6 +129,18 @@ public class InvoiceController {
         invoiceService.approvePendingInvoicesAfterTimeout();
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/send-cancel/{invoiceId}/{receiverTaxId}")
+    void sendInvoiceToCancel(@PathVariable("invoiceId") Long invoiceId,
+                             @PathVariable("receiverTaxId") String receiverTaxId) {
+        invoiceService.sendInvoiceToCancel(invoiceId, receiverTaxId);
+    }
+
+    @PutMapping("/cancel-timeout")
+    void cancelPendingInvoicesAfterTimeout() {
+        invoiceService.cancelPendingInvoicesAfterTimeout();
+    }
+
 
 
 }

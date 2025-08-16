@@ -19,4 +19,9 @@ public class InvoiceScheduler {
     public void autoApprovePendingInvoices() {
         invoiceService.approvePendingInvoicesAfterTimeout();
     }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void autoCancelPendingInvoices(){
+        invoiceService.cancelPendingInvoicesAfterTimeout();
+    }
 }

@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateInvoiceItemsRequest {
+    String comment;
     String senderTaxId;
     Long invoiceId;
     List<Long>deletedItemsId;

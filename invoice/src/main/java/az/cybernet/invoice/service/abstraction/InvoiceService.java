@@ -16,11 +16,10 @@ public interface InvoiceService {
 
     InvoiceEntity fetchInvoiceIfExist(Long invoiceId);
 
-    InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
+    InvoiceResponse updateInvoiceRecipientTaxId(String recipientTaxId, Long invoiceId);
 
     List<InvoiceResponse> sendInvoice(SendInvoiceRequest request);
 
-    InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
     PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter);
@@ -43,5 +42,9 @@ public interface InvoiceService {
     void markAsPending(Long invoiceId, String comment);
 
     void approvePendingInvoicesAfterTimeout();
+
+    void sendInvoiceToCancel(Long invoiceId,String receiverTaxId);
+
+    void cancelPendingInvoicesAfterTimeout();
 
 }
