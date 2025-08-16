@@ -34,9 +34,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
-import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
-import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
+import static az.cybernet.invoice.enums.InvoiceStatus.*;
+import static az.cybernet.invoice.enums.OperationStatus.DELETE;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
 import static az.cybernet.invoice.exception.ExceptionConstants.*;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
@@ -301,7 +300,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteInvoiceById(DeleteInvoicesRequest request) {
         List<Long> invalidIds = invoiceRepository.findInvalidInvoiceIdsBySenderTaxId(request.getSenderTaxId(), request.getInvoicesIds());
 
@@ -310,29 +309,39 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         invoiceRepository.findInvoicesByIds(request.getInvoicesIds())
-                .forEach(invoice -> doesntMatchInvoiceStatus(invoice, InvoiceStatus.DRAFT));
+                .forEach(invoice -> {
+                            doesntMatchInvoiceStatus(invoice, InvoiceStatus.DRAFT);
+                            addInvoiceToOperation(invoice.getId(), "Invoice deleted", DELETE);
+                        }
+                );
 
         invoiceRepository.deleteInvoicesById(request.getInvoicesIds());
     }
 
     @Override
-    @Transactional
-    public InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId) {
+    @Transactional(rollbackFor = Exception.class)
+    public InvoiceResponse updateInvoiceRecipientTaxId(String recipientTaxId, Long invoiceId) {
         //TODO: check current user has invoice given by ID or not
         InvoiceEntity invoice = fetchInvoiceIfExist(invoiceId);
 
         doesntMatchInvoiceStatus(invoice, CORRECTION, InvoiceStatus.DRAFT);
-//        findRecipientByTaxId(recipientTaxId);
+        findRecipientByTaxId(recipientTaxId);
 
         invoice.setRecipientTaxId(recipientTaxId);
+        invoice.setStatus(PENDING);
 
         invoiceRepository.updateInvoiceRecipientTaxId(invoiceId, recipientTaxId);
+        invoiceRepository.updateStatuses(List.of(invoiceId), "PENDING");
+        invoiceRepository.refreshLastPendingAt(invoiceId);
+        invoiceRepository.updatePreviousStatus(invoiceId,"DRAFT");
+
+        addInvoiceToOperation(invoiceId, "Recipient Tax ID changed to: " + recipientTaxId, OperationStatus.PENDING);
 
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public List<InvoiceResponse> sendInvoice(SendInvoiceRequest request) {
         List<Long> invalidIds = invoiceRepository.findInvalidInvoiceIdsBySenderTaxId(request.getSenderUserTaxId(), request.getInvoicesId());
 
@@ -345,6 +354,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoices.forEach(invoice -> {
             doesntMatchInvoiceStatus(invoice, CORRECTION, InvoiceStatus.DRAFT);
             invoice.setStatus(PENDING);
+            addInvoiceToOperation(invoice.getId(), "Invoice with id " + invoice.getId() + " sent", OperationStatus.PENDING);
         });
 
         invoiceRepository.updateStatuses(request.getInvoicesId(), PENDING.toString());
@@ -354,42 +364,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .toList();
     }
 
-    @Override
-    @Transactional
-    public InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request) {
-        InvoiceEntity invoice = invoiceRepository.findByIdAndReceiverTaxId(request.getInvoiceId(), request.getReceiverTaxId())
-                .orElseThrow(() -> new RuntimeException("You have not any received active invoice and given by ID!"));
 
-        doesntMatchInvoiceStatus(invoice, PENDING);
-
-        invoiceRepository.changeStatus(request.getInvoiceId(), CORRECTION.toString());
-
-        invoice.setStatus(CORRECTION);
-
-        addInvoiceToOperation(request.getInvoiceId(), request.getComment(), OperationStatus.CORRECTION, null);
-
-        return invoiceMapper.fromEntityToResponse(invoice);
-    }
-
-    @Override
-
-    @Transactional
-    public InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId) {
-        InvoiceEntity invoice = invoiceRepository.findBySenderTaxIdAndInvoiceId(senderTaxId, invoiceId)
-                .orElseThrow(() -> new RuntimeException("You have not any invoice and given by ID"));
-
-        if (doesntMatchInvoiceStatus(invoice, PENDING)) {
-            throw new RuntimeException("Your invoice isn't on PENDING status!");
-        }
-
-        invoice.setStatus(InvoiceStatus.DRAFT);
-
-        addInvoiceToOperation(invoiceId, "Invoice rolled back", DRAFT, null);
-
-        invoiceRepository.changeStatus(invoiceId, InvoiceStatus.DRAFT.toString());
-
-        return invoiceMapper.fromEntityToResponse(invoice);
-    }
 
     @Override
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
@@ -423,18 +398,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request) {
         InvoiceEntity invoice = invoiceRepository.findBySenderTaxIdAndInvoiceId(request.getSenderTaxId(), request.getInvoiceId())
-                .orElseThrow(() -> new RuntimeException("You have not any invoice given by ID"));
+                .orElseThrow(() -> new NotFoundException(INVOICE_NOT_FOUND.getCode(), INVOICE_NOT_FOUND.getMessage()));
 
-        doesntMatchInvoiceStatus(invoice, CORRECTION);
+        doesntMatchInvoiceStatus(invoice, CORRECTION, DRAFT);
 
-        addInvoiceToOperation(request.getInvoiceId(), "Invoice updated", UPDATE, null);
+        addInvoiceToOperation(request.getInvoiceId(), request.getComment(), UPDATE);
 
         if (!isNullOrEmpty(request.getCreatedItems().getItemsRequest())) {
             itemService.addItems(request.getCreatedItems());
         }
 
         if (!isNullOrEmpty(request.getUpdatedItems())) {
-            itemService.updateItems(request.getUpdatedItems());
+            itemService.updateItems(request.getUpdatedItems(), request.getInvoiceId());
         }
 
         if (!isNullOrEmpty(request.getDeletedItemsId())) {
@@ -449,18 +424,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
 
-    private boolean doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
-        return !Arrays.asList(statuses).contains(invoice.getStatus());
-
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
-        if(!Arrays.asList(statuses).contains(invoice.getStatus())){
+        if (!Arrays.asList(statuses).contains(invoice.getStatus())) {
             String statusList = Arrays.stream(statuses)
                     .map(Enum::name)
                     .collect(Collectors.joining(" or "));
-        throw new RuntimeException("Invoice status must be one of: "+statusList);
+            throw new RuntimeException("Invoice status must be one of: " + statusList);
         }
-
-
     }
 
 
@@ -495,4 +465,27 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
     }
+
+    @Override
+    public void sendInvoiceToCancel(Long invoiceId, String receiverTaxId) {
+        InvoiceEntity invoice = invoiceRepository.findByIdAndReceiverTaxId(invoiceId, receiverTaxId)
+                .orElseThrow(() -> new NotFoundException(INVOICE_NOT_FOUND.getCode(), INVOICE_NOT_FOUND.getMessage()));
+
+        doesntMatchInvoiceStatus(invoice, PENDING);
+
+        invoiceRepository.updateStatuses(List.of(invoiceId), "SEND_TO_CANCEL");
+
+        addInvoiceToOperation(invoiceId, "Invoice sent to cancel", OperationStatus.SEND_TO_CANCEL);
+    }
+
+    @Override
+    public void cancelPendingInvoicesAfterTimeout() {
+        List<Long> invoiceIds = invoiceRepository.findInvoicePendingMoreThanOneMonth()
+                .stream()
+                .map(InvoiceEntity::getId)
+                .toList();
+
+        invoiceRepository.updateStatuses(invoiceIds, "SEND_TO_CANCEL");
+    }
+
 }
