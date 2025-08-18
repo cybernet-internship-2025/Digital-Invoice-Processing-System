@@ -16,6 +16,7 @@ import az.cybernet.invoice.exception.ExceptionConstants;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.mapper.ItemMapStruct;
 import az.cybernet.invoice.repository.*;
+import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationDetailsService;
 import az.cybernet.invoice.service.abstraction.OperationService;
@@ -28,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -38,9 +38,9 @@ import static java.util.stream.Collectors.toList;
 public class ItemServiceImpl implements ItemService {
     private final ItemMapStruct itemMapStruct;
     private final ItemRepository itemRepository;
-    private final MeasurementRepository measurementRepository;
     private final OperationService operationService;
-    private final OperationDetailsService operationDetailsService;
+    private final InvoiceService invoiceService;
+    private final MeasurementRepository measurementRepository;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -50,19 +50,21 @@ public class ItemServiceImpl implements ItemService {
         }
 
         for (ItemRequest itemRequest : itemsRequest.getItemsRequest()) {
-            MeasurementEntity measurement = measurementRepository.findByName(itemRequest.getMeasurementName());
-            itemRequest.setStatus(ItemStatus.CREATED);
-            if (measurement == null) {
-                throw new IllegalArgumentException(
-                        "Measurement with name '" + itemRequest.getMeasurementName() + "' not found"
-                );
-            }
+            MeasurementEntity measurement = measurementRepository.findByName(itemRequest.getMeasurementName())
+                    .orElseThrow(
+                            () -> new NotFoundException(
+                                    ExceptionConstants.MEASUREMENT_NOT_FOUND.getMessage(),
+                                    ExceptionConstants.MEASUREMENT_NOT_FOUND.getCode()
+                            ));
+
+            ItemEntity item = itemMapStruct.toEntity(itemRequest);
+            item.setStatus(ItemStatus.CREATED);
+            itemRepository.addItems(item);
         }
 
-        itemRepository.addItems(itemsRequest);
-        List<ItemResponse> itemResponses = findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
-        List<Long> itemIds = itemResponses.stream()
-                .map(ItemResponse::getId)
+        List<ItemEntity> items = itemRepository.findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
+        List<Long> itemIds = items.stream()
+                .map(ItemEntity::getId)
                 .filter(Objects::nonNull)
                 .toList();
 
@@ -74,14 +76,16 @@ public class ItemServiceImpl implements ItemService {
                         .itemIds(itemIds)
                         .build()
         );
-        return itemResponses;
+
+        return itemMapStruct.toResponseList(items);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addItemsToOperation(AddItemsToOperationRequest request) {
-        final Long invoiceId = request.getInvoiceId();
+        Long invoiceId = request.getInvoiceId();
         List<Long> itemIds = request.getItemIds();
+
         if (itemIds == null) {
             itemIds = findAllItemsByInvoiceId(invoiceId).stream()
                     .map(ItemResponse::getId)
@@ -89,15 +93,14 @@ public class ItemServiceImpl implements ItemService {
                     .toList();
         }
 
-        List<CreateOperationDetailsRequest> details = itemIds.stream()
+        List<CreateOperationDetailsRequest> itemsForOp = itemIds.stream()
                 .map(itemId -> CreateOperationDetailsRequest.builder()
                         .itemId(itemId)
-                        .itemStatus(ItemStatus.CREATED)
+                        .itemStatus(request.getStatus() == OperationStatus.DRAFT
+                                ? ItemStatus.CREATED
+                                : ItemStatus.UPDATED)
                         .build())
-                        .toList();
-
-        List<CreateOperationDetailsRequest> itemsForOp =
-                details.isEmpty() ? null : details;
+                .toList();
 
         CreateOperationRequest opReq = CreateOperationRequest.builder()
                 .invoiceId(invoiceId)
@@ -106,21 +109,19 @@ public class ItemServiceImpl implements ItemService {
                 .items(itemsForOp)
                 .build();
 
-        //buradaki save metodundaki mentiq ele qurulmalidirki hem operation hemde operationDetailse save olunsun
         operationService.saveOperation(opReq);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateItemStatus(Long itemId, ItemStatus status) {
-           ItemEntity item = itemRepository.findById(itemId)
+        ItemEntity item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(
                         "Item not found with id: " + itemId,
                         ExceptionConstants.ITEM_NOT_FOUND.getCode()
                 ));
-           item.setStatus(status);
-           item.setUpdatedAt(LocalDateTime.now());
-
+        item.setStatus(status);
+        item.setUpdatedAt(LocalDateTime.now());
 
         itemRepository.updateItems(item);
     }
@@ -131,11 +132,12 @@ public class ItemServiceImpl implements ItemService {
         for (UpdateItemRequest request : itemRequests) {
             ItemEntity item = itemRepository.findById(request.getId()).orElseThrow();
 
-            MeasurementEntity measurement = measurementRepository.findByName(request.getMeasurementName());
-            if (measurement == null) {
-                throw new NotFoundException(ExceptionConstants.MEASUREMENT_NOT_FOUND.getMessage(),
-                        ExceptionConstants.MEASUREMENT_NOT_FOUND.getCode());
-            }
+            MeasurementEntity measurement = measurementRepository.findByName(request.getMeasurementName())
+                    .orElseThrow(
+                            () -> new NotFoundException(
+                                    ExceptionConstants.MEASUREMENT_NOT_FOUND.getMessage(),
+                                    ExceptionConstants.MEASUREMENT_NOT_FOUND.getCode()
+                            ));
 
             item.setTotalPrice(request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
             item.setUpdatedAt(LocalDateTime.now());
@@ -170,9 +172,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse findById(Long id) {
-
         ItemEntity item = itemRepository.findById(id).orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
-
         return itemMapStruct.toResponse(item);
     }
 
