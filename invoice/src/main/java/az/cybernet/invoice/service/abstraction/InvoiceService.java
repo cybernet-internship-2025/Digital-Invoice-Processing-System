@@ -12,6 +12,7 @@ import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface InvoiceService {
     InvoiceResponse saveInvoice(CreateInvoiceRequest invoiceRequest);
@@ -52,5 +53,10 @@ public interface InvoiceService {
     void markAsPending(Long invoiceId, String comment);
 
     void approvePendingInvoicesAfterTimeout();
+
+    void exportReceivedInvoicesToExcel(
+            InvoiceExportRequest request,
+            HttpServletResponse response
+    );
 
 }

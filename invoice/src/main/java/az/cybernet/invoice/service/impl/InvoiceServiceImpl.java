@@ -30,14 +30,22 @@ import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.ibatis.javassist.bytecode.ByteArray;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -278,6 +286,64 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .build();
     }
 
+    @Override
+    public void exportReceivedInvoicesToExcel(InvoiceExportRequest request,
+                                              HttpServletResponse response) {
+        var userResponse = findRecipientByTaxId(request.getRecipientTaxId());
+        var entities = invoiceRepository
+                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), invoiceMapper.map(request));
+        writeInvoicesToExcel(entities, response);
+
+    }
+
+    private void writeInvoicesToExcel(List<InvoiceEntity> invoices, HttpServletResponse response) {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("invoices");
+
+            CellStyle headerStyle = wb.createCellStyle();
+            Font bold = wb.createFont();
+            bold.setBold(true);
+            headerStyle.setFont(bold);
+
+            String[] headers = {
+                    "Created At", "Series", "Number", "Status",
+                    "Sender Tax ID", "Recipient Tax ID", "Total Price", "Item Count"
+            };
+            Row h = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = h.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+            int rowIdx = 1;
+            for (InvoiceEntity inv : invoices) {
+
+                Row r = sheet.createRow(rowIdx++);
+                r.createCell(0).setCellValue(inv.getCreatedAt() != null ? dtf.format(inv.getCreatedAt()) : "");
+                r.createCell(1).setCellValue(inv.getInvoiceSeries() != null ? inv.getInvoiceSeries() : "");
+                r.createCell(2).setCellValue(inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "");
+                r.createCell(3).setCellValue(inv.getStatus() != null ? inv.getStatus().name() : "");
+                r.createCell(4).setCellValue(inv.getSenderTaxId() != null ? inv.getSenderTaxId() : "");
+                r.createCell(5).setCellValue(inv.getRecipientTaxId() != null ? inv.getRecipientTaxId() : "");
+                r.createCell(6).setCellValue(inv.getTotalPrice() != null ? inv.getTotalPrice().doubleValue() : 0.0d);
+                r.createCell(7).setCellValue(inv.getItems() != null ? inv.getItems().size() : 0);
+            }
+
+            for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
+
+            String fileName = URLEncoder.encode("invoices_received.xlsx", StandardCharsets.UTF_8);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+
+            wb.write(response.getOutputStream());
+            response.flushBuffer();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to export invoices to Excel", e);
+        }
+    }
     private UserResponse findSenderByTaxId(String senderTaxId) {
         UserResponse sender = userClient.findUserByTaxId(senderTaxId);
 
@@ -408,20 +474,19 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
         findSenderByTaxId(senderTaxId);
-
-
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
 
         int queryLimit = filter.getLimit() + 1;
         filter.setLimit(queryLimit);
 
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
 
         List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
 
         boolean hasNext = entities.size() > filter.getLimit() - 1;
 
+        boolean hasNext = entities.size() > filter.getLimit() - 1;
 
         if (hasNext) {
             entities.removeLast(); // remove last item
@@ -548,11 +613,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         return !Arrays.asList(statuses).contains(invoice.getStatus());
 
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
-        if(!Arrays.asList(statuses).contains(invoice.getStatus())){
+        if (!Arrays.asList(statuses).contains(invoice.getStatus())) {
             String statusList = Arrays.stream(statuses)
                     .map(Enum::name)
                     .collect(Collectors.joining(" or "));
-        throw new RuntimeException("Invoice status must be one of: "+statusList);
+            throw new RuntimeException("Invoice status must be one of: " + statusList);
         }
 
 
