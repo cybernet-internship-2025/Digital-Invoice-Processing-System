@@ -24,11 +24,13 @@ import az.cybernet.invoice.service.abstraction.OperationService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.ibatis.javassist.bytecode.ByteArray;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -268,32 +270,24 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .build();
     }
 
-
     @Override
-    public void exportReceivedInvoicesToExcel(String recipientTaxId,
-                                              InvoiceFilterRequest filter,
+    public void exportReceivedInvoicesToExcel(InvoiceExportRequest request,
                                               HttpServletResponse response) {
-        filter.setLimit(null);
-        filter.setOffset(null);
-
-        var userResponse = findRecipientByTaxId(recipientTaxId);
+        var userResponse = findRecipientByTaxId(request.getRecipientTaxId());
         var entities = invoiceRepository
-                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
+                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), invoiceMapper.map(request));
+        writeInvoicesToExcel(entities, response);
 
-        writeInvoicesToExcel(entities, "received", response);
     }
 
-
-    private void writeInvoicesToExcel(List<InvoiceEntity> invoices, String kind, HttpServletResponse response) {
+    private void writeInvoicesToExcel(List<InvoiceEntity> invoices, HttpServletResponse response) {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("invoices");
-
 
             CellStyle headerStyle = wb.createCellStyle();
             Font bold = wb.createFont();
             bold.setBold(true);
             headerStyle.setFont(bold);
-
 
             String[] headers = {
                     "Created At", "Series", "Number", "Status",
@@ -308,31 +302,23 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-
             int rowIdx = 1;
-            for (var inv : invoices) {
+            for (InvoiceEntity inv : invoices) {
+
                 Row r = sheet.createRow(rowIdx++);
-
                 r.createCell(0).setCellValue(inv.getCreatedAt() != null ? dtf.format(inv.getCreatedAt()) : "");
-
                 r.createCell(1).setCellValue(inv.getInvoiceSeries() != null ? inv.getInvoiceSeries() : "");
-
                 r.createCell(2).setCellValue(inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "");
-
                 r.createCell(3).setCellValue(inv.getStatus() != null ? inv.getStatus().name() : "");
-
                 r.createCell(4).setCellValue(inv.getSenderTaxId() != null ? inv.getSenderTaxId() : "");
                 r.createCell(5).setCellValue(inv.getRecipientTaxId() != null ? inv.getRecipientTaxId() : "");
-
-                r.createCell(6).setCellValue(inv.getTotalPrice() != null ? inv.getTotalPrice().doubleValue() : 0.0);
-
-                int itemCount = inv.getItems() != null ? inv.getItems().size() : 0;
-                r.createCell(7).setCellValue(itemCount);
+                r.createCell(6).setCellValue(inv.getTotalPrice() != null ? inv.getTotalPrice().doubleValue() : 0.0d);
+                r.createCell(7).setCellValue(inv.getItems() != null ? inv.getItems().size() : 0);
             }
 
             for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
 
-            String fileName = URLEncoder.encode("invoices_" + kind + ".xlsx", StandardCharsets.UTF_8);
+            String fileName = URLEncoder.encode("invoices_received.xlsx", StandardCharsets.UTF_8);
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
 

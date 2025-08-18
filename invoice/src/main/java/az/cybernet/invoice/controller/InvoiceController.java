@@ -66,13 +66,11 @@ public class InvoiceController {
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
     }
 
-    @GetMapping("/invoices/export/received")
-    public void exportReceived(
-            @RequestParam String recipientTaxId,
-            @RequestBody InvoiceFilterRequest request,
-            HttpServletResponse response
-    ) {
-        invoiceService.exportReceivedInvoicesToExcel(recipientTaxId, request, response);
+    @GetMapping("/export/received")
+    public void exportReceived(@RequestBody InvoiceExportRequest request,
+                               HttpServletResponse response) {
+
+        invoiceService.exportReceivedInvoicesToExcel(request, response);
     }
 
     @GetMapping("/outbox/{senderTaxId}")

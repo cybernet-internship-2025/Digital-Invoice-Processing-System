@@ -46,8 +46,7 @@ public interface InvoiceService {
     void approvePendingInvoicesAfterTimeout();
 
     void exportReceivedInvoicesToExcel(
-            String recipientTaxId,
-            InvoiceFilterRequest filter,
+            InvoiceExportRequest request,
             HttpServletResponse response
     );
 
