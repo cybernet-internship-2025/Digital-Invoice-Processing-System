@@ -64,30 +64,15 @@ public class InvoiceController {
             @RequestParam(defaultValue = "10") Integer size) {
 
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
-}
+    }
+
     @GetMapping("/invoices/export/received")
     public void exportReceived(
             @RequestParam String recipientTaxId,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) String invoiceNumber,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
-            @RequestParam(required = false) Integer year,
+            @RequestBody InvoiceFilterRequest request,
             HttpServletResponse response
     ) {
-        var filter = InvoiceFilterRequest.builder()
-                .status(status)
-                .type(type)
-                .invoiceNumber(invoiceNumber)
-                .fromDate(fromDate)
-                .toDate(toDate)
-                .year(year)
-                .build();
-
-        invoiceService.exportReceivedInvoicesToExcel(recipientTaxId, filter, response);
+        invoiceService.exportReceivedInvoicesToExcel(recipientTaxId, request, response);
     }
 
     @GetMapping("/outbox/{senderTaxId}")
@@ -112,7 +97,7 @@ public class InvoiceController {
         filter.setOffset(offset);
         filter.setLimit(limit);
 
-        return invoiceService.findInvoicesBySenderTaxId(senderTaxId,filter);
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
 
