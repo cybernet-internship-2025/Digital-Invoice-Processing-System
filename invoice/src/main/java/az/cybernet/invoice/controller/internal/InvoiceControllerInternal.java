@@ -1,4 +1,4 @@
-package az.cybernet.invoice.controller.inner;
+package az.cybernet.invoice.controller.internal;
 
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
