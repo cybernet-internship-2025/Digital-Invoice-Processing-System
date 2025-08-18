@@ -4,9 +4,11 @@ import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
@@ -62,8 +64,14 @@ public class InvoiceController {
             @RequestParam(defaultValue = "10") Integer size) {
 
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
-}
+    }
 
+    @GetMapping("/export/received")
+    public void exportReceived(@RequestBody InvoiceExportRequest request,
+                               HttpServletResponse response) {
+
+        invoiceService.exportReceivedInvoicesToExcel(request, response);
+    }
 
     @GetMapping("/outbox/{senderTaxId}")
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
@@ -87,7 +95,7 @@ public class InvoiceController {
         filter.setOffset(offset);
         filter.setLimit(limit);
 
-        return invoiceService.findInvoicesBySenderTaxId(senderTaxId,filter);
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
 
