@@ -14,11 +14,13 @@ import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
+import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import az.cybernet.invoice.enums.ItemStatus;
 import az.cybernet.invoice.enums.OperationStatus;
@@ -226,11 +228,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
 
-        for (var item : itemResponses) {
-            itemService.updateItemStatus(item.getId(), ItemStatus.UPDATED);
-        }
+        List<Long> itemIds = itemResponses.stream()
+                .map(ItemResponse::getId)
+                .collect(Collectors.toList());
 
-        itemService.addItemsToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION);
+        AddItemsToOperationRequest items = AddItemsToOperationRequest.builder()
+                .invoiceId(invoiceEntity.getId())
+                .comment(opComment)
+                .status(OperationStatus.CORRECTION)
+                .itemIds(itemIds)
+                .build();
+
+        itemService.addItemsToOperation(items);
     }
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
@@ -481,10 +490,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         filter.setLimit(queryLimit);
 
         List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
-
-        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
-
-        boolean hasNext = entities.size() > filter.getLimit() - 1;
 
         boolean hasNext = entities.size() > filter.getLimit() - 1;
 
