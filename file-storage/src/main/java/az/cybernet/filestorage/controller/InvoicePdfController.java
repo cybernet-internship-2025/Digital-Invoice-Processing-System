@@ -1,8 +1,8 @@
 package az.cybernet.filestorage.controller;
 
 import az.cybernet.filestorage.client.InvoiceClient;
-import az.cybernet.filestorage.dto.client.InvoiceResponse;
 import az.cybernet.filestorage.service.PDFGeneratorService;
+import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

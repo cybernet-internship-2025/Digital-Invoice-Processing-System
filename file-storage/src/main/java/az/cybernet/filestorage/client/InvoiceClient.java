@@ -1,6 +1,6 @@
 package az.cybernet.filestorage.client;
 
-import az.cybernet.filestorage.dto.client.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
