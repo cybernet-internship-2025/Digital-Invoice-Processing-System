@@ -1,9 +1,10 @@
 package az.cybernet.filestorage.service;
 
-import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
-import az.cybernet.invoice.dto.response.item.ItemResponse;
+import az.cybernet.filestorage.dto.client.InvoiceResponse;
+import az.cybernet.filestorage.dto.client.ItemResponse;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
+import com.lowagie.text.Image;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -12,19 +13,22 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Objects;
 
 @Service
 public class PDFGeneratorService {
-
     public void export(HttpServletResponse response, InvoiceResponse invoice) throws IOException {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
 
-        Document document = new Document(PageSize.A4);
-
-        try {
+        try (Document document = new Document(PageSize.A4)) {
             PdfWriter.getInstance(document, response.getOutputStream());
             document.open();
+
+            Image logo = Image.getInstance(Objects.requireNonNull(getClass().getResource("/Vergi.png")));
+            logo.scaleToFit(120, 60);
+            logo.setAlignment(Element.ALIGN_LEFT);
+            document.add(logo);
 
             Font fontTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
             fontTitle.setColor(Color.RED);
@@ -40,18 +44,16 @@ public class PDFGeneratorService {
             title.setSpacingAfter(21);
             document.add(title);
 
-
             PdfPTable infoTable = new PdfPTable(2);
             infoTable.setWidthPercentage(100);
             infoTable.setSpacingBefore(10f);
             infoTable.setSpacingAfter(20f);
 
-
             infoTable.addCell(createCell("Sender: " + invoice.getSenderTaxId(), fontNormal));
 
             infoTable.addCell(createCell("Receiver: " + invoice.getRecipientTaxId(), fontNormal));
 
-            infoTable.addCell(createCell("Invoice Number: INVD"+invoice.getInvoiceNumber(), fontNormal));
+            infoTable.addCell(createCell("Invoice Number: INVD" + invoice.getInvoiceNumber(), fontNormal));
             infoTable.addCell(createCell("Date: " + invoice.getCreatedAt(), fontNormal));
             infoTable.addCell(createCell("Operator: Administrator", fontNormal));
 
@@ -71,7 +73,6 @@ public class PDFGeneratorService {
                 itemsTable.addCell(headerCell);
             }
 
-
             int count = 1;
             for (ItemResponse item : invoice.getItems()) {
                 itemsTable.addCell(createCell(String.valueOf(count++), fontNormal));
@@ -82,7 +83,6 @@ public class PDFGeneratorService {
 
             document.add(itemsTable);
 
-
             Paragraph total = new Paragraph("Total: " + invoice.getTotalPrice(), fontHeader);
             total.setAlignment(Element.ALIGN_RIGHT);
             total.setSpacingBefore(10f);
@@ -90,11 +90,8 @@ public class PDFGeneratorService {
 
         } catch (Exception e) {
             throw new IOException("Error", e);
-        } finally {
-            document.close();
         }
     }
-
 
     private PdfPCell createCell(String content, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(content, font));
