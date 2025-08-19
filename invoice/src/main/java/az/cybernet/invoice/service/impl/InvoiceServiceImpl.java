@@ -5,6 +5,8 @@ import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
 import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
 import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
@@ -35,19 +37,22 @@ import az.cybernet.invoice.service.abstraction.OperationService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.apache.ibatis.javassist.bytecode.ByteArray;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,8 +62,6 @@ import java.util.stream.Collectors;
 import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
-import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
-
 import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.ITEM_NOT_FOUND;
@@ -81,10 +84,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     OperationService operationService;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
-
-
-
-
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -353,6 +352,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new RuntimeException("Failed to export invoices to Excel", e);
         }
     }
+
     private UserResponse findSenderByTaxId(String senderTaxId) {
         UserResponse sender = userClient.findUserByTaxId(senderTaxId);
 
@@ -457,27 +457,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoice.setStatus(CORRECTION);
 
-        addInvoiceToOperation(request.getInvoiceId(), request.getComment(), OperationStatus.CORRECTION, null);
-
-        return invoiceMapper.fromEntityToResponse(invoice);
-    }
-
-    @Override
-
-    @Transactional
-    public InvoiceResponse rollbackInvoice(Long invoiceId, String senderTaxId) {
-        InvoiceEntity invoice = invoiceRepository.findBySenderTaxIdAndInvoiceId(senderTaxId, invoiceId)
-                .orElseThrow(() -> new RuntimeException("You have not any invoice and given by ID"));
-
-        if (doesntMatchInvoiceStatus(invoice, PENDING)) {
-            throw new RuntimeException("Your invoice isn't on PENDING status!");
-        }
-
-        invoice.setStatus(InvoiceStatus.DRAFT);
-
-        addInvoiceToOperation(invoiceId, "Invoice rolled back", DRAFT, null);
-
-        invoiceRepository.changeStatus(invoiceId, InvoiceStatus.DRAFT.toString());
+//        addInvoiceToOperation(request.getInvoiceId(), request.getComment(), OperationStatus.CORRECTION, null);
 
         return invoiceMapper.fromEntityToResponse(invoice);
     }
@@ -494,7 +474,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         boolean hasNext = entities.size() > filter.getLimit() - 1;
 
         if (hasNext) {
-            entities.removeLast(); // remove last item
+//            entities.removeLast(); // remove last item
         }
 
         PagedResponse<InvoiceResponse> response = new PagedResponse<>();
@@ -513,14 +493,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         doesntMatchInvoiceStatus(invoice, CORRECTION);
 
-        addInvoiceToOperation(request.getInvoiceId(), "Invoice updated", UPDATE, null);
+//        addInvoiceToOperation(request.getInvoiceId(), "Invoice updated", UPDATE, null);
 
         if (!isNullOrEmpty(request.getCreatedItems().getItemsRequest())) {
             itemService.addItems(request.getCreatedItems());
         }
 
         if (!isNullOrEmpty(request.getUpdatedItems())) {
-            itemService.updateItems(request.getUpdatedItems());
+//            itemService.updateItems(request.getUpdatedItems());
         }
 
         if (!isNullOrEmpty(request.getDeletedItemsId())) {
@@ -614,9 +594,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
 
-    private boolean doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
-        return !Arrays.asList(statuses).contains(invoice.getStatus());
-
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
         if (!Arrays.asList(statuses).contains(invoice.getStatus())) {
             String statusList = Arrays.stream(statuses)
@@ -624,10 +601,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                     .collect(Collectors.joining(" or "));
             throw new RuntimeException("Invoice status must be one of: " + statusList);
         }
-
-
     }
-
 
     @Override
     @Transactional
@@ -644,7 +618,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setLastPendingAt(LocalDateTime.now());
         invoice.setComment(comment);
 
-        invoiceRepository.updateInvoiceStatus(invoice);
+//        invoiceRepository.updateInvoiceStatus(invoice);
     }
 
 
@@ -652,12 +626,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional
     public void approvePendingInvoicesAfterTimeout() {
         LocalDateTime deadline = LocalDateTime.now().minusMonths(1);
-        List<InvoiceEntity> expiredInvoices = invoiceRepository.findPendingInvoicesOlderThan(deadline);
+//        List<InvoiceEntity> expiredInvoices = invoiceRepository.findPendingInvoicesOlderThan(deadline);
 
-        for (InvoiceEntity invoice : expiredInvoices) {
-            invoiceRepository.approveInvoiceById(invoice.getId());
-        }
-
+//        for (InvoiceEntity invoice : expiredInvoices) {
+//            invoiceRepository.approveInvoiceById(invoice.getId());
+//        }
 
     }
 }

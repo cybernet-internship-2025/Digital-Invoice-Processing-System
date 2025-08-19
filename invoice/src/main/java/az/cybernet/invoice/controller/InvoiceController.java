@@ -86,9 +86,9 @@ public class InvoiceController {
     }
 
     @GetMapping("/export/received")
+    @ResponseStatus(NO_CONTENT)
     public void exportReceived(@RequestBody InvoiceExportRequest request,
                                HttpServletResponse response) {
-
         invoiceService.exportReceivedInvoicesToExcel(request, response);
     }
 
@@ -117,7 +117,6 @@ public class InvoiceController {
         return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
-
     @PutMapping("/{recipientTaxId}/{invoiceId}")
     public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
                                                     @PathVariable("invoiceId") Long invoiceId) {
@@ -139,12 +138,10 @@ public class InvoiceController {
         return invoiceService.updateInvoiceItems(request);
     }
 
-
     @DeleteMapping
     public void deleteInvoiceById(@RequestBody DeleteInvoicesRequest request) {
         invoiceService.deleteInvoiceById(request);
     }
-
 
     @PutMapping("/{id}/pending")
     public ResponseEntity<Void> markAsPending(
@@ -159,6 +156,5 @@ public class InvoiceController {
         invoiceService.approvePendingInvoicesAfterTimeout();
         return ResponseEntity.ok().build();
     }
-
 
 }

@@ -17,7 +17,4 @@ public class CreateOperationDetailsRequest {
     Long itemId;
     Long operationId;
     ItemStatus itemStatus;
-
-
-
 }
