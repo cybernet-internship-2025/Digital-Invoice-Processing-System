@@ -3,13 +3,24 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
+import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
+import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import az.cybernet.invoice.enums.ItemStatus;
 import az.cybernet.invoice.enums.OperationStatus;
@@ -21,13 +32,22 @@ import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.ibatis.javassist.bytecode.ByteArray;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +57,13 @@ import java.util.stream.Collectors;
 import static az.cybernet.invoice.enums.InvoiceStatus.*;
 import static az.cybernet.invoice.enums.OperationStatus.DELETE;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
-import static az.cybernet.invoice.exception.ExceptionConstants.*;
+
+import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
+import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.ITEM_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
+import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
@@ -201,11 +227,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
 
-        for (var item : itemResponses) {
-            itemService.updateItemStatus(item.getId(), ItemStatus.UPDATED);
-        }
+        List<Long> itemIds = itemResponses.stream()
+                .map(ItemResponse::getId)
+                .collect(Collectors.toList());
 
-        itemService.addItemsToOperation(invoiceEntity.getId(), opComment, OperationStatus.CORRECTION);
+        AddItemsToOperationRequest items = AddItemsToOperationRequest.builder()
+                .invoiceId(invoiceEntity.getId())
+                .comment(opComment)
+                .status(OperationStatus.CORRECTION)
+                .itemIds(itemIds)
+                .build();
+
+        itemService.addItemsToOperation(items);
     }
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
@@ -229,9 +262,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
-                                                             InvoiceFilterRequest filter,
-                                                             Integer page,
-                                                             Integer size) {
+                                                                InvoiceFilterRequest filter,
+                                                                Integer page,
+                                                                Integer size) {
         if (page == null || page < 0) {
             page = 0;
         }
@@ -250,7 +283,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var count = invoiceRepository
                 .countInvoicesByRecipientUserTaxId(userResponse.getTaxId(), filter);
-        boolean hasNext = count > (long) (page + 1) * size ;
+        boolean hasNext = count > (long) (page + 1) * size;
 
         List<InvoiceResponse> invoiceResponses = invoiceMapper
                 .allByRecipientUserTaxId(allByRecipientUserTaxId);
@@ -261,6 +294,64 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .build();
     }
 
+    @Override
+    public void exportReceivedInvoicesToExcel(InvoiceExportRequest request,
+                                              HttpServletResponse response) {
+        var userResponse = findRecipientByTaxId(request.getRecipientTaxId());
+        var entities = invoiceRepository
+                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), invoiceMapper.map(request));
+        writeInvoicesToExcel(entities, response);
+
+    }
+
+    private void writeInvoicesToExcel(List<InvoiceEntity> invoices, HttpServletResponse response) {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("invoices");
+
+            CellStyle headerStyle = wb.createCellStyle();
+            Font bold = wb.createFont();
+            bold.setBold(true);
+            headerStyle.setFont(bold);
+
+            String[] headers = {
+                    "Created At", "Series", "Number", "Status",
+                    "Sender Tax ID", "Recipient Tax ID", "Total Price", "Item Count"
+            };
+            Row h = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = h.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+            int rowIdx = 1;
+            for (InvoiceEntity inv : invoices) {
+
+                Row r = sheet.createRow(rowIdx++);
+                r.createCell(0).setCellValue(inv.getCreatedAt() != null ? dtf.format(inv.getCreatedAt()) : "");
+                r.createCell(1).setCellValue(inv.getInvoiceSeries() != null ? inv.getInvoiceSeries() : "");
+                r.createCell(2).setCellValue(inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "");
+                r.createCell(3).setCellValue(inv.getStatus() != null ? inv.getStatus().name() : "");
+                r.createCell(4).setCellValue(inv.getSenderTaxId() != null ? inv.getSenderTaxId() : "");
+                r.createCell(5).setCellValue(inv.getRecipientTaxId() != null ? inv.getRecipientTaxId() : "");
+                r.createCell(6).setCellValue(inv.getTotalPrice() != null ? inv.getTotalPrice().doubleValue() : 0.0d);
+                r.createCell(7).setCellValue(inv.getItems() != null ? inv.getItems().size() : 0);
+            }
+
+            for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
+
+            String fileName = URLEncoder.encode("invoices_received.xlsx", StandardCharsets.UTF_8);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+
+            wb.write(response.getOutputStream());
+            response.flushBuffer();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to export invoices to Excel", e);
+        }
+    }
     private UserResponse findSenderByTaxId(String senderTaxId) {
         UserResponse sender = userClient.findUserByTaxId(senderTaxId);
 
@@ -367,20 +458,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter) {
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
         findSenderByTaxId(senderTaxId);
-
-
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(InvoiceFilterRequest filter) {
 
         int queryLimit = filter.getLimit() + 1;
         filter.setLimit(queryLimit);
 
+        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId, filter);
 
-        List<InvoiceEntity> entities = invoiceRepository.findInvoicesBySenderTaxId(senderTaxId,filter);
-
-        boolean hasNext = entities.size() > filter.getLimit()-1;
-
+        boolean hasNext = entities.size() > filter.getLimit() - 1;
 
         if (hasNext) {
             entities.removeLast(); // remove last item
@@ -422,7 +508,86 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public InvoiceResponse createReturnInvoice(ReturnInvoiceRequest invoiceRequest, String currentUserTaxId) {
+        var originalInvoice = fetchInvoiceIfExist(invoiceRequest.getOriginalInvoiceId());
 
+        if (!originalInvoice.getRecipientTaxId().equals(currentUserTaxId)) {
+            throw new IllegalStateException("Only the recipient of the original invoice can create a return invoice");
+        }
+
+        var invoiceEntity = InvoiceEntity.builder()
+                .senderTaxId(originalInvoice.getRecipientTaxId())
+                .recipientTaxId(originalInvoice.getSenderTaxId())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
+                .status(InvoiceStatus.DRAFT)
+                .invoiceSeries("INR")
+                .invoiceNumber(generateInvoiceNumber())
+                .isActive(true)
+                .build();
+
+        List<ItemEntity> returnedItems = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (ReturnItemRequest ri : invoiceRequest.getItems()) {
+            ItemEntity originalItem = originalInvoice.getItems().stream()
+                    .filter(i -> i.getId().equals(ri.getItemId()))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException(ITEM_NOT_FOUND.getCode(), ITEM_NOT_FOUND.getMessage()));
+
+            if (ri.getQuantity().compareTo(originalItem.getQuantity()) > 0) {
+                throw new IllegalArgumentException("Return quantity cannot be greater than original quantity");
+            }
+
+            ItemEntity returnedItem = ItemEntity.builder()
+                    .name(originalItem.getName())
+                    .unitPrice(originalItem.getUnitPrice())
+                    .quantity(ri.getQuantity())
+                    .isActive(true)
+                    .totalPrice(originalItem.getUnitPrice().multiply(BigDecimal.valueOf(ri.getQuantity())))
+                    .measurement(originalItem.getMeasurement())
+                    .invoice(invoiceEntity)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .status(ItemStatus.CREATED)
+                    .build();
+
+            totalPrice = totalPrice.add(returnedItem.getTotalPrice());
+
+            returnedItems.add(returnedItem);
+        }
+
+        invoiceEntity.setItems(returnedItems);
+        invoiceEntity.setTotalPrice(totalPrice);
+
+        return invoiceMapper.fromEntityToResponse(invoiceEntity);
+    }
+
+    @Override
+    public InvoiceResponse sendReturnInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
+        var invoiceEntity = fetchInvoiceIfExist(invoiceId);
+
+        if (!"INR".equals(invoiceEntity.getInvoiceSeries())) {
+            throw new IllegalStateException("This is not a return (INR) invoice");
+        }
+
+        if (!invoiceEntity.getRecipientTaxId().equals(senderTaxId)) {
+            throw new IllegalStateException("Only the sender can send this return invoice");
+        }
+
+        if (!invoiceEntity.getSenderTaxId().equals(recipientTaxId)) {
+            throw new IllegalStateException("Only the sender can send this return invoice");
+        }
+
+        if (!InvoiceStatus.DRAFT.equals(invoiceEntity.getStatus())) {
+            throw new IllegalStateException("Only draft invoices can be sent");
+        }
+
+        invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.PENDING, LocalDateTime.now());
+        return invoiceMapper.fromEntityToResponse(invoiceEntity);
+    }
 
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {
         if (!Arrays.asList(statuses).contains(invoice.getStatus())) {
