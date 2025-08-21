@@ -1,5 +1,5 @@
 package az.cybernet.invoice.enums;
 
 public enum InvoiceStatus {
-    DRAFT, PENDING, APPROVED, CANCELED, CORRECTION
+    DRAFT, PENDING, APPROVED, CANCELED, CORRECTION,SEND_TO_CANCEL
 }
