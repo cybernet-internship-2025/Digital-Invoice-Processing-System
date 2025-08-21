@@ -8,9 +8,9 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface OperationDetailsMapStruct {
-
     @Mapping(source = "operation.id", target = "operationId")
     @Mapping(source = "item.id", target = "itemId")
     OperationDetailsResponse toResponse(OperationDetailsEntity entity);
+
     List<OperationDetailsResponse> toResponseList(List<OperationDetailsEntity> entityList);
 }

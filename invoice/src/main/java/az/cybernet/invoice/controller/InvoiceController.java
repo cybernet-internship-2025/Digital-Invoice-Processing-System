@@ -1,5 +1,6 @@
 package az.cybernet.invoice.controller;
 
+
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -7,13 +8,41 @@ import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.util.ExcelFileExporter;
 import feign.Param;
+
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.invoice.PagedResponse;
+import az.cybernet.invoice.service.abstraction.InvoiceService;
+import jakarta.servlet.http.HttpServletResponse;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -69,16 +98,46 @@ public class InvoiceController {
             @RequestParam(defaultValue = "10") Integer size) {
 
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
-}
+    }
 
+    @GetMapping("/export/received")
+    @ResponseStatus(NO_CONTENT)
+    public void exportReceived(@RequestBody InvoiceExportRequest request,
+                               HttpServletResponse response) {
+        invoiceService.exportReceivedInvoicesToExcel(request, response);
+    }
 
     @GetMapping("/outbox/{senderTaxId}")
+
     @ResponseStatus(OK)
     public List<FilterResponse> findInvoicesBySenderTaxId(@PathVariable String senderTaxId,
                                                           @RequestBody InvoiceFilterRequest filter){
         return invoiceService.findInvoicesBySenderTaxId(senderTaxId,filter);
-    }
 
+    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
+            @PathVariable String senderTaxId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) LocalDateTime fromDate,
+            @RequestParam(required = false) LocalDateTime toDate,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false, name = "invoiceNumber") String invoiceNumber,
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
+            @RequestParam(required = false, defaultValue = "10") Integer limit
+    ) {
+        InvoiceFilterRequest filter = new InvoiceFilterRequest();
+        filter.setYear(year);
+        filter.setFromDate(fromDate);
+        filter.setToDate(toDate);
+        filter.setStatus(status);
+        filter.setType(type);
+        filter.setInvoiceNumber(invoiceNumber);
+        filter.setOffset(offset);
+        filter.setLimit(limit);
+
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
+
+    }
 
     @PutMapping("/{recipientTaxId}/{invoiceId}")
     public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
@@ -101,7 +160,6 @@ public class InvoiceController {
         return invoiceService.updateInvoiceItems(request);
     }
 
-
     @DeleteMapping
     public void deleteInvoiceById(@RequestBody DeleteInvoicesRequest request) {
         invoiceService.deleteInvoiceById(request);
@@ -117,5 +175,18 @@ public class InvoiceController {
         );
     }
 
+    @PutMapping("/{id}/pending")
+    public ResponseEntity<Void> markAsPending(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "Səhvlər var") String comment) {
+        invoiceService.markAsPending(id, comment);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/approve-timeout")
+    public ResponseEntity<Void> approvePendingInvoicesAfterTimeout() {
+        invoiceService.approvePendingInvoicesAfterTimeout();
+        return ResponseEntity.ok().build();
+    }
 
 }

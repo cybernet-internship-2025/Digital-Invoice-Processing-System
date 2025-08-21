@@ -9,8 +9,8 @@ import java.util.List;
 @Mapper
 public interface OperationDetailsRepository {
     void save(OperationDetailsEntity entity);
+
     OperationDetailsEntity findByItemId(@Param("itemId") Long itemId);
+
     List<OperationDetailsEntity> findAll();
-
-
 }

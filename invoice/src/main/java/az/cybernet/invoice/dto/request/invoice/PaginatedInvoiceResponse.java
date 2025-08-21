@@ -17,6 +17,6 @@ import static lombok.AccessLevel.PRIVATE;
 @Builder
 @FieldDefaults(level = PRIVATE)
 public class PaginatedInvoiceResponse {
-    private List<InvoiceResponse> invoices;
-    private boolean hasNext;
+    List<InvoiceResponse> invoices;
+    Boolean hasNext;
 }

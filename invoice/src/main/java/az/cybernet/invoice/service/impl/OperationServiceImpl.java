@@ -31,44 +31,41 @@ public class OperationServiceImpl implements OperationService {
 
     OperationRepository operationRepository;
     OperationMapStruct operationMapStruct;
-
     OperationDetailsService operationDetailsService;
-
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveOperation(CreateOperationRequest request) {
+
         OperationEntity entity = new OperationEntity();
         entity.setCreatedAt(LocalDateTime.now());
         entity.setStatus(request.getStatus());
         entity.setComment(request.getComment());
 
-
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(request.getInvoiceId());
         entity.setInvoice(invoiceEntity);
 
-
         List<OperationDetailsEntity> detailsList = new ArrayList<>();
 
         if (request.getItems() != null && !request.getItems().isEmpty()) {
-        for (CreateOperationDetailsRequest detail : request.getItems()) {
-            OperationDetailsEntity operationDetail = OperationDetailsEntity.builder()
-                    .item(ItemEntity.builder()
-                            .id(detail.getItemId())
-                            .build())
-                    .itemStatus(detail.getItemStatus())
-                    .operation(entity)
-                    .build();
+            for (CreateOperationDetailsRequest itemReq : request.getItems()) {
+                OperationDetailsEntity detail = OperationDetailsEntity.builder()
+                        .item(ItemEntity.builder()
+                                .id(itemReq.getItemId())
+                                .build())
+                        .itemStatus(itemReq.getItemStatus())
+                        .operation(entity)
+                        .build();
 
-            detailsList.add(operationDetail);
+                detailsList.add(detail);
+                operationDetailsService.save(detail);
+            }
         }
 
         entity.setItemDetails(detailsList);
         operationRepository.save(entity);
-    }}
-
+}
 
     @Override
     public List<OperationResponse> findAll() {
@@ -77,8 +74,6 @@ public class OperationServiceImpl implements OperationService {
                 .map(operationMapStruct::toResponse)
                 .collect(toList());
     }
-
-
 
     @Override
     public List<OperationResponse> findByStatus(OperationStatus status) {
@@ -104,7 +99,6 @@ public class OperationServiceImpl implements OperationService {
                 .collect(toList());
     }
 
-
     @Transactional
     public OperationResponse changeStatus(Long id, OperationStatus newStatus, String comment) {
         OperationEntity op = operationRepository.findById(id)
@@ -116,9 +110,6 @@ public class OperationServiceImpl implements OperationService {
         operationRepository.save(op);
         return operationMapStruct.toResponse(op);
     }
-
-
-
 
     @Transactional
     public OperationResponse  approve(Long id, String comment)    {
@@ -132,7 +123,6 @@ public class OperationServiceImpl implements OperationService {
     public OperationResponse draft(Long id, String comment)      {
         return changeStatus(id, OperationStatus.DRAFT, comment); }
 
-
     @Transactional
     public OperationResponse correction(Long id, String comment) {
         return changeStatus(id, OperationStatus.CORRECTION, comment); }
@@ -144,6 +134,7 @@ public class OperationServiceImpl implements OperationService {
     @Transactional
     public OperationResponse deleted(Long id, String comment)   {
         return changeStatus(id, OperationStatus.DELETE,comment);}
+
     @Transactional
     public OperationResponse update(Long id, String comment)   {
         return changeStatus(id, OperationStatus.UPDATE,comment);}

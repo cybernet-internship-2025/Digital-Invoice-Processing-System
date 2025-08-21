@@ -11,7 +11,7 @@
         VALUES (#{name}, #{createdAt}, #{isActive})
     </insert>
 
-    <select id="getByName" resultMap="MeasurementMap">
+    <select id="findByName" resultMap="MeasurementMap">
         SELECT * FROM invoice.measurements
         WHERE name = #{name}
           AND is_active = true

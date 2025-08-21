@@ -4,43 +4,49 @@ import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.operation.OperationResponse;
 import az.cybernet.invoice.enums.OperationStatus;
 import az.cybernet.invoice.service.abstraction.OperationService;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @RestController
 @RequestMapping("/api/v1/operation")
+@FieldDefaults(level = PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class OperationController {
+    OperationService operationService;
 
-    private final OperationService operationService;
-
-    public OperationController(OperationService operationService) {
-        this.operationService = operationService;
-    }
-
-
-
-    @GetMapping()
-    public List<OperationResponse> findAll(){
+    @GetMapping
+    public List<OperationResponse> findAll() {
         return operationService.findAll();
     }
 
     @GetMapping("/status")
-    public List<OperationResponse> findByStatus(@RequestParam OperationStatus status){
+    public List<OperationResponse> findByStatus(@RequestParam OperationStatus status) {
         return operationService.findByStatus(status);
     }
 
     @GetMapping("/{id}")
-    public List<OperationResponse> findAllItemsById(@PathVariable Long id){
+    public List<OperationResponse> findAllItemsById(@PathVariable Long id) {
         return operationService.findAllItemsById(id);
     }
 
     @GetMapping("/{id}/invoice")
-    public List<OperationResponse> findAllInvoicesById (@PathVariable Long id){
+    public List<OperationResponse> findAllInvoicesById(@PathVariable Long id) {
         return operationService.findAllInvoicesById(id);
     }
 
     @PostMapping()
-    public void saveOperation(@RequestBody CreateOperationRequest request){
-        operationService.saveOperation(request);}
+    public void saveOperation(@RequestBody CreateOperationRequest request) {
+        operationService.saveOperation(request);
+    }
 }
