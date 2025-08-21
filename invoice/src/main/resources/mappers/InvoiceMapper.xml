@@ -279,7 +279,7 @@
         where id = #{invoiceId}
     </update>
 
-    <select id="findInvalidInvoiceIdsBySenderTaxId" resultMap="long">
+    <select id="findInvalidInvoiceIdsBySenderTaxId" resultType="long" parameterType="map">
         select id
         from invoices
         where id in
@@ -309,7 +309,7 @@
         </foreach>
     </select>
 
-    <select id="findInvoicePendingMoreThanOneMonth">
+    <select id="findInvoicePendingMoreThanOneMonth" resultMap="InvoiceResultMap">
         select *
         from invoices
         where now() > date_add(last_pending_at, interval 1 month)
@@ -322,7 +322,7 @@
         set previous_status = status,
         status = #{status}
         where id in
-        <foreach collection="ids" open="(" separator="," close=")">
+        <foreach collection="invoiceIds" open="(" separator="," close=")">
             #{id}
         </foreach>
     </update>
@@ -345,10 +345,6 @@
         update invoices
         set last_pending_at = now()
         where id = #{invoiceId}
-    </update>
-
-    <update id="updateInvoiceRecipientTaxId">
-
     </update>
 
     <update id="changeStatus">
