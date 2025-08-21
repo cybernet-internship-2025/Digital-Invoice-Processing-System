@@ -2,10 +2,12 @@ package az.cybernet.invoice.service.impl;
 
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
+import az.cybernet.invoice.constant.InvoiceExportHeader;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
@@ -21,8 +23,12 @@ import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
+import az.cybernet.invoice.util.ExcelFileExporter;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.var;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +59,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     InvoiceMapper invoiceMapper;
     ItemService itemService;
     OperationService operationService;
+    ExcelFileExporter excelFileExporter;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
 
@@ -387,8 +394,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
+
+
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
+    public List<FilterResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
         findSenderByTaxId(senderTaxId);
 
         int queryLimit = filter.getLimit() + 1;
@@ -399,15 +408,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         boolean hasNext = entities.size() > filter.getLimit() - 1;
 
         if (hasNext) {
-            entities.removeLast(); // remove last item
+            entities.removeLast();
         }
 
-        PagedResponse<InvoiceResponse> response = new PagedResponse<>();
-        response.setContent(invoiceMapper.allByRecipientUserTaxId(entities));
-        response.setHasNext(hasNext);
-        response.setOffset(filter.getOffset());
-        response.setLimit(filter.getLimit() - 1);
-        return response;
+        return invoiceMapper.allBySenderTaxId(entities);
 
     }
 
@@ -436,6 +440,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice = fetchInvoiceIfExist(request.getInvoiceId());
 
         return invoiceMapper.fromEntityToResponse(invoice);
+    }
+
+    @Override
+    public byte[] exportExcelInvoice(String taxId, InvoiceFilterRequest invoiceFilterRequest) {
+        String[] headers= InvoiceExportHeader.HEADERS;
+        List<FilterResponse> invoices= findInvoicesBySenderTaxId(taxId, invoiceFilterRequest);
+        return ExcelFileExporter.exportInvoicesToExcel(invoices, headers);
+        
     }
 
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {

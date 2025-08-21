@@ -1,9 +1,11 @@
 package az.cybernet.invoice.service.abstraction;
 
 import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
@@ -23,7 +25,7 @@ public interface InvoiceService {
     InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
-    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId,InvoiceFilterRequest filter);
+    List<FilterResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
@@ -38,5 +40,7 @@ public interface InvoiceService {
     void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
 
     InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request);
+
+    byte[] exportExcelInvoice(String taxId, InvoiceFilterRequest invoiceFilterRequest );
 
 }
