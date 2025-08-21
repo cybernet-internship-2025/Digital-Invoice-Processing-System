@@ -34,31 +34,31 @@ public class MeasurementServiceImpl implements MeasurementService {
         mapper.saveMeasurement(entity);
     }
 
-    @Override
-    public MeasurementResponse findByName(String name) {
-        MeasurementEntity entity = mapper.findByName(name);
-        return mapStruct.toResponse(entity);
-    }
-
-
-    @Override
-    public List<MeasurementResponse> findAll() {
-        return mapStruct.toResponseList(mapper.findAll());
-    }
-
-    @Override
-    @Transactional
-    public void updateMeasurement(Long id, MeasurementRequest request) {
-        MeasurementEntity entity = mapper.findByName(request.getName());
-
-        if (entity == null || !entity.getId().equals(id)) {
-            throw new NotFoundException(MEASUREMENT_NOT_FOUND.getCode(), MEASUREMENT_NOT_FOUND.getMessage());
-        }
-
-        entity.setName(request.getName());
-        entity.setUpdatedAt(LocalDateTime.now());
-        mapper.updateMeasurement(entity);
-    }
+//    @Override
+//    public MeasurementResponse findByName(String name) {
+//        MeasurementEntity entity = mapper.findByName(name);
+//        return mapStruct.toResponse(entity);
+//    }
+//
+//
+//    @Override
+//    public List<MeasurementResponse> findAll() {
+//        return mapStruct.toResponseList(mapper.findAll());
+//    }
+//
+//    @Override
+//    @Transactional
+//    public void updateMeasurement(Long id, MeasurementRequest request) {
+//        MeasurementEntity entity = mapper.findByName(request.getName());
+//
+//        if (entity == null || !entity.getId().equals(id)) {
+//            throw new NotFoundException(MEASUREMENT_NOT_FOUND.getCode(), MEASUREMENT_NOT_FOUND.getMessage());
+//        }
+//
+//        entity.setName(request.getName());
+//        entity.setUpdatedAt(LocalDateTime.now());
+//        mapper.updateMeasurement(entity);
+//    }
 
     @Override
     @Transactional
