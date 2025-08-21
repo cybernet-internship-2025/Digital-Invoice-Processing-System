@@ -12,7 +12,6 @@ import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
@@ -61,11 +60,10 @@ import java.util.stream.Collectors;
 
 import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
+import static az.cybernet.invoice.enums.InvoiceStatus.DRAFT;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
-import static az.cybernet.invoice.enums.InvoiceStatus.*;
 import static az.cybernet.invoice.enums.OperationStatus.DELETE;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
-
 import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
 import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
 import static az.cybernet.invoice.exception.ExceptionConstants.ITEM_NOT_FOUND;
@@ -442,7 +440,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepository.updateInvoiceRecipientTaxId(invoiceId, recipientTaxId);
         invoiceRepository.updateStatuses(List.of(invoiceId), "PENDING");
         invoiceRepository.refreshLastPendingAt(invoiceId);
-        invoiceRepository.updatePreviousStatus(invoiceId,"DRAFT");
+        invoiceRepository.updatePreviousStatus(invoiceId, "DRAFT");
 
         addInvoiceToOperation(invoiceId, "Recipient Tax ID changed to: " + recipientTaxId, OperationStatus.PENDING);
 
@@ -472,7 +470,6 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .map(invoiceMapper::fromEntityToResponse)
                 .toList();
     }
-
 
 
     @Override
