@@ -44,6 +44,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,13 +76,14 @@ import static lombok.AccessLevel.PRIVATE;
 @Log
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = PRIVATE, makeFinal = true)
+@FieldDefaults(level = PRIVATE)
 public class InvoiceServiceImpl implements InvoiceService {
-    InvoiceRepository invoiceRepository;
-    UserClient userClient;
-    InvoiceMapper invoiceMapper;
+    final InvoiceRepository invoiceRepository;
+    final UserClient userClient;
+    final InvoiceMapper invoiceMapper;
+    @Lazy
     ItemService itemService;
-    OperationService operationService;
+    final OperationService operationService;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
 
