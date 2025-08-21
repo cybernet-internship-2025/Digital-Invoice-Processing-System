@@ -309,13 +309,42 @@
         </foreach>
     </select>
 
+    <select id="findInvoicePendingMoreThanOneMonth">
+        select *
+        from invoices
+        where now() > date_add(last_pending_at, interval 1 month)
+        and status = 'PENDING'
+        and is_active = true
+    </select>
+
     <update id="updateStatuses">
         update invoices
-        set status = #{status}
+        set previous_status = status,
+        status = #{status}
         where id in
         <foreach collection="invoiceIds" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </update>
+
+    <update id="updateInvoiceRecipientTaxId">
+        update invoices
+        set recipient_tax_id = #{recipientTaxId},
+        updated_at = now()
+        where id = #{invoiceId}
+    </update>
+
+    <update id="updatePreviousStatus">
+        update invoices
+        set previous_status = #{prevoiusStatus},
+        updated_at = now()
+        where id = #{invoiceId}
+    </update>
+
+    <update id="refreshLastPendingAt">
+        update invoices
+        set last_pending_at = now()
+        where id = #{invoiceId}
     </update>
 
     <update id="updateInvoiceRecipientTaxId">

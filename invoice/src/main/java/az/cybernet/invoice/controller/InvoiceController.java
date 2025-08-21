@@ -120,7 +120,7 @@ public class InvoiceController {
     @PutMapping("/{recipientTaxId}/{invoiceId}")
     public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
                                                     @PathVariable("invoiceId") Long invoiceId) {
-        return invoiceService.updateInvoiceRecipientId(recipientTaxId, invoiceId);
+        return invoiceService.updateInvoiceRecipientTaxId(recipientTaxId, invoiceId);
     }
 
     @PutMapping("/send-invoice")
@@ -128,10 +128,6 @@ public class InvoiceController {
         return invoiceService.sendInvoice(request);
     }
 
-    @PutMapping("/correction")
-    public InvoiceResponse sendInvoiceToCorrection(@RequestBody SendInvoiceToCorrectionRequest request) {
-        return invoiceService.sendInvoiceToCorrection(request);
-    }
 
     @PutMapping
     public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
@@ -156,5 +152,18 @@ public class InvoiceController {
         invoiceService.approvePendingInvoicesAfterTimeout();
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/send-cancel/{invoiceId}/{receiverTaxId}")
+    void sendInvoiceToCancel(@PathVariable("invoiceId") Long invoiceId,
+                             @PathVariable("receiverTaxId") String receiverTaxId) {
+        invoiceService.sendInvoiceToCancel(invoiceId, receiverTaxId);
+    }
+
+    @PutMapping("/cancel-timeout")
+    void cancelPendingInvoicesAfterTimeout() {
+        invoiceService.cancelPendingInvoicesAfterTimeout();
+    }
+
+
 
 }

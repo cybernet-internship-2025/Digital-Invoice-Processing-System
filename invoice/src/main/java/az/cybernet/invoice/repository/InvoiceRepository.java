@@ -31,8 +31,6 @@ public interface InvoiceRepository {
     void updateInvoiceRecipientTaxId(@Param("invoiceId") Long InvoiceId,
                                      @Param("recipientTaxId") String recipientTaxId);
 
-    void changeStatus(@Param("invoiceId") Long invoiceId,
-                      @Param("status") String status);
 
     Optional<InvoiceEntity> findBySenderTaxIdAndInvoiceId(
             @Param("senderTaxId") String senderTaxId,
@@ -64,5 +62,11 @@ public interface InvoiceRepository {
 
     void updateStatuses(@Param("invoiceIds") List<Long> invoiceIds,
                         @Param("status") String status);
+
+    void updatePreviousStatus(@Param("invoiceId") Long invoiceId,
+                              @Param("status") String status);
+    void refreshLastPendingAt(@Param("invoiceId") Long invoiceId);
+
+    List<InvoiceEntity>findInvoicePendingMoreThanOneMonth();
 }
 
