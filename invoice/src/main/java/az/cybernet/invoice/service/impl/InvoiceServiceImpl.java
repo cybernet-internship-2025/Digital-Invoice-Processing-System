@@ -35,7 +35,6 @@ import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -75,17 +74,29 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Log
 @Service
-@RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class InvoiceServiceImpl implements InvoiceService {
     final InvoiceRepository invoiceRepository;
     final UserClient userClient;
     final InvoiceMapper invoiceMapper;
-    @Lazy
-    ItemService itemService;
+    final ItemService itemService;
     final OperationService operationService;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
+
+    public InvoiceServiceImpl(
+            InvoiceRepository invoiceRepository,
+            UserClient userClient,
+            InvoiceMapper invoiceMapper,
+            OperationService operationService,
+            @Lazy ItemService itemService
+    ) {
+        this.invoiceRepository = invoiceRepository;
+        this.userClient = userClient;
+        this.invoiceMapper = invoiceMapper;
+        this.operationService = operationService;
+        this.itemService = itemService;
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
