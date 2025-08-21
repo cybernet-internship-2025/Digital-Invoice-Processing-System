@@ -279,7 +279,7 @@
         where id = #{invoiceId}
     </update>
 
-    <select id="findInvalidInvoiceIdsBySenderTaxId" resultMap="long">
+    <select id="findInvalidInvoiceIdsBySenderTaxId" resultMap="InvoiceResultMap">
         select id
         from invoices
         where id in
@@ -313,7 +313,7 @@
         update invoices
         set status = #{status}
         where id in
-        <foreach collection="ids" open="(" separator="," close=")">
+        <foreach collection="invoiceIds" open="(" separator="," close=")">
             #{id}
         </foreach>
     </update>

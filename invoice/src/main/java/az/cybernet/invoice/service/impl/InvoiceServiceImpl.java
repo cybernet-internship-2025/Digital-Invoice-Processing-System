@@ -438,20 +438,20 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional
     public List<InvoiceResponse> sendInvoice(SendInvoiceRequest request) {
-        List<Long> invalidIds = invoiceRepository.findInvalidInvoiceIdsBySenderTaxId(request.getSenderUserTaxId(), request.getInvoicesId());
+        List<Long> invalidIds = invoiceRepository.findInvalidInvoiceIdsBySenderTaxId(request.getSenderUserTaxId(), request.getInvoiceIds());
 
         if (!invalidIds.isEmpty()) {
             throw new RuntimeException("These invoice is not yours: " + invalidIds);
         }
 
-        List<InvoiceEntity> invoices = invoiceRepository.findInvoicesByIds(request.getInvoicesId());
+        List<InvoiceEntity> invoices = invoiceRepository.findInvoicesByIds(request.getInvoiceIds());
 
         invoices.forEach(invoice -> {
             doesntMatchInvoiceStatus(invoice, CORRECTION, InvoiceStatus.DRAFT);
             invoice.setStatus(PENDING);
         });
 
-        invoiceRepository.updateStatuses(request.getInvoicesId(), PENDING.toString());
+        invoiceRepository.updateStatuses(request.getInvoiceIds(), PENDING.toString());
 
         return invoices.stream()
                 .map(invoiceMapper::fromEntityToResponse)

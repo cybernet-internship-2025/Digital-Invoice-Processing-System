@@ -10,5 +10,5 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SendInvoiceRequest {
     String senderUserTaxId;
-    List<Long>invoicesId;
+    List<Long> invoiceIds;
 }
