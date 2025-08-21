@@ -39,7 +39,7 @@ public class PDFGeneratorService {
 
             Font fontHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
 
-            Paragraph title = new Paragraph("INVOICE", fontTitle);
+            Paragraph title = new Paragraph("Qaimə", fontTitle);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(21);
             document.add(title);
@@ -49,12 +49,12 @@ public class PDFGeneratorService {
             infoTable.setSpacingBefore(10f);
             infoTable.setSpacingAfter(20f);
 
-            infoTable.addCell(createCell("Sender: " + invoice.getSenderTaxId(), fontNormal));
+            infoTable.addCell(createCell("Kimdən: " + invoice.getSenderTaxId(), fontNormal));
 
-            infoTable.addCell(createCell("Receiver: " + invoice.getRecipientTaxId(), fontNormal));
+            infoTable.addCell(createCell("Kimə: " + invoice.getRecipientTaxId(), fontNormal));
 
-            infoTable.addCell(createCell("Invoice Number: INVD" + invoice.getInvoiceNumber(), fontNormal));
-            infoTable.addCell(createCell("Date: " + invoice.getCreatedAt(), fontNormal));
+            infoTable.addCell(createCell("Qaimə Nömrəsi: INVD" + invoice.getInvoiceNumber(), fontNormal));
+            infoTable.addCell(createCell("Tarix: " + invoice.getCreatedAt(), fontNormal));
             infoTable.addCell(createCell("Operator: Administrator", fontNormal));
 
             document.add(infoTable);
@@ -65,7 +65,7 @@ public class PDFGeneratorService {
             itemsTable.setSpacingBefore(10f);
 
 
-            String[] headers = {"No", "Description", "Quantity", "Price"};
+            String[] headers = {"Sıra", "Malın adı", "Miqdar", "Qiymət"};
             for (String header : headers) {
                 PdfPCell headerCell = new PdfPCell(new Phrase(header, fontHeader));
                 headerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -83,7 +83,7 @@ public class PDFGeneratorService {
 
             document.add(itemsTable);
 
-            Paragraph total = new Paragraph("Total: " + invoice.getTotalPrice(), fontHeader);
+            Paragraph total = new Paragraph("Ümumi məbləği: " + invoice.getTotalPrice(), fontHeader);
             total.setAlignment(Element.ALIGN_RIGHT);
             total.setSpacingBefore(10f);
             document.add(total);
