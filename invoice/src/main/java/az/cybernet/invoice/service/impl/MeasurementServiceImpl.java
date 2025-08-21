@@ -9,7 +9,6 @@ import az.cybernet.invoice.repository.MeasurementRepository;
 import az.cybernet.invoice.service.abstraction.MeasurementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,12 +18,10 @@ import static az.cybernet.invoice.exception.ExceptionConstants.MEASUREMENT_NOT_F
 @Service
 @RequiredArgsConstructor
 public class MeasurementServiceImpl implements MeasurementService {
-
     private final MeasurementRepository mapper;
     private final MeasurementMapStruct mapStruct;
 
     @Override
-    @Transactional
     public void addMeasurement(MeasurementRequest request) {
         MeasurementEntity entity = new MeasurementEntity();
         entity.setName(request.getName());
@@ -34,41 +31,50 @@ public class MeasurementServiceImpl implements MeasurementService {
         mapper.saveMeasurement(entity);
     }
 
-//    @Override
-//    public MeasurementResponse findByName(String name) {
-//        MeasurementEntity entity = mapper.findByName(name);
-//        return mapStruct.toResponse(entity);
-//    }
-//
-//
-//    @Override
-//    public List<MeasurementResponse> findAll() {
-//        return mapStruct.toResponseList(mapper.findAll());
-//    }
-//
-//    @Override
-//    @Transactional
-//    public void updateMeasurement(Long id, MeasurementRequest request) {
-//        MeasurementEntity entity = mapper.findByName(request.getName());
-//
-//        if (entity == null || !entity.getId().equals(id)) {
-//            throw new NotFoundException(MEASUREMENT_NOT_FOUND.getCode(), MEASUREMENT_NOT_FOUND.getMessage());
-//        }
-//
-//        entity.setName(request.getName());
-//        entity.setUpdatedAt(LocalDateTime.now());
-//        mapper.updateMeasurement(entity);
-//    }
+    @Override
+    public List<MeasurementResponse> findAll() {
+        return mapStruct.toResponseList(mapper.findAll().orElseThrow(() ->
+                new NotFoundException(
+                        MEASUREMENT_NOT_FOUND.getCode(),
+                        MEASUREMENT_NOT_FOUND.getMessage())));
+    }
 
     @Override
-    @Transactional
+    public MeasurementResponse findByName(String name) {
+        MeasurementEntity entity = mapper.findByName(name).orElseThrow(() ->
+                new NotFoundException(
+                        MEASUREMENT_NOT_FOUND.getCode(),
+                        MEASUREMENT_NOT_FOUND.getMessage()));
+        return mapStruct.toResponse(entity);
+    }
+
+    private MeasurementEntity findById(Long id) {
+        return mapper.findById(id).orElseThrow(
+                () -> new NotFoundException(
+                        MEASUREMENT_NOT_FOUND.getCode(),
+                        MEASUREMENT_NOT_FOUND.getMessage()
+                ));
+    }
+
+    @Override
+    public void updateMeasurement(Long id, MeasurementRequest request) {
+        MeasurementEntity entity = findById(id);
+
+        entity.setName(request.getName());
+        entity.setUpdatedAt(LocalDateTime.now());
+
+        mapper.updateMeasurement(entity);
+    }
+
+    @Override
     public void deleteMeasurement(Long id) {
+        findById(id);
         mapper.deleteMeasurement(id);
     }
 
     @Override
-    @Transactional
     public void restoreMeasurement(Long id) {
+        findById(id);
         mapper.restoreMeasurement(id);
     }
 }

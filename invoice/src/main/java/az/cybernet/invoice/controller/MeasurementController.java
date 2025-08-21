@@ -41,21 +41,20 @@ public class MeasurementController {
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable Long id,
+    public void updateMeasurement(@PathVariable Long id,
                        @RequestBody MeasurementRequest request) {
         measurementService.updateMeasurement(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void deleteMeasurement(@PathVariable Long id) {
         measurementService.deleteMeasurement(id);
     }
 
     @PostMapping("/{id}/restore")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void restore(@PathVariable Long id) {
+    public void restoreMeasurement(@PathVariable Long id) {
         measurementService.restoreMeasurement(id);
     }
 }
