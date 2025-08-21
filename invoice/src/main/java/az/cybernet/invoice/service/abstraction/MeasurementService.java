@@ -11,14 +11,14 @@ public interface MeasurementService {
 
     void addMeasurement(MeasurementRequest request);
 
-    List<MeasurementResponse> findAll();
+//    List<MeasurementResponse> findAll();
 
-    void updateMeasurement(Long id, MeasurementRequest request);
+//    void updateMeasurement(Long id, MeasurementRequest request);
 
     void deleteMeasurement(Long id);
 
     void restoreMeasurement(Long id);
 
-    MeasurementResponse findByName(String name);
+//    MeasurementResponse findByName(String name);
 
 }

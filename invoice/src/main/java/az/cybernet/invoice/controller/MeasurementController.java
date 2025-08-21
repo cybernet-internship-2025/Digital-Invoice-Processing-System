@@ -34,22 +34,22 @@ public class MeasurementController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public ResponseEntity<List<MeasurementResponse>> findAll() {
-        return ResponseEntity.ok(measurementService.findAll());
-    }
+//    @GetMapping
+//    public ResponseEntity<List<MeasurementResponse>> findAll() {
+//        return ResponseEntity.ok(measurementService.findAll());
+//    }
 
-    @GetMapping("/{measurementName}")
-    public ResponseEntity<MeasurementResponse> findByName(@PathVariable String measurementName) {
-        return ResponseEntity.ok(measurementService.findByName(measurementName));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id,
-                                       @RequestBody MeasurementRequest request) {
-        measurementService.updateMeasurement(id, request);
-        return ResponseEntity.noContent().build();
-    }
+//    @GetMapping("/{measurementName}")
+//    public ResponseEntity<MeasurementResponse> findByName(@PathVariable String measurementName) {
+//        return ResponseEntity.ok(measurementService.findByName(measurementName));
+//    }
+//
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Void> update(@PathVariable Long id,
+//                                       @RequestBody MeasurementRequest request) {
+//        measurementService.updateMeasurement(id, request);
+//        return ResponseEntity.noContent().build();
+//    }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
