@@ -279,7 +279,7 @@
         where id = #{invoiceId}
     </update>
 
-    <select id="findInvalidInvoiceIdsBySenderTaxId" resultMap="InvoiceResultMap">
+    <select id="findInvalidInvoiceIdsBySenderTaxId" resultType="long" parameterType="map">
         select id
         from invoices
         where id in
