@@ -347,4 +347,24 @@
         where id = #{invoiceId}
     </update>
 
+    <update id="updateInvoiceRecipientTaxId">
+
+    </update>
+
+    <update id="changeStatus">
+
+    </update>
+
+    <update id="countInvoicesByRecipientUserTaxId">
+
+    </update>
+
+    <select id="findAllInvoicesByRecipientUserTaxId" resultType="az.cybernet.invoice.entity.InvoiceEntity">
+
+    </select>
+
+    <select id="findInvoicesByIds" resultType="az.cybernet.invoice.entity.InvoiceEntity">
+
+    </select>
+
 </mapper>

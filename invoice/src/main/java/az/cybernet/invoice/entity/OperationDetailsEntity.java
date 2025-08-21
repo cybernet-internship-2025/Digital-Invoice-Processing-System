@@ -18,7 +18,4 @@ public class OperationDetailsEntity {
     ItemEntity item;
     ItemStatus itemStatus;
     Long operationId;
-
-
-
 }

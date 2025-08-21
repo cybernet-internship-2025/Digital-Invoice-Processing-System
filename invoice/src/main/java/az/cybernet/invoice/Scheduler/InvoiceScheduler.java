@@ -12,7 +12,6 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class InvoiceScheduler {
-
     InvoiceService invoiceService;
 
     @Scheduled(cron = "0 0 0 * * ?")

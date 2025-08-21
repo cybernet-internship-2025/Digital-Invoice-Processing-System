@@ -13,12 +13,16 @@ import java.math.BigDecimal;
 public class UpdateItemRequest {
     @NotNull(message = "Item ID cannot be null")
     Long id;
+
     @NotBlank(message = "Item name cannot be blank")
     String name;
+
     @NotNull(message = "Unit price cannot be null")
     BigDecimal unitPrice;
+
     @NotNull(message = "Quantity cannot be null")
     Integer quantity;
+
     @NotBlank(message = "Measurement name cannot be blank")
     String measurementName;
 }
