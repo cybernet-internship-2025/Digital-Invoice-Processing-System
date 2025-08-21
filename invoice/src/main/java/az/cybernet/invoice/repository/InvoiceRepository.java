@@ -65,8 +65,9 @@ public interface InvoiceRepository {
 
     void updatePreviousStatus(@Param("invoiceId") Long invoiceId,
                               @Param("status") String status);
+
     void refreshLastPendingAt(@Param("invoiceId") Long invoiceId);
 
-    List<InvoiceEntity>findInvoicePendingMoreThanOneMonth();
+    List<InvoiceEntity> findInvoicePendingMoreThanOneMonth();
 }
 

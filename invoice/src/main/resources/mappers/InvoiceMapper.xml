@@ -309,7 +309,7 @@
         </foreach>
     </select>
 
-    <select id="findInvoicePendingMoreThanOneMonth">
+    <select id="findInvoicePendingMoreThanOneMonth" resultMap="InvoiceResultMap">
         select *
         from invoices
         where now() > date_add(last_pending_at, interval 1 month)
@@ -345,10 +345,6 @@
         update invoices
         set last_pending_at = now()
         where id = #{invoiceId}
-    </update>
-
-    <update id="updateInvoiceRecipientTaxId">
-
     </update>
 
     <update id="changeStatus">
