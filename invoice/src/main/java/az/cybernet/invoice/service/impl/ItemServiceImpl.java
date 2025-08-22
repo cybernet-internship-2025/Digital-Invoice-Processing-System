@@ -8,6 +8,7 @@ import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationDetailsRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
+import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
 import az.cybernet.invoice.entity.MeasurementEntity;
 import az.cybernet.invoice.enums.ItemStatus;
@@ -18,7 +19,6 @@ import az.cybernet.invoice.mapper.ItemMapStruct;
 import az.cybernet.invoice.repository.*;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
-import az.cybernet.invoice.service.abstraction.OperationDetailsService;
 import az.cybernet.invoice.service.abstraction.OperationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
@@ -48,6 +46,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemsRequest == null || itemsRequest.getItemsRequest() == null || itemsRequest.getItemsRequest().isEmpty()) {
             return Collections.emptyList();
         }
+        List<ItemEntity> itemsToSave = new ArrayList<>();
 
         for (ItemRequest itemRequest : itemsRequest.getItemsRequest()) {
             MeasurementEntity measurement = measurementRepository.findByName(itemRequest.getMeasurementName())
@@ -57,10 +56,23 @@ public class ItemServiceImpl implements ItemService {
                                     ExceptionConstants.MEASUREMENT_NOT_FOUND.getCode()
                             ));
 
-            ItemEntity item = itemMapStruct.toEntity(itemRequest);
-            item.setStatus(ItemStatus.CREATED);
-            itemRepository.addItems(item);
+            ItemEntity item = ItemEntity.builder()
+                    .status(ItemStatus.CREATED)
+                    .isActive(true)
+                    .createdAt(LocalDateTime.now())
+                    .name(itemRequest.getProductName())
+                    .invoice(InvoiceEntity.builder().id(itemsRequest.getInvoiceId()).build())
+                    .measurement(MeasurementEntity.builder().name(itemRequest.getMeasurementName()).build())
+                    .unitPrice(itemRequest.getUnitPrice())
+                    .quantity(itemRequest.getQuantity())
+                    .totalPrice(itemRequest.getUnitPrice() != null && itemRequest.getQuantity() != null
+                            ? itemRequest.getUnitPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()))
+                            : BigDecimal.ZERO)
+                    .build();
+
+            itemsToSave.add(item);
         }
+        itemRepository.addItems(itemsToSave);
 
         List<ItemEntity> items = itemRepository.findAllItemsByInvoiceId(itemsRequest.getInvoiceId());
         List<Long> itemIds = items.stream()
