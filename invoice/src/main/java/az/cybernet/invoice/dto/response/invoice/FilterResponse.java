@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 
 @Data
 public class FilterResponse {
-    Long id;
-    String fullInvoiceNumber;
-    String senderTaxId;
-    String recipientTaxId;
-    BigDecimal totalPrice;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
-    InvoiceStatus status;
+    private Long id;
+    private String fullInvoiceNumber;
+    private String senderTaxId;
+    private String recipientTaxId;
+    private BigDecimal totalPrice;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private InvoiceStatus status;
 
 }
