@@ -9,7 +9,6 @@ import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
@@ -30,7 +29,6 @@ public interface InvoiceService {
     InvoiceResponse updateInvoiceRecipientTaxId(String recipientTaxId, Long invoiceId);
 
     List<InvoiceResponse> sendInvoice(SendInvoiceRequest request);
-
 
 
     PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter);
@@ -62,7 +60,7 @@ public interface InvoiceService {
             HttpServletResponse response
     );
 
-    void sendInvoiceToCancel(Long invoiceId,String receiverTaxId);
+    void sendInvoiceToCancel(Long invoiceId, String receiverTaxId);
 
     void cancelPendingInvoicesAfterTimeout();
 

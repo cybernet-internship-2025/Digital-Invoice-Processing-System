@@ -8,7 +8,6 @@ import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
 import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
@@ -163,7 +162,6 @@ public class InvoiceController {
     void cancelPendingInvoicesAfterTimeout() {
         invoiceService.cancelPendingInvoicesAfterTimeout();
     }
-
 
 
 }
