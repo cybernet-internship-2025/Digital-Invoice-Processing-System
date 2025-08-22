@@ -12,6 +12,10 @@ spring:
     drop-first: false
     default-schema: invoice
     liquibase-schema: public
+  security:
+    user:
+      name: ${USER_NAME}
+      password: ${USER_PASSWORD}
 
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
@@ -19,3 +23,9 @@ mybatis:
 user:
   service:
     url: http://localhost:8080
+
+springdoc:
+  api-docs:
+    path: /api/DIPS/api-docs
+  swagger-ui:
+    path: /api/DIPS/swagger-ui.html
