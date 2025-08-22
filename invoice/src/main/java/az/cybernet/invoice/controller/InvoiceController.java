@@ -8,7 +8,6 @@ import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
 import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -105,7 +104,7 @@ public class InvoiceController {
     @PutMapping("/{recipientTaxId}/{invoiceId}")
     public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
                                                     @PathVariable("invoiceId") Long invoiceId) {
-        return invoiceService.updateInvoiceRecipientId(recipientTaxId, invoiceId);
+        return invoiceService.updateInvoiceRecipientTaxId(recipientTaxId, invoiceId);
     }
 
     @PutMapping("/send-invoice")
@@ -113,10 +112,6 @@ public class InvoiceController {
         return invoiceService.sendInvoice(request);
     }
 
-    @PutMapping("/correction")
-    public InvoiceResponse sendInvoiceToCorrection(@RequestBody SendInvoiceToCorrectionRequest request) {
-        return invoiceService.sendInvoiceToCorrection(request);
-    }
 
     @PutMapping
     public InvoiceResponse updateInvoiceItems(@RequestBody UpdateInvoiceItemsRequest request) {
@@ -142,6 +137,7 @@ public class InvoiceController {
         return ResponseEntity.ok().build();
     }
 
+
     @PostMapping("/{taxId}/sent/export-to-excel")
     public ResponseEntity<byte[]> exportSentInvoiceToExcel(
             @PathVariable("taxId") String taxId,
@@ -151,6 +147,17 @@ public class InvoiceController {
                 invoiceService.exportInvoiceToExcel(invoiceFilterRequest, taxId),
                 fileName
         );
+
+    @PutMapping("/send-cancel/{invoiceId}/{receiverTaxId}")
+    void sendInvoiceToCancel(@PathVariable("invoiceId") Long invoiceId,
+                             @PathVariable("receiverTaxId") String receiverTaxId) {
+        invoiceService.sendInvoiceToCancel(invoiceId, receiverTaxId);
+    }
+
+    @PutMapping("/cancel-timeout")
+    void cancelPendingInvoicesAfterTimeout() {
+        invoiceService.cancelPendingInvoicesAfterTimeout();
+
     }
 
 
