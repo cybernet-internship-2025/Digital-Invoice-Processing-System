@@ -323,29 +323,6 @@
         </foreach>
     </update>
 
-    <update id="updateInvoiceRecipientTaxId">
-        update invoices
-        set recipient_tax_id = #{recipientTaxId},
-        updated_at = now()
-        where id = #{invoiceId}
-    </update>
-
-    <update id="updatePreviousStatus">
-        update invoices
-        set previous_status = #{prevoiusStatus},
-        updated_at = now()
-        where id = #{invoiceId}
-    </update>
-
-    <update id="refreshLastPendingAt">
-        update invoices
-        set last_pending_at = now()
-        where id = #{invoiceId}
-    </update>
-
-    <update id="changeStatus">
-
-    </update>
 
     <update id="countInvoicesByRecipientUserTaxId">
 
@@ -355,8 +332,27 @@
 
     </select>
 
-    <select id="findInvoicesByIds" resultType="az.cybernet.invoice.entity.InvoiceEntity">
-
+    <select id="findInvoicesByIds"
+            parameterType="list"
+            resultType="az.cybernet.invoice.entity.InvoiceEntity">
+select *
+from invoices i
+where id in
+<foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
+    #{id}
+</foreach>
     </select>
+
+    <update id="updateInvoiceRecipientTaxId">
+        update invoices
+        set recipient_tax_id = #{recipientTaxId},
+            updated_at = now(),
+            previous_status = status,
+            status = 'PENDING',
+            last_pending_at = now()
+        where id = #{invoiceId}
+
+    </update>
+
 
 </mapper>
