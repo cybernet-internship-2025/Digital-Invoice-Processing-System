@@ -9,7 +9,7 @@ spring:
     driverClassName: org.postgresql.Driver
   liquibase:
     change-log: classpath:liquibase/changelog-master.yml
-    drop-first: true
+    drop-first: false
     default-schema: invoice
     liquibase-schema: public
 

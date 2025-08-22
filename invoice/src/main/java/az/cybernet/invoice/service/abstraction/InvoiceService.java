@@ -9,7 +9,6 @@ import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
 import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
@@ -28,11 +27,9 @@ public interface InvoiceService {
 
     InvoiceEntity fetchInvoiceIfExist(Long invoiceId);
 
-    InvoiceResponse updateInvoiceRecipientId(String recipientTaxId, Long invoiceId);
+    InvoiceResponse updateInvoiceRecipientTaxId(String recipientTaxId, Long invoiceId);
 
     List<InvoiceResponse> sendInvoice(SendInvoiceRequest request);
-
-    InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
     List<FilterResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter);
@@ -64,5 +61,9 @@ public interface InvoiceService {
             HttpServletResponse response
     );
     byte[] exportInvoiceToExcel(InvoiceFilterRequest request,String taxId);
+
+    void sendInvoiceToCancel(Long invoiceId, String receiverTaxId);
+
+    void cancelPendingInvoicesAfterTimeout();
 
 }

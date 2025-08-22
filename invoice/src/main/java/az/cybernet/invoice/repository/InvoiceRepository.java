@@ -31,8 +31,6 @@ public interface InvoiceRepository {
     void updateInvoiceRecipientTaxId(@Param("invoiceId") Long InvoiceId,
                                      @Param("recipientTaxId") String recipientTaxId);
 
-    void changeStatus(@Param("invoiceId") Long invoiceId,
-                      @Param("status") String status);
 
     Optional<InvoiceEntity> findBySenderTaxIdAndInvoiceId(
             @Param("senderTaxId") String senderTaxId,
@@ -56,13 +54,20 @@ public interface InvoiceRepository {
     void refreshInvoice(Long invoiceId);
 
     List<Long> findInvalidInvoiceIdsBySenderTaxId(@Param("senderTaxId") String senderTaxId,
-                                                  @Param("invoicesId") List<Long> invoiceIds);
+                                                  @Param("invoiceIds") List<Long> invoiceIds);
 
     List<Long> findAllInvalidInvoicesById(@Param("invoiceIds") List<Long> invoiceIds);
 
-    List<InvoiceEntity> findInvoicesByIds(@Param("ids") List<Long> ids);
+    List<InvoiceEntity> findInvoicesByIds(@Param("invoiceIds") List<Long> invoiceIds);
 
-    void updateStatuses(@Param("ids") List<Long> invoiceIds,
+    void updateStatuses(@Param("invoiceIds") List<Long> invoiceIds,
                         @Param("status") String status);
+
+    void updatePreviousStatus(@Param("invoiceId") Long invoiceId,
+                              @Param("status") String status);
+
+    void refreshLastPendingAt(@Param("invoiceId") Long invoiceId);
+
+    List<InvoiceEntity> findInvoicePendingMoreThanOneMonth();
 }
 
