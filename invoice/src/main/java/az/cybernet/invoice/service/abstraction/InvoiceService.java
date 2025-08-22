@@ -11,6 +11,7 @@ import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.SendInvoiceToCorrectionRequest;
 import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
@@ -34,7 +35,7 @@ public interface InvoiceService {
     InvoiceResponse sendInvoiceToCorrection(SendInvoiceToCorrectionRequest request);
 
 
-    PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter);
+    List<FilterResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter);
 
 
     PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
@@ -62,5 +63,6 @@ public interface InvoiceService {
             InvoiceExportRequest request,
             HttpServletResponse response
     );
+    byte[] exportInvoiceToExcel(InvoiceFilterRequest request,String taxId);
 
 }
