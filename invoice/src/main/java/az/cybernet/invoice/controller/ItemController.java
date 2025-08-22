@@ -1,16 +1,13 @@
 package az.cybernet.invoice.controller;
 
+import az.cybernet.invoice.dto.request.item.ItemsRequest;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.service.abstraction.ItemService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -45,5 +42,10 @@ public class ItemController {
     public ResponseEntity<Void> deleteItemsByInvoiceId(@PathVariable Long invoiceId) {
         itemService.deleteItemsByInvoiceId(invoiceId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping()
+    public List<ItemResponse> addItems(@RequestBody @Valid ItemsRequest requests) {
+        return itemService.addItems(requests);
     }
 }
