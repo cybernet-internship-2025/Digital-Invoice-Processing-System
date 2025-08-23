@@ -1,6 +1,9 @@
 version: '3.8'
 
 services:
+
+  # ----- DATABASES -----
+
   invoice-db:
     image: postgres:16
     container_name: invoice-db
@@ -12,6 +15,21 @@ services:
       - "5433:5432"
     volumes:
       - invoice-db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+
+  notification-db:
+    image: mongo:7.0.4
+    container_name: notification-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: notification-service
+    volumes:
+      - notification-db-data:/data/db
     networks:
       - backend
 
@@ -29,6 +47,34 @@ services:
       - user-db-data:/var/lib/postgresql/data
     networks:
       - backend
+
+  # ----- KAFKA & ZOOKEEPER -----
+
+
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - backend
+
+  kafka:
+    image: wurstmeister/kafka:2.13-2.8.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - backend
+
+  # ----- SERVICES -----
 
   user-management-service:
     build:
@@ -68,6 +114,24 @@ services:
     networks:
       - backend
 
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    depends_on:
+      - kafka
+      - notification-db
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://root:password@notification-db:27017/notification-service?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_APPLICATION_NAME: notification-service
+      SERVER_PORT: 8083
+    ports:
+      - "8083:8083"
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge
@@ -75,3 +139,4 @@ networks:
 volumes:
   invoice-db-data:
   user-db-data:
+  notification-db-data:
