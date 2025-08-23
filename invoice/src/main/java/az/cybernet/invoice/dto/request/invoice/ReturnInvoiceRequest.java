@@ -19,4 +19,5 @@ public class ReturnInvoiceRequest {
     List<ReturnItemRequest> items;
     String senderTaxId;
     String recipientTaxId;
+    String comment;
 }

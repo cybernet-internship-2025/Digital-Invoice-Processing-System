@@ -1,16 +1,9 @@
 package az.cybernet.invoice.controller;
 
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
-import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
+import az.cybernet.invoice.enums.InvoiceStatus;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -65,6 +58,30 @@ public class InvoiceController {
     @ResponseStatus(NO_CONTENT)
     public void requestCorrection(@PathVariable Long invoiceId, @RequestBody RequestCorrectionRequest request) {
         invoiceService.requestCorrection(invoiceId, request);
+    }
+
+    @PostMapping("/{returnInvoiceId}/return/approve")
+    @ResponseStatus(NO_CONTENT)
+    public void approveReturnInvoice(@PathVariable Long returnInvoiceId,
+                                     @RequestBody @Valid ReturnInvoiceRequest request) {
+
+        invoiceService.approveReturnInvoice(returnInvoiceId, request);
+    }
+
+    @PostMapping("/{returnInvoiceId}/return/reject")
+    @ResponseStatus(NO_CONTENT)
+    public void cancelReturnInvoice(@PathVariable Long returnInvoiceId,
+                                    @RequestBody @Valid ReturnInvoiceRequest request) {
+
+        invoiceService.cancelReturnInvoice(returnInvoiceId, request);
+    }
+
+    @PostMapping("/{returnInvoiceId}/return/correction")
+    @ResponseStatus(NO_CONTENT)
+    public void requestReturnCorrection(@PathVariable Long returnInvoiceId,
+                                        @RequestBody @Valid ReturnInvoiceRequest request) {
+
+        invoiceService.requestReturnCorrection(returnInvoiceId, request);
     }
 
     @GetMapping("/{invoiceId}")

@@ -13,6 +13,7 @@ import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
+import az.cybernet.invoice.enums.InvoiceStatus;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
@@ -44,6 +45,17 @@ public interface InvoiceService {
     void cancelInvoice(ApproveAndCancelInvoiceRequest request);
 
     void requestCorrection(Long invoiceId, RequestCorrectionRequest request);
+
+    void processReturnInvoice(ReturnInvoiceRequest request,
+                              Long  invoiceReturnId,
+                              InvoiceStatus status,
+                              String comment);
+
+    void approveReturnInvoice(Long returnInvoiceId, ReturnInvoiceRequest request);
+
+    void cancelReturnInvoice(Long returnInvoiceId, ReturnInvoiceRequest request);
+
+    void requestReturnCorrection(Long returnInvoiceId, ReturnInvoiceRequest request);
 
     InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request);
 
