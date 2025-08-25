@@ -3,16 +3,7 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
-import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
 import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
@@ -427,22 +418,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public InvoiceResponse updateInvoiceRecipientTaxId(String recipientTaxId, Long invoiceId) {
+    public InvoiceResponse updateInvoiceRecipientTaxId(UpdateInvoiceRecipientTaxIdRequest request) {
         //TODO: check current user has invoice given by ID or not
-        InvoiceEntity invoice = fetchInvoiceIfExist(invoiceId);
+        InvoiceEntity invoice = fetchInvoiceIfExist(request.getInvoiceId());
 
         doesntMatchInvoiceStatus(invoice, CORRECTION, InvoiceStatus.DRAFT);
-        findRecipientByTaxId(recipientTaxId);
+        findRecipientByTaxId(request.getRecipientTaxId());
 
-        invoice.setRecipientTaxId(recipientTaxId);
+        invoice.setRecipientTaxId(request.getRecipientTaxId());
         invoice.setStatus(PENDING);
 
-        invoiceRepository.updateInvoiceRecipientTaxId(invoiceId, recipientTaxId);
-        invoiceRepository.updateStatuses(List.of(invoiceId), "PENDING");
-        invoiceRepository.refreshLastPendingAt(invoiceId);
-        invoiceRepository.updatePreviousStatus(invoiceId, "DRAFT");
+        invoiceRepository.updateInvoiceRecipientTaxId(request);
 
-        addInvoiceToOperation(invoiceId, "Recipient Tax ID changed to: " + recipientTaxId, OperationStatus.PENDING);
+        addInvoiceToOperation(request.getInvoiceId(), "Recipient Tax ID changed to: " + request.getRecipientTaxId(), OperationStatus.PENDING);
 
         return invoiceMapper.fromEntityToResponse(invoice);
     }

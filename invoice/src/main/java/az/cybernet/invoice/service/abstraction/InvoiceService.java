@@ -1,15 +1,6 @@
 package az.cybernet.invoice.service.abstraction;
 
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
-import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
@@ -26,7 +17,7 @@ public interface InvoiceService {
 
     InvoiceEntity fetchInvoiceIfExist(Long invoiceId);
 
-    InvoiceResponse updateInvoiceRecipientTaxId(String recipientTaxId, Long invoiceId);
+    InvoiceResponse updateInvoiceRecipientTaxId(UpdateInvoiceRecipientTaxIdRequest request);
 
     List<InvoiceResponse> sendInvoice(SendInvoiceRequest request);
 

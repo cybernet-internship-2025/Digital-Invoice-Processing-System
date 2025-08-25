@@ -1,14 +1,6 @@
 package az.cybernet.invoice.controller;
 
-import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
-import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
-import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
-import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
-import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
-import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
@@ -116,10 +108,9 @@ public class InvoiceController {
         return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
     }
 
-    @PutMapping("/{recipientTaxId}/{invoiceId}")
-    public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
-                                                    @PathVariable("invoiceId") Long invoiceId) {
-        return invoiceService.updateInvoiceRecipientTaxId(recipientTaxId, invoiceId);
+    @PutMapping("/update-recipient")
+    public InvoiceResponse updateInvoiceRecipientId(@RequestBody UpdateInvoiceRecipientTaxIdRequest request) {
+        return invoiceService.updateInvoiceRecipientTaxId(request);
     }
 
     @PutMapping("/send-invoice")
