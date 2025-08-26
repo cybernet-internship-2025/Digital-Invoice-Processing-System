@@ -2,12 +2,14 @@ package az.cybernet.invoice.service.impl;
 
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
+import az.cybernet.invoice.constants.InvoiceHeaders;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
 import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
@@ -24,6 +26,7 @@ import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
+import az.cybernet.invoice.util.ExcelFileExporter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.experimental.FieldDefaults;
 import org.apache.poi.ss.usermodel.Cell;
@@ -310,6 +313,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     }
 
+    @Override
+    public byte[] exportInvoiceToExcel(InvoiceFilterRequest request, String taxId) {
+        String[] headers= InvoiceHeaders.HEADERS;
+        List<FilterResponse> invoices= findInvoicesBySenderTaxId(taxId,request);
+        return ExcelFileExporter.exportInvoicesToExcel(invoices, headers);
+
+    }
+
     private void writeInvoicesToExcel(List<InvoiceEntity> invoices, HttpServletResponse response) {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("invoices");
@@ -461,7 +472,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
+    public List<FilterResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
         findSenderByTaxId(senderTaxId);
 
         int queryLimit = filter.getLimit() + 1;
@@ -475,12 +486,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             entities.removeLast(); // remove last item
         }
 
-        PagedResponse<InvoiceResponse> response = new PagedResponse<>();
-        response.setContent(invoiceMapper.allByRecipientUserTaxId(entities));
-        response.setHasNext(hasNext);
-        response.setOffset(filter.getOffset());
-        response.setLimit(filter.getLimit() - 1);
-        return response;
+        return invoiceMapper.allBySenderTaxId(entities);
 
     }
 

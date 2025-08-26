@@ -1,9 +1,23 @@
 package az.cybernet.invoice.controller;
 
+
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
+
 import az.cybernet.invoice.dto.request.invoice.*;
+
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
+import az.cybernet.invoice.util.ExcelFileExporter;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +48,7 @@ import static org.springframework.http.HttpStatus.OK;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class InvoiceController {
     InvoiceService invoiceService;
+    ExcelFileExporter excelFileExporter;
 
     @PostMapping
     @ResponseStatus(CREATED)
@@ -84,33 +99,22 @@ public class InvoiceController {
     }
 
     @GetMapping("/outbox/{senderTaxId}")
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
-            @PathVariable String senderTaxId,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) LocalDateTime fromDate,
-            @RequestParam(required = false) LocalDateTime toDate,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false, name = "invoiceNumber") String invoiceNumber,
-            @RequestParam(required = false, defaultValue = "0") Integer offset,
-            @RequestParam(required = false, defaultValue = "10") Integer limit
-    ) {
-        InvoiceFilterRequest filter = new InvoiceFilterRequest();
-        filter.setYear(year);
-        filter.setFromDate(fromDate);
-        filter.setToDate(toDate);
-        filter.setStatus(status);
-        filter.setType(type);
-        filter.setInvoiceNumber(invoiceNumber);
-        filter.setOffset(offset);
-        filter.setLimit(limit);
-
-        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, filter);
+    public List<FilterResponse> findInvoicesBySenderTaxId(@RequestParam String senderTaxId,
+                                                          @RequestBody InvoiceFilterRequest request) {
+        return invoiceService.findInvoicesBySenderTaxId(senderTaxId, request);
     }
+
+
+
+    @PutMapping("/{recipientTaxId}/{invoiceId}")
+    public InvoiceResponse updateInvoiceRecipientId(@PathVariable("recipientTaxId") String recipientTaxId,
+                                                    @PathVariable("invoiceId") Long invoiceId) {
+        return invoiceService.updateInvoiceRecipientTaxId(recipientTaxId, invoiceId);
 
     @PutMapping("/update-recipient")
     public InvoiceResponse updateInvoiceRecipientId(@RequestBody UpdateInvoiceRecipientTaxIdRequest request) {
         return invoiceService.updateInvoiceRecipientTaxId(request);
+
     }
 
     @PutMapping("/send-invoice")
@@ -143,6 +147,17 @@ public class InvoiceController {
         return ResponseEntity.ok().build();
     }
 
+
+    @PostMapping("/{taxId}/sent/export-to-excel")
+    public ResponseEntity<byte[]> exportSentInvoiceToExcel(
+            @PathVariable("taxId") String taxId,
+            @RequestBody @Valid InvoiceFilterRequest invoiceFilterRequest,
+            @RequestParam(value = "fileName", defaultValue = "Invoice") String fileName) {
+        return excelFileExporter.buildExcelResponse(
+                invoiceService.exportInvoiceToExcel(invoiceFilterRequest, taxId),
+                fileName
+        );
+
     @PutMapping("/send-cancel/{invoiceId}/{receiverTaxId}")
     void sendInvoiceToCancel(@PathVariable("invoiceId") Long invoiceId,
                              @PathVariable("receiverTaxId") String receiverTaxId) {
@@ -152,6 +167,7 @@ public class InvoiceController {
     @PutMapping("/cancel-timeout")
     void cancelPendingInvoicesAfterTimeout() {
         invoiceService.cancelPendingInvoicesAfterTimeout();
+
     }
 
 
