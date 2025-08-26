@@ -22,7 +22,6 @@ public interface InvoiceMapper {
     @Mapping(target = "invoiceNumber", ignore = true)
     @Mapping(target = "invoiceSeries", ignore = true)
     @Mapping(target = "items", ignore = true)
-
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
 
     List<InvoiceResponse> allByRecipientUserTaxId(List<InvoiceEntity> invoiceEntities);
