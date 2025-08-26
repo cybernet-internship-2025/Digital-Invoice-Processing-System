@@ -5,7 +5,6 @@
 
 <mapper namespace="az.cybernet.invoice.repository.InvoiceRepository">
 
-    
     <resultMap id="InvoiceResultMap" type="az.cybernet.invoice.entity.InvoiceEntity">
         <id property="id" column="c_id"/>
         <result property="senderTaxId" column="c_sender_tax_id"/>
@@ -38,19 +37,17 @@
         </collection>
     </resultMap>
 
-
-    <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity" useGeneratedKeys="true"
+            keyProperty="id" keyColumn="id">
         INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, invoice_number, invoice_series,
                               status, created_at, updated_at, is_active)
         VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{invoiceNumber}, #{invoiceSeries},
                 'DRAFT', NOW(), NULL, true)
     </insert>
 
-
     <select id="getNextInvoiceSequence" resultType="long">
         SELECT nextval('invoice.invoice_number_seq')
     </select>
-
 
     <update id="updateTotalPrice" parameterType="map">
         UPDATE invoices
@@ -58,7 +55,6 @@
         WHERE id = #{invoiceId}
           AND is_active = true
     </update>
-
 
     <update id="updateInvoiceStatus" parameterType="az.cybernet.invoice.entity.InvoiceEntity">
         UPDATE invoices
@@ -71,15 +67,13 @@
           AND is_active = true
     </update>
 
-
     <select id="findPendingInvoicesOlderThan" resultMap="InvoiceResultMap" parameterType="java.time.LocalDateTime">
         SELECT *
         FROM invoices
         WHERE status = 'PENDING'
-        AND last_pending_at = #{deadline, jdbcType=TIMESTAMP}
-        AND is_active = true
+          AND last_pending_at = #{deadline, jdbcType=TIMESTAMP}
+          AND is_active = true
     </select>
-
 
     <update id="approveInvoiceById" parameterType="long">
         UPDATE invoices
@@ -116,15 +110,20 @@
                o.id               AS o_id,
                o.status           AS o_status,
                o.comment          AS o_comment,
-               o.created_at       AS o_created_at
+               o.created_at       AS o_created_at,
+
+               od.id              AS od_id,
+               od.item_status     AS od_item_status,
+               od.comment         AS od_comment,
+               od.operation_id    AS od_operation_id
         FROM invoices c
                  LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
-                 LEFT JOIN operations o ON o.item_id = i.id
+                 LEFT JOIN operation_details od ON od.item_id = i.id
+                 LEFT JOIN operations o ON o.id = od.operation_id
         WHERE c.id = #{id}
           AND c.is_active = true
           AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION', 'DRAFT')
     </select>
-
 
     <update id="deleteInvoiceById" parameterType="long">
         UPDATE invoices
@@ -135,7 +134,6 @@
           AND c.status IN ('CANCELED')
     </update>
 
-
     <update id="deleteInvoicesById" parameterType="list">
         update invoices
         set is_active = false
@@ -145,7 +143,6 @@
         </foreach>
 
     </update>
-
 
     <update id="restoreInvoice" parameterType="long">
         UPDATE invoices
@@ -270,7 +267,6 @@
         </if>
 
 
-
     </select>
 
     <update id="refreshInvoice" parameterType="Long">
@@ -284,7 +280,7 @@
         from invoices
         where id in
         <foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
-        #{id}
+            #{id}
         </foreach>
         and sender_tax_id != #{senderTaxId}
     </select>
@@ -313,8 +309,8 @@
         select *
         from invoices
         where now() > date_add(last_pending_at, interval 1 month)
-        and status = 'PENDING'
-        and is_active = true
+          and status = 'PENDING'
+          and is_active = true
     </select>
 
     <update id="updateStatuses">
@@ -327,29 +323,6 @@
         </foreach>
     </update>
 
-    <update id="updateInvoiceRecipientTaxId">
-        update invoices
-        set recipient_tax_id = #{recipientTaxId},
-        updated_at = now()
-        where id = #{invoiceId}
-    </update>
-
-    <update id="updatePreviousStatus">
-        update invoices
-        set previous_status = #{prevoiusStatus},
-        updated_at = now()
-        where id = #{invoiceId}
-    </update>
-
-    <update id="refreshLastPendingAt">
-        update invoices
-        set last_pending_at = now()
-        where id = #{invoiceId}
-    </update>
-
-    <update id="changeStatus">
-
-    </update>
 
     <update id="countInvoicesByRecipientUserTaxId">
 
@@ -359,8 +332,27 @@
 
     </select>
 
-    <select id="findInvoicesByIds" resultType="az.cybernet.invoice.entity.InvoiceEntity">
-
+    <select id="findInvoicesByIds"
+            parameterType="list"
+            resultType="az.cybernet.invoice.entity.InvoiceEntity">
+select *
+from invoices i
+where id in
+<foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
+    #{id}
+</foreach>
     </select>
+
+    <update id="updateInvoiceRecipientTaxId">
+        update invoices
+        set recipient_tax_id = #{recipientTaxId},
+            updated_at = now(),
+            previous_status = status,
+            status = 'PENDING',
+            last_pending_at = now()
+        where id = #{invoiceId}
+
+    </update>
+
 
 </mapper>

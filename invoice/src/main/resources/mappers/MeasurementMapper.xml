@@ -4,46 +4,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="az.cybernet.invoice.repository.MeasurementRepository">
-
-
-    <insert id="saveMeasurement" parameterType="az.cybernet.invoice.entity.MeasurementEntity">
-        INSERT INTO invoice.measurements (name, created_at, is_active)
-        VALUES (#{name}, #{createdAt}, #{isActive})
-    </insert>
-
-    <select id="findByName" resultMap="MeasurementMap">
-        SELECT * FROM invoice.measurements
-        WHERE name = #{name}
-          AND is_active = true
-    </select>
-
-    <select id="findAll" resultMap="MeasurementMap">
-        SELECT * FROM invoice.measurements
-        WHERE is_active = true
-    </select>
-
-    <update id="updateMeasurement">
-        UPDATE invoice.measurements
-        SET name = #{name},
-            updated_at = NOW()
-        WHERE id = #{id}
-    </update>
-
-
-    <update id="deleteMeasurement">
-        UPDATE invoice.measurements
-        SET is_active = false,
-            updated_at = NOW()
-        WHERE id = #{id}
-    </update>
-
-    <update id="restoreMeasurement">
-        UPDATE invoice.measurements
-        SET is_active = true,
-            updated_at = NULL
-        WHERE id = #{id}
-    </update>
-
     <resultMap id="MeasurementMap" type="az.cybernet.invoice.entity.MeasurementEntity">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -51,4 +11,51 @@
         <result property="updatedAt" column="updated_at"/>
         <result property="isActive" column="is_active"/>
     </resultMap>
+
+    <insert id="saveMeasurement" parameterType="az.cybernet.invoice.entity.MeasurementEntity">
+        INSERT INTO invoice.measurements (name, created_at, is_active)
+        VALUES (#{name}, #{createdAt}, #{isActive})
+    </insert>
+
+    <select id="findByName" resultMap="MeasurementMap">
+        SELECT *
+        FROM invoice.measurements
+        WHERE name = #{name}
+          AND is_active = true
+    </select>
+
+    <select id="findById" resultMap="MeasurementMap">
+        SELECT *
+        FROM invoice.measurements
+        WHERE id = #{id}
+          AND is_active = true
+    </select>
+
+    <select id="findAll" resultMap="MeasurementMap">
+        SELECT *
+        FROM invoice.measurements
+        WHERE is_active = true
+    </select>
+
+    <update id="updateMeasurement">
+        UPDATE invoice.measurements
+        SET name       = #{name},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="deleteMeasurement">
+        UPDATE invoice.measurements
+        SET is_active  = false,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="restoreMeasurement">
+        UPDATE invoice.measurements
+        SET is_active  = true,
+            updated_at = NULL
+        WHERE id = #{id}
+    </update>
 </mapper>

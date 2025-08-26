@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Mapper
 public interface ItemRepository {
-    void addItems(@Param("item") ItemEntity item);
+    void addItems(@Param("items") List<ItemEntity> items);
 
     void updateItems(ItemEntity item);
 
