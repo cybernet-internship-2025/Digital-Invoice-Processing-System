@@ -14,6 +14,8 @@ public interface MeasurementRepository {
 
     Optional<MeasurementEntity> findByName(String name);
 
+    Optional<MeasurementEntity> findById(Long id);
+
     void updateMeasurement(MeasurementEntity entity);
 
     void deleteMeasurement(Long id);

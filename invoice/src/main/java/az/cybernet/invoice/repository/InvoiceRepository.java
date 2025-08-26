@@ -1,6 +1,7 @@
 package az.cybernet.invoice.repository;
 
 import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceRecipientTaxIdRequest;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import org.apache.ibatis.annotations.Mapper;
@@ -26,11 +27,6 @@ public interface InvoiceRepository {
 
 
     void deleteInvoicesById(List<Long> invoiceIds);
-
-
-    void updateInvoiceRecipientTaxId(@Param("invoiceId") Long InvoiceId,
-                                     @Param("recipientTaxId") String recipientTaxId);
-
 
     Optional<InvoiceEntity> findBySenderTaxIdAndInvoiceId(
             @Param("senderTaxId") String senderTaxId,
@@ -63,10 +59,9 @@ public interface InvoiceRepository {
     void updateStatuses(@Param("invoiceIds") List<Long> invoiceIds,
                         @Param("status") String status);
 
-    void updatePreviousStatus(@Param("invoiceId") Long invoiceId,
-                              @Param("status") String status);
+    void updateInvoiceRecipientTaxId(UpdateInvoiceRecipientTaxIdRequest request);
 
-    void refreshLastPendingAt(@Param("invoiceId") Long invoiceId);
+
 
     List<InvoiceEntity> findInvoicePendingMoreThanOneMonth();
 }
