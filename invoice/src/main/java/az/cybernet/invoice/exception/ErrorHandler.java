@@ -11,15 +11,28 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.List;
 
 import static az.cybernet.invoice.exception.ExceptionConstants.HTTP_METHOD_IS_NOT_CORRECT;
+import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
+import static az.cybernet.invoice.exception.ExceptionConstants.UNEXPECTED_EXCEPTION;
 import static az.cybernet.invoice.exception.ExceptionConstants.VALIDATION_EXCEPTION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
+    public ErrorResponse handle(Exception ex) {
+        log.error("Exception: ", ex);
+        return ErrorResponse.builder()
+                .code(UNEXPECTED_EXCEPTION.getCode())
+                .message(UNAUTHORIZED.getMessage())
+                .build();
+    }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(NOT_FOUND)
