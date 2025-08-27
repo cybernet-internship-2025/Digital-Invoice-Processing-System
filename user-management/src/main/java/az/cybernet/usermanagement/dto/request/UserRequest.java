@@ -16,4 +16,7 @@ public class UserRequest {
     @NotBlank(message = "Name must not be blank")
     @Size(min = 1, max = 255)
     String name;
+
+    @NotBlank(message = "date of birth can not be empty")
+    String dateOfBirth;
 }

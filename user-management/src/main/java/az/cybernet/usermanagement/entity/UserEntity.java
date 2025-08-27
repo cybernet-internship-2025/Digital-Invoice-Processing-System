@@ -1,6 +1,7 @@
 package az.cybernet.usermanagement.entity;
 
 
+import az.cybernet.usermanagement.enums.Status;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,13 +17,14 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 @FieldDefaults(level = PRIVATE)
 public class UserEntity {
-
     Long id;
     String name;
     String taxId;
+    String userId;
+    String password;
+    Status status;
+    String dateOfBirth;
     Boolean isActive;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-
-
 }

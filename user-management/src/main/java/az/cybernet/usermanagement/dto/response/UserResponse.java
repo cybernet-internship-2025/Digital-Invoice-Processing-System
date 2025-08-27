@@ -1,5 +1,6 @@
 package az.cybernet.usermanagement.dto.response;
 
+import az.cybernet.usermanagement.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +20,10 @@ public class UserResponse {
     Long id;
     String name;
     String taxId;
+    String dateOfBirth;
+    String userId;
+    Status status;
     Boolean isActive;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-
-
 }

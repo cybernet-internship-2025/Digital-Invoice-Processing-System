@@ -44,6 +44,18 @@ public class UserController {
         return userService.addUser(request);
     }
 
+    @PostMapping("/{id}/approve")
+    @ResponseStatus(OK)
+    public UserResponse approveUser(@PathVariable Long id) {
+        return userService.approveUser(id);
+    }
+
+    @PostMapping("/{id}/cancel")
+    @ResponseStatus(OK)
+    public UserResponse cancelUser(@PathVariable Long id) {
+        return userService.cancelUser(id);
+    }
+
     @PutMapping("/{taxId}")
     @ResponseStatus(OK)
     public UserResponse updateUser(@Valid @RequestBody UserRequest request, @PathVariable("taxId") String taxId) {
