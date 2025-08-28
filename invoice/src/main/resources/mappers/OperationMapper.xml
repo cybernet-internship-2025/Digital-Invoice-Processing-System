@@ -125,8 +125,8 @@
     </select>
 
     <insert id="save" parameterType="az.cybernet.invoice.entity.OperationEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO operations (status, created_at, invoice_id,comment)
-        VALUES (#{op.operation.status}, #{op.createdAt}, #{op.invoice.id},#{op.comment})
+        INSERT INTO operations (operation_status, created_at, invoice_id,comment)
+        VALUES (#{op.operationStatus}, #{op.createdAt}, #{op.invoice.id},#{op.comment})
     </insert>
 
 </mapper>

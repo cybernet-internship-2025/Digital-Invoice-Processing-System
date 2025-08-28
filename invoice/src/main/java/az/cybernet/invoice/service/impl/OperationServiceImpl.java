@@ -36,7 +36,6 @@ public class OperationServiceImpl implements OperationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveOperation(CreateOperationRequest request) {
-
         OperationEntity entity = new OperationEntity();
         entity.setCreatedAt(LocalDateTime.now());
         entity.setOperationStatus(request.getStatus());
@@ -48,26 +47,26 @@ public class OperationServiceImpl implements OperationService {
 
         operationRepository.save(entity);
 
-
-        List<OperationDetailsEntity> detailsList = new ArrayList<>();
+        Long operationId = entity.getId();
+        System.out.println("Saved operation ID: " + operationId);
 
         if (request.getItems() != null && !request.getItems().isEmpty()) {
+            List<OperationDetailsEntity> detailsList = new ArrayList<>();
             for (CreateOperationDetailsRequest itemReq : request.getItems()) {
                 OperationDetailsEntity detail = OperationDetailsEntity.builder()
                         .item(ItemEntity.builder()
                                 .id(itemReq.getItemId())
                                 .build())
                         .itemStatus(itemReq.getItemStatus())
-                        .operation(entity)
+                        .operationId(operationId)
                         .build();
-
-
                 detailsList.add(detail);
             }
+
             for (OperationDetailsEntity detail : detailsList) {
-                operationDetailsService.save(detail);}
-        }
-    }
+                operationDetailsService.save(detail);
+            }
+       }}
 
 
 
