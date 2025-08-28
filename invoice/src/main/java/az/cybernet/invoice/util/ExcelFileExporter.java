@@ -1,10 +1,9 @@
 package az.cybernet.invoice.util;
 
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import az.cybernet.invoice.entity.InvoiceEntity;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
 @Service
 public class ExcelFileExporter {
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -80,6 +80,7 @@ public class ExcelFileExporter {
             cell.setCellValue(value.toString());
         }
     }
+
     public ResponseEntity<byte[]> buildExcelResponse(byte[] bytes, String fileName) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
@@ -88,5 +89,47 @@ public class ExcelFileExporter {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(bytes);
+    }
+
+    public byte[] writeRecipientInvoicesToExcel(List<InvoiceEntity> invoices, String[] headers) {
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("invoices");
+
+            CellStyle headerStyle = wb.createCellStyle();
+            Font bold = wb.createFont();
+            bold.setBold(true);
+            headerStyle.setFont(bold);
+
+            Row h = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = h.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+            int rowIdx = 1;
+            for (InvoiceEntity inv : invoices) {
+
+                Row r = sheet.createRow(rowIdx++);
+                r.createCell(0).setCellValue(inv.getSenderTaxId() != null ? inv.getSenderTaxId() : "");
+                r.createCell(1).setCellValue(inv.getRecipientTaxId() != null ? inv.getRecipientTaxId() : "");
+                r.createCell(2).setCellValue(inv.getTotalPrice() != null ? inv.getTotalPrice().doubleValue() : 0.0d);
+                r.createCell(3).setCellValue(inv.getCreatedAt() != null ? dtf.format(inv.getCreatedAt()) : "");
+                r.createCell(4).setCellValue(inv.getStatus() != null ? inv.getStatus().name() : "");
+                r.createCell(5).setCellValue(inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "");
+                r.createCell(6).setCellValue(inv.getInvoiceSeries() != null ? inv.getInvoiceSeries() : "");
+                r.createCell(7).setCellValue(inv.getItems() != null ? inv.getItems().size() : 0);
+            }
+
+            for (int i = 0; i < headers.length; i++)
+                sheet.autoSizeColumn(i);
+            wb.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to export received invoices to Excel", e);
+        }
     }
 }
