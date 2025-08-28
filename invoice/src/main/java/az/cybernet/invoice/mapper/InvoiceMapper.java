@@ -3,6 +3,7 @@ package az.cybernet.invoice.mapper;
 import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
 import az.cybernet.invoice.dto.request.invoice.InvoiceExportRequest;
 import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import org.mapstruct.Mapper;
@@ -31,4 +32,7 @@ public interface InvoiceMapper {
     @Mapping(target = "offset", ignore = true)
     @Mapping(target = "limit", ignore = true)
     InvoiceFilterRequest map(InvoiceExportRequest request);
+
+    List<FilterResponse> allBySenderTaxId(List<InvoiceEntity> invoiceEntities);
+
 }
