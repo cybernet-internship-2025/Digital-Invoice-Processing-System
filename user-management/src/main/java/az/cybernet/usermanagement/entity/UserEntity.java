@@ -2,10 +2,14 @@ package az.cybernet.usermanagement.entity;
 
 
 import az.cybernet.usermanagement.enums.Status;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -23,7 +27,7 @@ public class UserEntity {
     String userId;
     String password;
     Status status;
-    String dateOfBirth;
+    LocalDate dateOfBirth;
     Boolean isActive;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

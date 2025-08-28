@@ -16,7 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static az.cybernet.usermanagement.enums.Status.APPROVED;
 import static az.cybernet.usermanagement.enums.Status.PENDING;
@@ -67,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public UserResponse cancelUser(Long id) {
+    public UserResponse deactivateUser(Long id) {
         var userEntity = userRepository.findById(id).orElseThrow(() ->
                 new NotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
 
@@ -86,7 +88,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public UserResponse approveUser(Long id) {
+    public UserResponse activateUser(Long id) {
         var userEntity = userRepository.findById(id).orElseThrow(() ->
                 new NotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage()));
 
@@ -96,11 +98,12 @@ public class UserServiceImpl implements UserService {
 
         String taxId = generateNextTaxId();
         String userId = userRepository.generateUserId();
-        String dob = userEntity.getDateOfBirth();
+        LocalDate dob = userEntity.getDateOfBirth();
         if (dob == null) {
             throw new IllegalStateException("User dateOfBirth is null");
         }
-        String password = dob.replace("-", "");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String password = dob.format(formatter);
         String passwordHash = passwordEncoder.encode(password);
 
         userEntity.setTaxId(taxId);

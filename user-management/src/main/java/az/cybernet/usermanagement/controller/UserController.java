@@ -44,16 +44,16 @@ public class UserController {
         return userService.addUser(request);
     }
 
-    @PostMapping("/{id}/approve")
+    @PostMapping("/{id}/approve-registration")
     @ResponseStatus(OK)
-    public UserResponse approveUser(@PathVariable Long id) {
-        return userService.approveUser(id);
+    public UserResponse activateUser(@PathVariable Long id) {
+        return userService.activateUser(id);
     }
 
-    @PostMapping("/{id}/cancel")
+    @PostMapping("/{id}/cancel-registration")
     @ResponseStatus(OK)
-    public UserResponse cancelUser(@PathVariable Long id) {
-        return userService.cancelUser(id);
+    public UserResponse deactivateUser(@PathVariable Long id) {
+        return userService.deactivateUser(id);
     }
 
     @PutMapping("/{taxId}")

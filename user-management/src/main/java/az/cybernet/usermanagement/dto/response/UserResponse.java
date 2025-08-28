@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -20,7 +21,7 @@ public class UserResponse {
     Long id;
     String name;
     String taxId;
-    String dateOfBirth;
+    LocalDate dateOfBirth;
     String userId;
     Status status;
     Boolean isActive;

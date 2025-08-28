@@ -15,7 +15,7 @@ public interface UserService {
 
     void deleteUser(String taxId);
 
-    UserResponse approveUser(Long id);
+    UserResponse activateUser(Long id);
 
-    UserResponse cancelUser(Long id);
+    UserResponse deactivateUser(Long id);
 }

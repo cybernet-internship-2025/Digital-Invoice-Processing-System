@@ -1,9 +1,16 @@
 package az.cybernet.usermanagement.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDate;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -17,6 +24,7 @@ public class UserRequest {
     @Size(min = 1, max = 255)
     String name;
 
-    @NotBlank(message = "date of birth can not be empty")
-    String dateOfBirth;
+    @NotNull(message = "date of birth can not be empty")
+    @Past(message = "Date of birth must be in the past")
+    LocalDate dateOfBirth;
 }

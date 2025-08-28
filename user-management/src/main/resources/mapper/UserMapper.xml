@@ -49,7 +49,7 @@
     <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true"
             keyProperty="id">
         INSERT INTO users.users (name, date_of_birth, status, tax_id, is_active, created_at)
-        VALUES (#{name}, #{dateOfBirth}, #{status}, #{taxId}, true, NOW())
+        VALUES (#{name}, #{dateOfBirth}, #{status}, #{taxId}, false, NOW())
     </insert>
 
     <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">

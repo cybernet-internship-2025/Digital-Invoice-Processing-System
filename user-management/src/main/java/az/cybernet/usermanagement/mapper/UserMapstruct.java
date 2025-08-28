@@ -17,7 +17,7 @@ public interface UserMapstruct {
     @Mapping(target = "isActive", constant = "false")
     @Mapping(target = "createdAt", expression = "java(LocalDateTime.now())")
     @Mapping(target = "status", constant = "PENDING")
-    @Mapping(target = "dateOfBirth", source = "dateOfBirth")
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth", dateFormat = "yyyy-MM-dd")
     UserEntity toUserEntityFromCreate(UserRequest createUserRequest);
 
     @Mapping(target = "updatedAt", expression = "java(LocalDateTime.now())")

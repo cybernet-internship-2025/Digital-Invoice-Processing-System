@@ -44,14 +44,14 @@ databaseChangeLog:
 
               - column:
                   name: date_of_birth
-                  type: VARCHAR(32)
+                  type: DATE
                   constraints:
                     nullable: false
 
               - column:
                   name: is_active
                   type: BOOLEAN
-                  defaultValueBoolean: true
+                  defaultValueBoolean: false
                   constraints:
                     nullable: false
 
