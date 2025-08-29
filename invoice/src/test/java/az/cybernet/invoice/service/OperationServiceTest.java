@@ -63,13 +63,13 @@ public class OperationServiceTest {
     void findAll_ShouldReturnMappedResponses() {
         OperationEntity entity = OperationEntity.builder()
                 .id(1L)
-                .status(OperationStatus.PENDING)
+                .operationStatus(OperationStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .invoice(InvoiceEntity.builder().id(10L).build())
                 .comment("Test")
                 .build();
 
-        OperationResponse response = new OperationResponse(); // Varsayalım boş DTO
+        OperationResponse response = new OperationResponse();
         when(operationRepository.findAll()).thenReturn(List.of(entity));
         when(operationMapStruct.toResponse(entity)).thenReturn(response);
 
@@ -82,7 +82,7 @@ public class OperationServiceTest {
     void findByStatus_ShouldFilterByStatus() {
         OperationEntity entity = OperationEntity.builder()
                 .id(2L)
-                .status(OperationStatus.APPROVED)
+                .operationStatus(OperationStatus.APPROVED)
                 .build();
 
         OperationResponse response = new OperationResponse();
@@ -98,7 +98,7 @@ public class OperationServiceTest {
     void changeStatus_ShouldUpdateStatusAndComment() {
         OperationEntity entity = OperationEntity.builder()
                 .id(3L)
-                .status(OperationStatus.PENDING)
+                .operationStatus(OperationStatus.PENDING)
                 .comment("Old Comment")
                 .build();
 
@@ -107,7 +107,7 @@ public class OperationServiceTest {
 
         OperationResponse result = operationService.approve(3L, "New Comment");
 
-        assertThat(entity.getStatus()).isEqualTo(OperationStatus.APPROVED);
+        assertThat(entity.getOperationStatus()).isEqualTo(OperationStatus.APPROVED);
         assertThat(entity.getComment()).isEqualTo("New Comment");
         verify(operationRepository, times(1)).save(entity);
         assertThat(result).isNotNull();

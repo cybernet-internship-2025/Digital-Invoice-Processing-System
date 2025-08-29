@@ -417,9 +417,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         boolean hasNext = entities.size() > filter.getLimit() - 1;
 
-        if (hasNext) {
-            entities.removeLast(); // remove last item
-        }
+       // if (hasNext) {
+       //     entities.removeLast(); // remove last item
+     //   }
 
         return invoiceMapper.allBySenderTaxId(entities);
 

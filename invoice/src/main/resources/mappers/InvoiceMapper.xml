@@ -31,7 +31,7 @@
 
         <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
             <id property="id" column="o_id"/>
-            <result property="status" column="o_status"/>
+            <result property="operationStatus" column="o_operationStatus"/>
             <result property="comment" column="o_comment"/>
             <result property="createdAt" column="o_created_at"/>
         </collection>

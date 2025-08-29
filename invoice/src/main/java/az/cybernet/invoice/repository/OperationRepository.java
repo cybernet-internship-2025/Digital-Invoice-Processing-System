@@ -12,11 +12,11 @@ import java.util.Optional;
 public interface OperationRepository {
     Optional<OperationEntity> findById(@Param("id") Long id);
 
-    void save(@Param("op") OperationEntity operationEntity);
+    void save(@Param("op") OperationEntity op);
 
     List<OperationEntity> findAll();
 
-    List<OperationEntity> findByStatus(@Param("status") OperationStatus status);
+    List<OperationEntity> findByStatus(@Param("status") OperationStatus operationStatus);
 
     List<OperationEntity> findAllItemsById(@Param("itemId") Long itemId);
 

@@ -23,7 +23,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE  )
 public class OperationEntity {
     Long id;
-    OperationStatus status;
+    OperationStatus operationStatus;
     LocalDateTime createdAt;
     InvoiceEntity invoice;
     String comment;
