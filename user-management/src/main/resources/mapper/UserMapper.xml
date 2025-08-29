@@ -9,7 +9,10 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="taxId" column="tax_id"/>
+        <result property="userId" column="user_id"/>
         <result property="isActive" column="is_active"/>
+        <result property="status" column="status"/>
+        <result property="dateOfBirth" column="date_of_birth"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
@@ -18,20 +21,19 @@
     <!-- RESTORE USER -->
     <update id="restoreUser" parameterType="String">
         UPDATE users.users
-        SET is_active = true,
+        SET is_active  = true,
             updated_at = null
         WHERE tax_id = #{taxId}
     </update>
 
     <!-- FIND USER BY TAXID -->
     <select id="findUserByTaxId" resultMap="UserResultMap" parameterType="String">
-        SELECT
-            u.id,
-            u.name,
-            u.tax_id,
-            u.is_active,
-            u.created_at,
-            u.updated_at
+        SELECT u.id,
+               u.name,
+               u.tax_id,
+               u.is_active,
+               u.created_at,
+               u.updated_at
         FROM users.users u
         WHERE u.tax_id = #{taxId}
     </select>
@@ -39,25 +41,43 @@
     <!-- SOFT DELETE USER -->
     <update id="deleteUser" parameterType="String">
         UPDATE users.users
-        SET is_active = false,
+        SET is_active  = false,
             updated_at = now()
         WHERE tax_id = #{taxId}
     </update>
 
-    <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users.users (name, tax_id, is_active, created_at)
-        VALUES (#{name}, #{taxId}, true, NOW())
+    <insert id="addUser" parameterType="az.cybernet.usermanagement.entity.UserEntity" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO users.users (name, date_of_birth, status, tax_id, is_active, created_at)
+        VALUES (#{name}, #{dateOfBirth}, #{status}, #{taxId}, false, NOW())
     </insert>
 
     <update id="updateUser" parameterType="az.cybernet.usermanagement.entity.UserEntity">
         UPDATE users.users
-        SET name = #{name},
-            updated_at = NOW()
-        WHERE tax_id = #{taxId}
+        SET name          = #{name},
+            date_of_birth = #{dateOfBirth},
+            tax_id        = #{taxId},
+            user_id       = #{userId},
+            password      = #{password},
+            status        = #{status},
+            is_active     = #{isActive},
+            updated_at    = #{updatedAt}
+        WHERE id = #{id}
     </update>
 
     <select id="findMaxTaxId" resultType="String">
-        SELECT COALESCE(MAX(tax_id), '0') FROM users
+        SELECT COALESCE(MAX(tax_id), '0')
+        FROM users
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="UserResultMap">
+        SELECT *
+        FROM users.users
+        WHERE id = #{id}
+    </select>
+
+    <select id="generateUserId" resultType="string">
+        SELECT LPAD(nextval('user_id_seq')::text, 6, '0')
     </select>
 
 </mapper>
