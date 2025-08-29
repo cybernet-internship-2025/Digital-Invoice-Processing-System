@@ -43,6 +43,7 @@ public class LoginCitizenImpl implements LoginCitizen {
     }
 
     private boolean isValidPin(String pin) {
+
         return pin != null && pin.matches(AZERBAIJAN_PIN_REGEX);
     }
 }
