@@ -2,6 +2,7 @@ package az.cybernet.usermanagement.controller;
 
 import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
+import az.cybernet.usermanagement.service.abstraction.RegistrationService;
 import az.cybernet.usermanagement.service.abstraction.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import static org.springframework.http.HttpStatus.OK;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class UserController {
     UserService userService;
+    RegistrationService registrationService;
 
     @DeleteMapping("/{taxId}")
     @ResponseStatus(OK)
@@ -41,19 +43,19 @@ public class UserController {
     @PostMapping
     @ResponseStatus(CREATED)
     public UserResponse addUser(@Valid @RequestBody UserRequest request) {
-        return userService.addUser(request);
+        return registrationService.addUser(request);
     }
 
     @PostMapping("/{id}/approve-registration")
     @ResponseStatus(OK)
     public UserResponse activateUser(@PathVariable Long id) {
-        return userService.activateUser(id);
+        return registrationService.activateUser(id);
     }
 
     @PostMapping("/{id}/cancel-registration")
     @ResponseStatus(OK)
     public UserResponse deactivateUser(@PathVariable Long id) {
-        return userService.deactivateUser(id);
+        return registrationService.deactivateUser(id);
     }
 
     @PutMapping("/{taxId}")
