@@ -16,3 +16,7 @@ mybatis:
     map-underscore-to-camel-case: true
     default-fetch-size: 100
     default-statement-timeout: 30
+
+integration:
+  service:
+    url: http://localhost:8084

@@ -1,5 +1,6 @@
 package az.cybernet.usermanagement.service.abstraction;
 
+import az.cybernet.usermanagement.dto.client.integration.IAMASDto;
 import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 
@@ -14,4 +15,7 @@ public interface UserService {
     void restoreUser(String taxId);
 
     void deleteUser(String taxId);
+
+
+
 }

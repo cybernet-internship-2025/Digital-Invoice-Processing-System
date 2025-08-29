@@ -5,19 +5,16 @@ import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceFileService;
 import az.cybernet.invoice.util.ExcelFileExporter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@RequiredArgsConstructor
 @Service
 public class InvoiceFileServiceImpl implements InvoiceFileService {
     private final InvoiceServiceImpl invoiceService;
     private final ExcelFileExporter excelFileExporter;
 
-    public InvoiceFileServiceImpl(InvoiceServiceImpl invoiceService, ExcelFileExporter excelFileExporter) {
-        this.invoiceService = invoiceService;
-        this.excelFileExporter = excelFileExporter;
-    }
 
     @Override
     public byte[] exportInvoiceToExcel(InvoiceFilterRequest request, String taxId) {

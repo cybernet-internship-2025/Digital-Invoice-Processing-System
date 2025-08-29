@@ -141,6 +141,7 @@ public class InvoiceController {
     void cancelPendingInvoicesAfterTimeout() {
         invoiceService.cancelPendingInvoicesAfterTimeout();
     }
+
     @PostMapping("/{taxId}/sent/export-to-excelexport")
     public ResponseEntity<byte[]> exportSentInvoiceToExcel(
             @PathVariable("taxId") String taxId,

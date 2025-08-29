@@ -2,6 +2,8 @@ package az.cybernet.usermanagement.service.impl;
 
 import az.cybernet.usermanagement.aop.annotation.Log;
 import az.cybernet.usermanagement.aop.annotation.LogIgnore;
+import az.cybernet.usermanagement.client.IntegrationClient;
+import az.cybernet.usermanagement.dto.client.integration.IAMASDto;
 import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.entity.UserEntity;
@@ -12,6 +14,7 @@ import az.cybernet.usermanagement.repository.UserRepository;
 import az.cybernet.usermanagement.service.abstraction.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,7 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     UserMapstruct userMapstruct;
 
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void restoreUser(String taxId) {
@@ -40,6 +44,7 @@ public class UserServiceImpl implements UserService {
         var user = fetchUserIfExist(taxId);
         userRepository.deleteUser(user.getTaxId());
     }
+
 
     @Override
     public UserResponse findUserByTaxId(String taxId) {
@@ -94,4 +99,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findUserByTaxId(taxId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage(taxId)));
     }
+
+
 }
