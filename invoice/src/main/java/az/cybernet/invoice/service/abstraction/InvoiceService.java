@@ -47,11 +47,6 @@ public interface InvoiceService {
 
     void approvePendingInvoicesAfterTimeout();
 
-    void exportReceivedInvoicesToExcel(
-            InvoiceExportRequest request,
-            HttpServletResponse response
-    );
-
     void sendInvoiceToCancel(Long invoiceId, String receiverTaxId);
 
     void cancelPendingInvoicesAfterTimeout();

@@ -47,6 +47,18 @@ public class UserController {
         return userService.addUser(request);
     }
 
+    @PostMapping("/{id}/approve-registration")
+    @ResponseStatus(OK)
+    public UserResponse activateUser(@PathVariable Long id) {
+        return userService.activateUser(id);
+    }
+
+    @PostMapping("/{id}/cancel-registration")
+    @ResponseStatus(OK)
+    public UserResponse deactivateUser(@PathVariable Long id) {
+        return userService.deactivateUser(id);
+    }
+
     @PutMapping("/{taxId}")
     @ResponseStatus(OK)
     public UserResponse updateUser(@Valid @RequestBody UserRequest request, @PathVariable("taxId") String taxId) {

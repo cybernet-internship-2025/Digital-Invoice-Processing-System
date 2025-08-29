@@ -10,7 +10,6 @@ import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
-import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
 import az.cybernet.invoice.entity.ItemEntity;
@@ -25,24 +24,13 @@ import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.experimental.FieldDefaults;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,6 +53,7 @@ import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
+import static org.springframework.boot.autoconfigure.amqp.RabbitRetryTemplateCustomizer.Target.SENDER;
 
 @Log
 @Service
@@ -181,6 +170,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
     }
 
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void cancelInvoice(ApproveAndCancelInvoiceRequest request) {
@@ -196,57 +186,70 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
             }
 
-            if (invoiceEntity.getStatus() != PENDING) {
+            if (invoiceEntity.getStatus() == PENDING || invoiceEntity.getStatus() == APPROVED) {
+
+                invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.CANCELED, LocalDateTime.now());
+
+                var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
+
+                for (var item : itemResponses) {
+                    itemService.updateItemStatus(item.getId(), ItemStatus.DELETED);
+                }
+
+                addInvoiceToOperation(invoiceId, "Invoice canceled", OperationStatus.CANCELED);
+
+            } else {
                 throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
             }
-
-            invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.CANCELED, LocalDateTime.now());
-
-            var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
-
-            for (var item : itemResponses) {
-                itemService.updateItemStatus(item.getId(), ItemStatus.DELETED);
-            }
-
-            addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
-
     }
+
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void requestCorrection(Long invoiceId, RequestCorrectionRequest request) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        if (!invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId()) || !invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId())) {
+        boolean isSender = invoiceEntity.getSenderTaxId().equals(request.getSenderTaxId());
+        boolean isReceiver = invoiceEntity.getRecipientTaxId().equals(request.getRecipientTaxId());
+
+        if (!isSender && !isReceiver) {
             throw new UnauthorizedException(UNAUTHORIZED.getCode(), UNAUTHORIZED.getMessage());
         }
 
-        if (invoiceEntity.getStatus() != PENDING || invoiceEntity.getStatus() != APPROVED) {
+        if (invoiceEntity.getStatus() == PENDING || invoiceEntity.getStatus() == APPROVED) {
+
+            InvoiceStatus newStatus = isSender ? InvoiceStatus.PENDING : InvoiceStatus.CORRECTION;
+
+            invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), newStatus, LocalDateTime.now());
+
+
+            String opComment = (request.getComment() == null || request.getComment().isBlank())
+                    ? (isSender ? "Correction requested by Sender" : "Correction requested by Receiver")
+                    : request.getComment();
+
+            var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
+
+            List<Long> itemIds = itemResponses.stream()
+                    .map(ItemResponse::getId)
+                    .collect(Collectors.toList());
+
+            AddItemsToOperationRequest items = AddItemsToOperationRequest.builder()
+                    .invoiceId(invoiceEntity.getId())
+                    .comment(opComment)
+                    .status(OperationStatus.CORRECTION)
+                    .itemIds(itemIds)
+                    .build();
+
+            itemService.addItemsToOperation(items);
+
+        } else {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
-
-        invoiceRepository.updateInvoiceStatus(invoiceEntity.getId(), InvoiceStatus.CORRECTION, LocalDateTime.now());
-
-        String opComment = (request.getComment() == null || request.getComment().isBlank())
-                ? "Correction requested"
-                : request.getComment();
-
-        var itemResponses = itemService.findAllItemsByInvoiceId(invoiceId);
-
-        List<Long> itemIds = itemResponses.stream()
-                .map(ItemResponse::getId)
-                .collect(Collectors.toList());
-
-        AddItemsToOperationRequest items = AddItemsToOperationRequest.builder()
-                .invoiceId(invoiceEntity.getId())
-                .comment(opComment)
-                .status(OperationStatus.CORRECTION)
-                .itemIds(itemIds)
-                .build();
-
-        itemService.addItemsToOperation(items);
     }
+
+
 
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
@@ -265,7 +268,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse findById(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
-    }
+}
+
 
     @Override
     public PaginatedInvoiceResponse findAllByRecipientUserTaxId(String recipientTaxId,
@@ -301,65 +305,6 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .build();
     }
 
-    @Override
-    public void exportReceivedInvoicesToExcel(InvoiceExportRequest request,
-                                              HttpServletResponse response) {
-        var userResponse = findRecipientByTaxId(request.getRecipientTaxId());
-        var entities = invoiceRepository
-                .findAllInvoicesByRecipientUserTaxId(userResponse.getTaxId(), invoiceMapper.map(request));
-        writeInvoicesToExcel(entities, response);
-
-    }
-
-    private void writeInvoicesToExcel(List<InvoiceEntity> invoices, HttpServletResponse response) {
-        try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("invoices");
-
-            CellStyle headerStyle = wb.createCellStyle();
-            Font bold = wb.createFont();
-            bold.setBold(true);
-            headerStyle.setFont(bold);
-
-            String[] headers = {
-                    "Created At", "Series", "Number", "Status",
-                    "Sender Tax ID", "Recipient Tax ID", "Total Price", "Item Count"
-            };
-            Row h = sheet.createRow(0);
-            for (int i = 0; i < headers.length; i++) {
-                Cell c = h.createCell(i);
-                c.setCellValue(headers[i]);
-                c.setCellStyle(headerStyle);
-            }
-
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-            int rowIdx = 1;
-            for (InvoiceEntity inv : invoices) {
-
-                Row r = sheet.createRow(rowIdx++);
-                r.createCell(0).setCellValue(inv.getCreatedAt() != null ? dtf.format(inv.getCreatedAt()) : "");
-                r.createCell(1).setCellValue(inv.getInvoiceSeries() != null ? inv.getInvoiceSeries() : "");
-                r.createCell(2).setCellValue(inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "");
-                r.createCell(3).setCellValue(inv.getStatus() != null ? inv.getStatus().name() : "");
-                r.createCell(4).setCellValue(inv.getSenderTaxId() != null ? inv.getSenderTaxId() : "");
-                r.createCell(5).setCellValue(inv.getRecipientTaxId() != null ? inv.getRecipientTaxId() : "");
-                r.createCell(6).setCellValue(inv.getTotalPrice() != null ? inv.getTotalPrice().doubleValue() : 0.0d);
-                r.createCell(7).setCellValue(inv.getItems() != null ? inv.getItems().size() : 0);
-            }
-
-            for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
-
-            String fileName = URLEncoder.encode("invoices_received.xlsx", StandardCharsets.UTF_8);
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
-
-            wb.write(response.getOutputStream());
-            response.flushBuffer();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to export invoices to Excel", e);
-        }
-    }
-
     private UserResponse findSenderByTaxId(String senderTaxId) {
         UserResponse sender = userClient.findUserByTaxId(senderTaxId);
 
@@ -370,7 +315,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return sender;
     }
 
-    private UserResponse findRecipientByTaxId(String recipientTaxId) {
+    UserResponse findRecipientByTaxId(String recipientTaxId) {
         UserResponse recipient = userClient.findUserByTaxId(recipientTaxId);
 
         if (recipient == null) {

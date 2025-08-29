@@ -26,13 +26,38 @@ databaseChangeLog:
                   name: tax_id
                   type: VARCHAR(10)
                   constraints:
-                    nullable: false
+                    nullable: true
                     unique: true
+
+              - column:
+                  name: user_id
+                  type: VARCHAR(6)
+                  constraints:
+                    nullable: true
+                    unique: true
+
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: date_of_birth
+                  type: DATE
+                  constraints:
+                    nullable: false
 
               - column:
                   name: is_active
                   type: BOOLEAN
-                  defaultValueBoolean: true
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: VARCHAR(64)
                   constraints:
                     nullable: false
 
