@@ -1,9 +1,7 @@
 package az.cybernet.usermanagement.service.abstraction;
 
-import org.springframework.stereotype.Service;
 
-
-public interface LoginCitizen {
+public interface LoginService {
 
     boolean validateCitizen(String pin,String phoneNumber);
 }

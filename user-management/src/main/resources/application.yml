@@ -8,7 +8,7 @@ spring:
     change-log: classpath:liquibase/changelog-master.yml
     default-schema: users
     liquibase-schema: public
-    drop-first: false
+    drop-first: true
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

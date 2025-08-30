@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class IAMASDto {
+public class PersonDto {
     private String pin;
     private String passportSeries;
     private String passportNumber;
