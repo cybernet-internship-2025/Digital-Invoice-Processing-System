@@ -35,6 +35,12 @@ databaseChangeLog:
                     nullable: false
 
               - column:
+                  name: invoice_type
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+
+              - column:
                   name: created_at
                   type: TIMESTAMP
                   constraints:
@@ -58,12 +64,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     unique: true
-
-              - column:
-                  name: invoice_series
-                  type: VARCHAR(10)
-                  constraints:
-                    nullable: false
 
               - column:
                   name: is_active
