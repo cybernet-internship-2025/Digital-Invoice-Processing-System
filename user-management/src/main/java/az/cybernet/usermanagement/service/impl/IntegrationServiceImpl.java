@@ -6,8 +6,6 @@ import az.cybernet.usermanagement.service.abstraction.IntegrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class IntegrationServiceImpl implements IntegrationService {
@@ -16,7 +14,6 @@ public class IntegrationServiceImpl implements IntegrationService {
 
     @Override
     public void sendOtp(String phone, String message) {
-        Optional.ofNullable(integrationClient.sendOtp(new OtpRequest(phone, message)))
-                .orElseThrow();
+        integrationClient.sendOtp(new OtpRequest(phone, message));
     }
 }

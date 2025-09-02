@@ -33,8 +33,7 @@ import az.cybernet.usermanagement.aop.annotation.Log;
 import az.cybernet.usermanagement.client.IntegrationClient;
 import az.cybernet.usermanagement.dto.client.integration.PersonDto;
 import az.cybernet.usermanagement.util.RegexUtil;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults
+import lombok.experimental.FieldDefaults;
 import static lombok.AccessLevel.PRIVATE;
 
 @Service
@@ -59,17 +58,16 @@ public class LoginServiceImpl implements LoginService {
     private String botToken;
 
     @Override
-    public String loginByPhone(LoginRequest loginRequest) {
+    public void loginByPhone(LoginRequest loginRequest) {
         String phoneNumber = loginRequest.getPhoneNumber();
         //todo pin və phoneNumber must check
         String otp = String.valueOf(this.generateOtp());
         redisTemplate.opsForValue().set("OTP_" + phoneNumber, otp, 5, TimeUnit.MINUTES);
         integrationService.sendOtp(phoneNumber, otp);
-        return "OTP sent: " + phoneNumber;
     }
 
     @Override
-    public String loginByEmail(LoginByEmailRequest loginByEmailRequest) {
+    public void loginByEmail(LoginByEmailRequest loginByEmailRequest) {
         String email = loginByEmailRequest.getEmail();
         String otp = String.valueOf(this.generateOtp());
         redisTemplate.opsForValue().set("OTP_" + email, otp, 5, TimeUnit.MINUTES);
@@ -79,7 +77,6 @@ public class LoginServiceImpl implements LoginService {
         message.setSubject("Sizin OTP kodunuz");
         message.setText("Sizin OTP kodunuz: " + otp);
         mailSender.send(message);
-        return "OTP sent: " + email;
     }
 
     public int generateOtp() {
@@ -88,7 +85,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public String loginByTelegram(LoginByTelegramRequest request) {
+    public void loginByTelegram(LoginByTelegramRequest request) {
         checkAttemptsLimit(request);
         String verificationCode = generateOtpAndSaveAtRedis(request);
 
@@ -101,11 +98,9 @@ public class LoginServiceImpl implements LoginService {
             restTemplate.postForObject(url, params, String.class);
         } catch (Exception e) {
             e.printStackTrace();
-            return "An error occurred: " + e.getMessage();
         }
 
         loginHelper.insertOTPLoginData(request, verificationCode);
-        return "OTP sent";
     }
 
     private void checkAttemptsLimit(LoginByTelegramRequest request) {
@@ -195,10 +190,10 @@ public class LoginServiceImpl implements LoginService {
             log.error("OTP not found in Redis, possibly expired");
             throw new VerificationCodeException("OTP expired or not found", 400);
         }
-       // loginHelper.updateLoginOTPData(request.getCode(), request.getPin(), request.getPhoneNumber());
+        // loginHelper.updateLoginOTPData(request.getCode(), request.getPin(), request.getPhoneNumber());
         return true;
-      
-      @Override
+    }
+    @Override
     public boolean validateCitizen(String pin, String phoneNumber) {
         if (!isValidPin(pin)) {
             throw new IllegalArgumentException("Fin yanlışdır. Zəhmətolmasa bir daha yoxlayın .");
@@ -226,5 +221,4 @@ public class LoginServiceImpl implements LoginService {
         return pin != null && pin.matches(regexUtil.getAZERBAIJAN_PIN_REGEX());
 
     }
-}}
-
+}
