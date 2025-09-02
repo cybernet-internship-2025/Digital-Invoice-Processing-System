@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="az.cybernet.usermanagement.repository.OtpRepository">
+
+    <resultMap id="UserResultMap" type="az.cybernet.usermanagement.entity.UserEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="taxId" column="tax_id"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <insert id="insertOTPLoginData" parameterType="az.cybernet.usermanagement.entity.FinLoginData">
+        INSERT INTO users.otp_login_data (pin, phone_number, verification_code, number_of_attempts, insert_date, state)
+        VALUES (#{loginData.pin}, #{loginData.phoneNumber}, #{loginData.verificationCode},
+                #{loginData.numberOfAttempts},
+                #{loginData.insertDate}, #{loginData.state})
+    </insert>
+    <update id="updateLoginOTPData">
+        update users.otp_login_data
+        set state = true
+        where verification_code = #{code}
+          and pin = #{pin}
+          and phone_number = #{phoneNumber};
+    </update>
+
+</mapper>
