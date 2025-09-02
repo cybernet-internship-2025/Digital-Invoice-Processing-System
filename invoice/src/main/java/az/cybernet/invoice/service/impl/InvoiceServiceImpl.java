@@ -58,8 +58,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     final InvoiceMapper invoiceMapper;
     final ItemService itemService;
     final OperationService operationService;
-    static int MAX_SIZE = 50;
-    static int MIN_SIZE = 10;
 
     public InvoiceServiceImpl(
             InvoiceRepository invoiceRepository,
@@ -270,6 +268,9 @@ public class InvoiceServiceImpl implements InvoiceService {
                                                                 InvoiceFilterRequest filter,
                                                                 Integer page,
                                                                 Integer size) {
+        final int MAX_SIZE = 50;
+        final int MIN_SIZE = 10;
+
         if (page == null || page < 0) {
             page = 0;
         }
