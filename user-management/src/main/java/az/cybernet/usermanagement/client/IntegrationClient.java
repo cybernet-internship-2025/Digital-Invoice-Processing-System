@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface IntegrationClient {
     @PostMapping("/api/integration/v1/sms/send")
     String sendOtp(@RequestBody OtpRequest request);
-
-@FeignClient(name = "integration", url = "${integration.service.url}")
-public interface IntegrationClient {
+    
     @GetMapping("/api/v1/iamas/{pin}")
     PersonDto getPersonByFin(@PathVariable("pin") String pin);
 }
