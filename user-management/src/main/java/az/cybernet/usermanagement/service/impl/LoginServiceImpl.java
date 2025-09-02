@@ -116,7 +116,7 @@ public class LoginServiceImpl implements LoginService {
             RecentLoginAttempts recentLoginAttempts = attemptsRedisTemplate.opsForValue().get(loginByFinCacheKey);
 
             if (Objects.isNull(recentLoginAttempts)) {
-                log.warn("Recent login attempts is null for request {}", request);
+                log.warn("Recent login attempts is null for request");
                 recentLoginAttempts = new RecentLoginAttempts(new ArrayList<>());
             }
 
@@ -124,7 +124,7 @@ public class LoginServiceImpl implements LoginService {
                     .parse(attempt.getDate()).isBefore(oneHourAgo));
 
             if (recentLoginAttempts.getLoginAttempts().size() > 2) {
-                log.error("User trying to send too many otp {}", request);
+                log.error("User trying to send too many otp ");
                 throw new OtpLimitExceededException("Too many OTP requests in 1 hour");
             }
         }
@@ -171,7 +171,7 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public boolean checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request) {
-        log.info("Enter code request {} ", request);
+        log.info("Enter code request");
         String otpCacheKey = getOtpCodeCacheKey(request.getPin());
 
         if (hasKeyInRedis(otpCacheKey)) {
