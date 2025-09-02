@@ -546,8 +546,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         processReturnInvoice(request, returnInvoiceId, InvoiceStatus.CORRECTION, request.getComment());
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void processReturnInvoice(ReturnInvoiceRequest request,
                                      Long invoiceReturnId,
                                      InvoiceStatus action,
@@ -613,6 +613,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 addInvoiceToOperation(returnInvoice.getId(), opComment, OperationStatus.CORRECTION);
             }
+
+            default -> throw new InvalidStatusException(INVALID_RETURN_STATUS.getCode(), INVALID_RETURN_STATUS.getMessage());
         }
     }
 
