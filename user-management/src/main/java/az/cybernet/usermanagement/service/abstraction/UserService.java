@@ -14,4 +14,8 @@ public interface UserService {
     void restoreUser(String taxId);
 
     void deleteUser(String taxId);
+
+    UserResponse activateUser(Long id);
+
+    UserResponse deactivateUser(Long id);
 }

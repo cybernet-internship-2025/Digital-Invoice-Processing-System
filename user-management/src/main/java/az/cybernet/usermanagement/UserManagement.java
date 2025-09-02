@@ -10,8 +10,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @MapperScan("az.cybernet.usermanagement.repository")
 @EnableCaching
-@EnableFeignClients(basePackages = "az.cybernet.usermanagement.client")
 @EnableConfigurationProperties
+@EnableFeignClients(basePackages = "az.cybernet.usermanagement.client")
 public class UserManagement {
     public static void main(String[] args) {
         SpringApplication.run(UserManagement.class, args);
