@@ -20,4 +20,8 @@ public interface UserRepository {
     void updateUser(UserEntity userEntity);
 
     String findMaxTaxId();
+
+    Optional<UserEntity> findById(Long id);
+
+    String generateUserId();
 }

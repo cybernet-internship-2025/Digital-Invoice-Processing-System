@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "integration.service.url",
+      "type": "java.lang.String",
+      "description": "Description for integration.service.url."
+  }
+] }

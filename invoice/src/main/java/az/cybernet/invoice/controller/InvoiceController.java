@@ -81,13 +81,6 @@ public class InvoiceController {
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
     }
 
-    @GetMapping("/export/received")
-    @ResponseStatus(NO_CONTENT)
-    public void exportReceived(@RequestBody InvoiceExportRequest request,
-                               HttpServletResponse response) {
-        invoiceService.exportReceivedInvoicesToExcel(request, response);
-    }
-
     @GetMapping("/outbox/{senderTaxId}")
     public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(
             @PathVariable String senderTaxId,
@@ -158,17 +151,26 @@ public class InvoiceController {
     void cancelPendingInvoicesAfterTimeout() {
         invoiceService.cancelPendingInvoicesAfterTimeout();
     }
+
     @PostMapping("/{taxId}/sent/export-to-excelexport")
     public ResponseEntity<byte[]> exportSentInvoiceToExcel(
             @PathVariable("taxId") String taxId,
             @RequestBody @Valid InvoiceFilterRequest invoiceFilterRequest,
             @RequestParam(value = "fileName", defaultValue = "Invoice") String fileName) {
         return excelFileExporter.buildExcelResponse(
-                invoiceFileService.exportInvoiceToExcel(invoiceFilterRequest,taxId),
+                invoiceFileService.exportInvoiceToExcel(invoiceFilterRequest, taxId),
                 fileName
         );
     }
 
+    @PostMapping("/{taxId}/recipient/export-to-excel")
+    public ResponseEntity<byte[]> exportRecipientInvoiceToExcel(
+            @PathVariable("taxId") String taxId,
+            @RequestBody InvoiceExportRequest request) {
 
+        return excelFileExporter
+                .buildExcelResponse(invoiceFileService
+                        .exportRecipientInvoicesToExcel(request, taxId), "invoices_received");
+    }
 
 }
