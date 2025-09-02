@@ -164,7 +164,7 @@ public class LoginServiceImpl implements LoginService {
         try {
             return attemptsRedisTemplate.hasKey(key);
         } catch (Exception e) {
-            log.error("Redis error while checking key {}: {}", key, e.getMessage(), e);
+            log.error("Redis error while checking key ");
             throw new RedisOperationException("Redis error while checking key: " + key, e);
         }
     }
