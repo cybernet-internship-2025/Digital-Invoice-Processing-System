@@ -10,6 +10,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Getter
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public enum ExceptionConstants {
+    UNEXPECTED_EXCEPTION("UNEXPECTED_EXCEPTION", "Unexpected exception occurred"),
     SENDER_NOT_FOUND("SENDER_NOT_FOUND", "no sender with id found"),
     INVOICE_NOT_FOUND("INVOICE_NOT_FOUND", "no invoice with id found"),
     MEASUREMENT_NOT_FOUND("MEASUREMENT_NOT_FOUND", "no measurent with id found"),

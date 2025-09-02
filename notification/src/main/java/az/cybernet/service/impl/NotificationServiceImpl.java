@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
@@ -21,6 +23,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .invoiceId(event.getInvoiceId())
                 .senderTaxId(event.getSenderTaxId())
                 .receiverTaxId(event.getReceiverTaxId())
+                .createdAt(LocalDateTime.now())
                 .operationType(event.getOperationType())
                 .message(message)
                 .isRead(false)
@@ -31,7 +34,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private String buildMessage(String operationType){
         return switch (operationType) {
-            case "DRAFT", "PENDING" -> "A new invoice has been created and is pending.";
+            case "DRAFT" -> "A new invoice has been created and is pending.";
+            case "PENDING" -> "The invoice has been sent and is pending";
             case "APPROVED" -> "The invoice has been approved.";
             case "CANCELED" -> "The invoice has been canceled.";
             case "CORRECTION" -> "The invoice requires correction.";

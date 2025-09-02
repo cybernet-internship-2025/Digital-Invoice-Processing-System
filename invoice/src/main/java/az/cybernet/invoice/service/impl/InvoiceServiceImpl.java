@@ -8,6 +8,7 @@ import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
 import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
 import az.cybernet.invoice.dto.request.operation.CreateOperationRequest;
+import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
 import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
@@ -20,6 +21,7 @@ import az.cybernet.invoice.exception.InvalidStatusException;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.exception.UnauthorizedException;
 import az.cybernet.invoice.mapper.InvoiceMapper;
+import az.cybernet.invoice.notification.event.InvoiceNotificationEvent;
 import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
@@ -75,7 +77,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     final InvoiceMapper invoiceMapper;
     final ItemService itemService;
     final OperationService operationService;
-    final KafkaTemplate<String, >
+    final KafkaTemplate<String, InvoiceNotificationEvent>kafkaTemplate;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
 
@@ -84,13 +86,15 @@ public class InvoiceServiceImpl implements InvoiceService {
             UserClient userClient,
             InvoiceMapper invoiceMapper,
             OperationService operationService,
-            @Lazy ItemService itemService
+            @Lazy ItemService itemService,
+            KafkaTemplate<String, InvoiceNotificationEvent> kafkaTemplate
     ) {
         this.invoiceRepository = invoiceRepository;
         this.userClient = userClient;
         this.invoiceMapper = invoiceMapper;
         this.operationService = operationService;
         this.itemService = itemService;
+        this.kafkaTemplate=kafkaTemplate;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -122,6 +126,16 @@ public class InvoiceServiceImpl implements InvoiceService {
             var totalPrice = updateInvoiceTotalPrice(invoiceId);
             invoiceEntity.setTotalPrice(totalPrice);
         }
+
+        //send to kafka
+        InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                .invoiceId(invoiceId)
+                .operationType(invoiceEntity.getStatus().name())
+                .receiverTaxId(invoiceEntity.getRecipientTaxId())
+                .senderTaxId(invoiceEntity.getSenderTaxId())
+                .build();
+
+        kafkaTemplate.send("invoice-notifications",invoiceNotificationEvent);
 
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
@@ -178,8 +192,21 @@ public class InvoiceServiceImpl implements InvoiceService {
                 itemService.updateItemStatus(item.getId(), ItemStatus.CREATED);
             }
 
+            //send to kafka
+            InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                    .invoiceId(invoiceId)
+                    .operationType(invoiceEntity.getStatus().name())
+                    .receiverTaxId(invoiceEntity.getRecipientTaxId())
+                    .senderTaxId(invoiceEntity.getSenderTaxId())
+                    .build();
+
+            kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
+
+
             addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
+
+
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -208,6 +235,16 @@ public class InvoiceServiceImpl implements InvoiceService {
             for (var item : itemResponses) {
                 itemService.updateItemStatus(item.getId(), ItemStatus.DELETED);
             }
+
+            //send to kafka
+            InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                    .invoiceId(invoiceId)
+                    .operationType(invoiceEntity.getStatus().name())
+                    .receiverTaxId(invoiceEntity.getRecipientTaxId())
+                    .senderTaxId(invoiceEntity.getSenderTaxId())
+                    .build();
+
+            kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
 
             addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
         }
@@ -245,6 +282,16 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .status(OperationStatus.CORRECTION)
                 .itemIds(itemIds)
                 .build();
+
+        //send to kafka
+        InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                .invoiceId(invoiceId)
+                .operationType(invoiceEntity.getStatus().name())
+                .receiverTaxId(invoiceEntity.getRecipientTaxId())
+                .senderTaxId(invoiceEntity.getSenderTaxId())
+                .build();
+
+        kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
 
         itemService.addItemsToOperation(items);
     }
@@ -412,6 +459,17 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .forEach(invoice -> {
                             doesntMatchInvoiceStatus(invoice, InvoiceStatus.DRAFT);
                             addInvoiceToOperation(invoice.getId(), "Invoice deleted", DELETE);
+
+                            //send to kafka
+                            InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                                    .invoiceId(invoice.getId())
+                                    .operationType(invoice.getStatus().name())
+                                    .receiverTaxId(invoice.getRecipientTaxId())
+                                    .senderTaxId(invoice.getSenderTaxId())
+                                    .build();
+
+                            kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
+
                         }
                 );
 
@@ -434,6 +492,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         addInvoiceToOperation(request.getInvoiceId(), "Recipient Tax ID changed to: " + request.getRecipientTaxId(), OperationStatus.PENDING);
 
+        //send to kafka
+        InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                .invoiceId(invoice.getId())
+                .operationType(invoice.getStatus().name())
+                .receiverTaxId(invoice.getRecipientTaxId())
+                .senderTaxId(invoice.getSenderTaxId())
+                .build();
+
+        kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
+
+
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
@@ -452,10 +521,20 @@ public class InvoiceServiceImpl implements InvoiceService {
             doesntMatchInvoiceStatus(invoice, CORRECTION, InvoiceStatus.DRAFT);
             invoice.setStatus(PENDING);
             addInvoiceToOperation(invoice.getId(), "Invoice with id " + invoice.getId() + " sent", OperationStatus.PENDING);
+
+            //send to kafka
+            InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                    .invoiceId(invoice.getId())
+                    .operationType(invoice.getStatus().name())
+                    .receiverTaxId(invoice.getRecipientTaxId())
+                    .senderTaxId(invoice.getSenderTaxId())
+                    .build();
+
+            kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
+
         });
 
         invoiceRepository.updateStatuses(request.getInvoiceIds(), PENDING.toString());
-
         return invoices.stream()
                 .map(invoiceMapper::fromEntityToResponse)
                 .toList();
@@ -463,7 +542,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
     @Override
-    public PagedResponse<InvoiceResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
+    public List<FilterResponse> findInvoicesBySenderTaxId(String senderTaxId, InvoiceFilterRequest filter) {
         findSenderByTaxId(senderTaxId);
 
         int queryLimit = filter.getLimit() + 1;
@@ -477,14 +556,10 @@ public class InvoiceServiceImpl implements InvoiceService {
             entities.removeLast(); // remove last item
         }
 
-        PagedResponse<InvoiceResponse> response = new PagedResponse<>();
-        response.setContent(invoiceMapper.allByRecipientUserTaxId(entities));
-        response.setHasNext(hasNext);
-        response.setOffset(filter.getOffset());
-        response.setLimit(filter.getLimit() - 1);
-        return response;
+        return invoiceMapper.allBySenderTaxId(entities);
 
     }
+
 
     @Override
     public InvoiceResponse updateInvoiceItems(UpdateInvoiceItemsRequest request) {
@@ -509,6 +584,16 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.refreshInvoice(request.getInvoiceId());
         invoice = fetchInvoiceIfExist(request.getInvoiceId());
+
+        //send to kafka
+        InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                .invoiceId(invoice.getId())
+                .operationType(invoice.getStatus().name())
+                .receiverTaxId(invoice.getRecipientTaxId())
+                .senderTaxId(invoice.getSenderTaxId())
+                .build();
+
+        kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
 
         return invoiceMapper.fromEntityToResponse(invoice);
     }
@@ -644,13 +729,36 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepository.updateStatuses(List.of(invoiceId), "SEND_TO_CANCEL");
 
         addInvoiceToOperation(invoiceId, "Invoice sent to cancel", OperationStatus.SEND_TO_CANCEL);
+
+        //send to kafka
+        InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                .invoiceId(invoiceId)
+                .operationType(invoice.getStatus().name())
+                .receiverTaxId(invoice.getRecipientTaxId())
+                .senderTaxId(invoice.getSenderTaxId())
+                .build();
+
+        kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
+
     }
 
     @Override
     public void cancelPendingInvoicesAfterTimeout() {
         List<Long> invoiceIds = invoiceRepository.findInvoicePendingMoreThanOneMonth()
                 .stream()
-                .map(InvoiceEntity::getId)
+                .map(invoice -> {
+                    //send to kafka
+                    InvoiceNotificationEvent invoiceNotificationEvent = InvoiceNotificationEvent.builder()
+                            .invoiceId(invoice.getId())
+                            .operationType(invoice.getStatus().name())
+                            .receiverTaxId(invoice.getRecipientTaxId())
+                            .senderTaxId(invoice.getSenderTaxId())
+                            .build();
+
+                    kafkaTemplate.send("invoice-notifications", invoiceNotificationEvent);
+
+                    return invoice.getId();
+                })
                 .toList();
 
         invoiceRepository.updateStatuses(invoiceIds, "SEND_TO_CANCEL");

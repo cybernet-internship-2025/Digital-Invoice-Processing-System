@@ -20,18 +20,19 @@ services:
 
 
   notification-db:
-    image: mongo:7.0.4
+    image: postgres:15
     container_name: notification-db
     ports:
-      - "27017:27017"
+      - "5435:5432"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: notification-service
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: notification_service
     volumes:
-      - notification-db-data:/data/db
+      - notification-db-data:/var/lib/postgresql/data
     networks:
       - backend
+
 
 
   user-db:
@@ -52,25 +53,41 @@ services:
 
 
   zookeeper:
-    image: wurstmeister/zookeeper:3.4.6
+    image: confluentinc/cp-zookeeper:7.6.0
     container_name: zookeeper
     ports:
       - "2181:2181"
-    networks:
-      - backend
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
   kafka:
-    image: wurstmeister/kafka:2.13-2.8.0
+    image: confluentinc/cp-kafka:7.6.0
     container_name: kafka
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
+    networks:
+      - backend
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
     networks:
       - backend
 
@@ -116,19 +133,18 @@ services:
 
   notification-service:
     build:
-      context: ./notification-service
+      context: ./notification
       dockerfile: Dockerfile
     container_name: notification-service
     depends_on:
       - kafka
       - notification-db
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://root:password@notification-db:27017/notification-service?authSource=admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_APPLICATION_NAME: notification-service
-      SERVER_PORT: 8083
+      SERVER_PORT: 8080
     ports:
-      - "8083:8083"
+      - "8083:8080"
     networks:
       - backend
 

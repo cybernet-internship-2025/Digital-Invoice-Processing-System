@@ -19,5 +19,4 @@ public class NotificationEntity {
     String message;
     LocalDateTime createdAt;
     boolean isRead;
-
 }

@@ -1,4 +1,34 @@
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/invoice-notification
+  datasource:
+    url: jdbc:postgresql://localhost:5435/notification_service
+    username: root
+    password: password
+    driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+    drop-first: false
+    default-schema: notification
+    liquibase-schema: public
+
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: az.cybernet.invoice.notification.event.InvoiceNotificationEvent
+    listener:
+      ack-mode: record
+
+app:
+  kafka:
+    topic: invoice-notifications
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: az.cybernet.entity
+
