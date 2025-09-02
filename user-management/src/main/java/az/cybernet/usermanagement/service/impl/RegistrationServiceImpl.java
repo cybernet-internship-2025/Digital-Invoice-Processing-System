@@ -1,8 +1,9 @@
 package az.cybernet.usermanagement.service.impl;
 
 import az.cybernet.usermanagement.aop.annotation.Log;
-import az.cybernet.usermanagement.dto.request.UserRequest;
+import az.cybernet.usermanagement.dto.request.RegistrationRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
+import az.cybernet.usermanagement.entity.UserEntity;
 import az.cybernet.usermanagement.exception.InvalidTaxIdException;
 import az.cybernet.usermanagement.exception.NotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
@@ -33,12 +34,16 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public UserResponse addUser(UserRequest request) {
-        var userEntity = userMapstruct.toUserEntityFromCreate(request);
-        userEntity.setDateOfBirth(request.getDateOfBirth());
-        userEntity.setName(request.getName());
+    public UserResponse registerUser(Long id, RegistrationRequest request) {
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage())
+        );
 
-        userRepository.addUser(userEntity);
+        userEntity.setRegistrationType(request.getType());
+        userEntity.setStatus(PENDING);
+        userEntity.setIsActive(false);
+        userEntity.setUpdatedAt(null);
+
         return userMapstruct.toUserResponseFromEntity(userEntity);
     }
 
@@ -74,9 +79,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         String taxId = generateNextTaxId();
         String userId = userRepository.generateUserId();
         LocalDate dob = userEntity.getDateOfBirth();
+
         if (dob == null) {
             throw new IllegalStateException("User dateOfBirth is null");
         }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String password = dob.format(formatter);
         String passwordHash = passwordEncoder.encode(password);

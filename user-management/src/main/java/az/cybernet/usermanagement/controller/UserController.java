@@ -1,5 +1,6 @@
 package az.cybernet.usermanagement.controller;
 
+import az.cybernet.usermanagement.dto.request.RegistrationRequest;
 import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
 import az.cybernet.usermanagement.service.abstraction.RegistrationService;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -40,12 +40,6 @@ public class UserController {
         userService.restoreUser(taxId);
     }
 
-    @PostMapping
-    @ResponseStatus(CREATED)
-    public UserResponse addUser(@Valid @RequestBody UserRequest request) {
-        return registrationService.addUser(request);
-    }
-
     @PostMapping("/{id}/approve-registration")
     @ResponseStatus(OK)
     public UserResponse activateUser(@PathVariable Long id) {
@@ -56,6 +50,12 @@ public class UserController {
     @ResponseStatus(OK)
     public UserResponse deactivateUser(@PathVariable Long id) {
         return registrationService.deactivateUser(id);
+    }
+
+    @PostMapping("/{id}/send-registration-request")
+    @ResponseStatus(OK)
+    public UserResponse registerUser(@PathVariable("id") Long id, @RequestBody @Valid RegistrationRequest request) {
+        return registrationService.registerUser(id, request);
     }
 
     @PutMapping("/{taxId}")
