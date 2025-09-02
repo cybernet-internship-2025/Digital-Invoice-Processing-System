@@ -13,11 +13,9 @@
         <result property="failedAttempts" column="failed_attempts"/>
         <result property="blockedUntil" column="blocked_until"/>
         <result property="phoneNumber" column="phone_number"/>
-        <result property="taxId" column="tax_id"/>
         <result property="mustChangePassword" column="must_change_password"/>
     </resultMap>
 
-    <!-- userId veya taxId ile arama -->
     <select id="findByUserIdOrTaxId" parameterType="map" resultMap="UserResultMap">
         SELECT * FROM users
         WHERE user_id = #{userId} OR tax_id = #{taxId}
