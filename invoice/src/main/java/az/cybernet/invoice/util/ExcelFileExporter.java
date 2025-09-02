@@ -120,7 +120,7 @@ public class ExcelFileExporter {
                 r.createCell(3).setCellValue(inv.getCreatedAt() != null ? dtf.format(inv.getCreatedAt()) : "");
                 r.createCell(4).setCellValue(inv.getStatus() != null ? inv.getStatus().name() : "");
                 r.createCell(5).setCellValue(inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "");
-                r.createCell(6).setCellValue(inv.getInvoiceSeries() != null ? inv.getInvoiceSeries() : "");
+                r.createCell(6).setCellValue(inv.getInvoiceType().name() != null ? inv.getInvoiceType().name() : "");
                 r.createCell(7).setCellValue(inv.getItems() != null ? inv.getItems().size() : 0);
             }
 
