@@ -3,11 +3,9 @@ package az.cybernet.invoice.controller;
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
-import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.service.abstraction.InvoiceFileService;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.util.ExcelFileExporter;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -79,6 +76,30 @@ public class InvoiceController {
             @RequestParam(defaultValue = "10") Integer size) {
 
         return invoiceService.findAllByRecipientUserTaxId(recipientTaxId, filter, page, size);
+    }
+
+    @PostMapping("/{returnInvoiceId}/return/approve")
+    @ResponseStatus(NO_CONTENT)
+    public void approveReturnInvoice(@PathVariable Long returnInvoiceId,
+                                     @RequestBody @Valid ReturnInvoiceRequest request) {
+
+        invoiceService.approveReturnInvoice(returnInvoiceId, request);
+    }
+
+    @PostMapping("/{returnInvoiceId}/return/reject")
+    @ResponseStatus(NO_CONTENT)
+    public void cancelReturnInvoice(@PathVariable Long returnInvoiceId,
+                                    @RequestBody @Valid ReturnInvoiceRequest request) {
+
+        invoiceService.cancelReturnInvoice(returnInvoiceId, request);
+    }
+
+    @PostMapping("/{returnInvoiceId}/return/correction")
+    @ResponseStatus(NO_CONTENT)
+    public void requestReturnCorrection(@PathVariable Long returnInvoiceId,
+                                        @RequestBody @Valid ReturnInvoiceRequest request) {
+
+        invoiceService.requestReturnCorrection(returnInvoiceId, request);
     }
 
     @GetMapping("/outbox/{senderTaxId}")
