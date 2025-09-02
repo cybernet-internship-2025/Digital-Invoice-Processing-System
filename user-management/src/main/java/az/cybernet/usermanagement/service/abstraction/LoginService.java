@@ -5,11 +5,11 @@ import az.cybernet.usermanagement.dto.request.LoginByTelegramRequest;
 import az.cybernet.usermanagement.dto.request.LoginRequest;
 
 public interface LoginService {
-    String loginByPhone(LoginRequest loginRequest);
+     void loginByPhone(LoginRequest loginRequest);
 
-    String loginByEmail(LoginByEmailRequest loginByEmailRequest);
+    void loginByEmail(LoginByEmailRequest loginByEmailRequest);
 
-    String loginByTelegram(LoginByTelegramRequest loginByTelegramRequest);
+    void loginByTelegram(LoginByTelegramRequest loginByTelegramRequest);
 
     boolean checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request);
 
