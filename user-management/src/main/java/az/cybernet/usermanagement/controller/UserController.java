@@ -3,7 +3,7 @@ package az.cybernet.usermanagement.controller;
 import az.cybernet.usermanagement.dto.request.LoginUserRequest;
 import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
-import az.cybernet.usermanagement.service.abstraction.LoginService;
+import az.cybernet.usermanagement.service.abstraction.UserLoginService;
 import az.cybernet.usermanagement.service.abstraction.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import static org.springframework.http.HttpStatus.OK;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class UserController {
     UserService userService;
-    LoginService loginService;
+    UserLoginService loginService;
 
     @DeleteMapping("/{taxId}")
     @ResponseStatus(OK)

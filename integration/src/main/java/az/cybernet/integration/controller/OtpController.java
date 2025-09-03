@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/sms")
-public class SmsController {
+public class OtpController {
 
     private final SmsService smsService;
 
     @PostMapping("/send")
-    public ResponseEntity<Void> sendSMS(@RequestBody OtpRequest request) {
+    public ResponseEntity<Void> sendOtp(@RequestBody OtpRequest request) {
         smsService.sendOtp(request.getPhone(), request.getMessage());
         return ResponseEntity.ok().build();
     }
