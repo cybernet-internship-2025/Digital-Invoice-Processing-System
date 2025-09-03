@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRequest {
     @NotBlank(message = "Item name cannot be blank")
-    String productName;
+    String name;
 
     @NotNull(message = "Unit price cannot be null")
     BigDecimal unitPrice;
