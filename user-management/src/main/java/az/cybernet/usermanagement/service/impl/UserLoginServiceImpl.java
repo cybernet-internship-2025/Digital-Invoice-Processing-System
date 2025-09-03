@@ -1,5 +1,7 @@
 package az.cybernet.usermanagement.service.impl;
 
+import az.cybernet.usermanagement.client.IntegClient;
+import az.cybernet.usermanagement.config.BotProperties;
 import az.cybernet.usermanagement.dto.request.EnterCodeByTelegramRequest;
 import az.cybernet.usermanagement.dto.request.LoginByEmailRequest;
 import az.cybernet.usermanagement.dto.request.LoginByTelegramRequest;
@@ -10,11 +12,11 @@ import az.cybernet.usermanagement.entity.RecentLoginAttempts;
 import az.cybernet.usermanagement.exception.OtpLimitExceededException;
 import az.cybernet.usermanagement.exception.RedisOperationException;
 import az.cybernet.usermanagement.exception.VerificationCodeException;
-import az.cybernet.usermanagement.service.abstraction.IntegrationService;
-import az.cybernet.usermanagement.service.abstraction.LoginService;
+import az.cybernet.usermanagement.service.abstraction.IntegService;
+import az.cybernet.usermanagement.service.abstraction.UserLoginService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import az.cybernet.usermanagement.aop.annotation.Log;
-import az.cybernet.usermanagement.client.IntegrationClient;
 import az.cybernet.usermanagement.dto.client.integration.PersonDto;
 import az.cybernet.usermanagement.util.RegexUtil;
 import lombok.experimental.FieldDefaults;
@@ -41,26 +42,28 @@ import static lombok.AccessLevel.PRIVATE;
 @Slf4j
 @Log
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-public class LoginServiceImpl implements LoginService {
-    private final IntegrationService integrationService;
+public class UserLoginServiceImpl implements UserLoginService {
+    private final IntegService integrationService;
     private final StringRedisTemplate redisTemplate;
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, RecentLoginAttempts> attemptsRedisTemplate;
     private final RedisTemplate<String, Otp> otpRedisTemplate;
     private final LoginHelper loginHelper;
     private final JavaMailSender mailSender;
-    IntegrationClient integrationClient;
-    RegexUtil regexUtil;
+    private final IntegClient integrationClient;
+    private final RegexUtil regexUtil;
     private static final String AZERBAIJAN_PHONE_REGEX = "^(\\+994|0)?(50|51|55|70|77|99|10)\\d{7}$";
     private static final String AZERBAIJAN_PIN_REGEX = "^[A-Z0-9]{7}$";
 
-    @Value("${telegram.bot.token}")
-    private String botToken;
+    @Autowired
+    private BotProperties botProperties;
+
+    String botToken = botProperties.getToken();
 
     @Override
     public void loginByPhone(LoginRequest loginRequest) {
         String phoneNumber = loginRequest.getPhoneNumber();
-        //todo pin və phoneNumber must check
+        validateCitizen(loginRequest.getPin(), phoneNumber);
         String otp = String.valueOf(this.generateOtp());
         redisTemplate.opsForValue().set("OTP_" + phoneNumber, otp, 5, TimeUnit.MINUTES);
         integrationService.sendOtp(phoneNumber, otp);

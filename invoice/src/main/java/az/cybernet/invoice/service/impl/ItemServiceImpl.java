@@ -60,7 +60,7 @@ public class ItemServiceImpl implements ItemService {
                     .status(ItemStatus.CREATED)
                     .isActive(true)
                     .createdAt(LocalDateTime.now())
-                    .name(itemRequest.getProductName())
+                    .name(itemRequest.getName())
                     .invoice(InvoiceEntity.builder().id(itemsRequest.getInvoiceId()).build())
                     .measurement(MeasurementEntity.builder().name(itemRequest.getMeasurementName()).build())
                     .unitPrice(itemRequest.getUnitPrice())

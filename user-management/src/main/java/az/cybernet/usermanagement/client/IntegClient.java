@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "integration", url = "http://localhost:8081")
-public interface IntegrationClient {
-    @PostMapping("/api/integration/v1/sms/send")
-    void sendOtp(@RequestBody OtpRequest request);
-
+public interface IntegClient {
     @GetMapping("/api/v1/iamas/{pin}")
     PersonDto getPersonByFin(@PathVariable("pin") String pin);
+
+    @PostMapping("/api/integration/v1/sms/send")
+    void sendOtp(@RequestBody OtpRequest request);
 }
