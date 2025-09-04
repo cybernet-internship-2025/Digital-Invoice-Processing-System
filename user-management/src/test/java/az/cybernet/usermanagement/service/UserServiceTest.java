@@ -8,6 +8,7 @@ import az.cybernet.usermanagement.exception.InvalidTaxIdException;
 import az.cybernet.usermanagement.exception.NotFoundException;
 import az.cybernet.usermanagement.mapper.UserMapstruct;
 import az.cybernet.usermanagement.repository.UserRepository;
+import az.cybernet.usermanagement.service.abstraction.RegistrationService;
 import az.cybernet.usermanagement.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ public class UserServiceTest {
 
     @InjectMocks
     UserServiceImpl userService;
+    RegistrationService registrationService;
 
     @Mock
     UserMapstruct userMapstruct;
@@ -70,7 +72,7 @@ public class UserServiceTest {
         when(userMapstruct.toUserResponseFromEntity(USER_ENTITY)).thenReturn(USER_RESPONSE);
 
         //Act
-        UserResponse result = userService.addUser(CREATE_USER_REQUEST);
+        UserResponse result = registrationService.addUser(CREATE_USER_REQUEST);
 
         //Assert
         assertEquals(USER_RESPONSE, result);
@@ -176,7 +178,7 @@ public class UserServiceTest {
         when(userRepository.findMaxTaxId()).thenReturn("INVALID_TAX_ID");
 
         InvalidTaxIdException exception = Assertions.assertThrows(InvalidTaxIdException.class, () -> {
-            userService.addUser(CREATE_USER_REQUEST);
+            registrationService.addUser(CREATE_USER_REQUEST);
         });
 
         assertEquals(ExceptionConstants.INVALID_TAX_ID_EXCEPTION.getCode(), exception.getCode());
@@ -190,7 +192,7 @@ public class UserServiceTest {
         willDoNothing().given(userRepository).addUser(USER_ENTITY);
         when(userMapstruct.toUserResponseFromEntity(USER_ENTITY)).thenReturn(USER_RESPONSE);
 
-        userService.addUser(CREATE_USER_REQUEST);
+        registrationService.addUser(CREATE_USER_REQUEST);
 
         Assertions.assertEquals("0000000006", USER_ENTITY.getTaxId());
     }
@@ -202,7 +204,7 @@ public class UserServiceTest {
         willDoNothing().given(userRepository).addUser(any(UserEntity.class));
         when(userMapstruct.toUserResponseFromEntity(any(UserEntity.class))).thenReturn(USER_RESPONSE);
 
-        UserResponse result = userService.addUser(CREATE_USER_REQUEST);
+        UserResponse result = registrationService.addUser(CREATE_USER_REQUEST);
 
         assertEquals(USER_RESPONSE, result);
         verify(userRepository).addUser(any(UserEntity.class));

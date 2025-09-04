@@ -1,9 +1,9 @@
 package az.cybernet.usermanagement.controller;
 
-import az.cybernet.usermanagement.dto.request.LoginUserRequest;
+import az.cybernet.usermanagement.dto.request.RegistrationRequest;
 import az.cybernet.usermanagement.dto.request.UserRequest;
 import az.cybernet.usermanagement.dto.response.UserResponse;
-import az.cybernet.usermanagement.service.abstraction.UserLoginService;
+import az.cybernet.usermanagement.service.abstraction.RegistrationService;
 import az.cybernet.usermanagement.service.abstraction.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -27,7 +26,7 @@ import static org.springframework.http.HttpStatus.OK;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class UserController {
     UserService userService;
-    UserLoginService loginService;
+    RegistrationService registrationService;
 
     @DeleteMapping("/{taxId}")
     @ResponseStatus(OK)
@@ -41,33 +40,27 @@ public class UserController {
         userService.restoreUser(taxId);
     }
 
-    @PostMapping
-    @ResponseStatus(CREATED)
-    public UserResponse addUser(@Valid @RequestBody UserRequest request) {
-        return userService.addUser(request);
-    }
-
     @PostMapping("/{id}/approve-registration")
     @ResponseStatus(OK)
     public UserResponse activateUser(@PathVariable Long id) {
-        return userService.activateUser(id);
+        return registrationService.activateUser(id);
     }
 
     @PostMapping("/{id}/cancel-registration")
     @ResponseStatus(OK)
     public UserResponse deactivateUser(@PathVariable Long id) {
-        return userService.deactivateUser(id);
+        return registrationService.deactivateUser(id);
+    }
+
+    @PostMapping("/{id}/send-registration-request")
+    @ResponseStatus(OK)
+    public UserResponse registerUser(@PathVariable("id") Long id, @RequestBody @Valid RegistrationRequest request) {
+        return registrationService.registerUser(id, request);
     }
 
     @PutMapping("/{taxId}")
     @ResponseStatus(OK)
     public UserResponse updateUser(@Valid @RequestBody UserRequest request, @PathVariable("taxId") String taxId) {
         return userService.updateUser(taxId, request);
-    }
-    @PostMapping("/login")
-    public boolean loginCitizen( @Valid @RequestBody LoginUserRequest request){
-
-        return loginService.validateCitizen(request.getPin(), request.getPhoneNumber());
-
     }
 }
