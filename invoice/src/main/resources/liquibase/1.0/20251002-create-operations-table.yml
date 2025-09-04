@@ -21,14 +21,16 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
-
               - column:
                   name: operation_status
                   type: VARCHAR(50)
                   constraints:
                     nullable: false
-
-
+              - column:
+                  name: comment
+                  type: TEXT
+                  constraints:
+                    nullable: false
               - column:
                   name: created_at
                   type: TIMESTAMP

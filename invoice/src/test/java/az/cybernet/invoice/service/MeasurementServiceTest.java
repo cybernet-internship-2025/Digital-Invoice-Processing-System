@@ -43,65 +43,65 @@ class MeasurementServiceTest {
 
         verify(measurementRepository, times(1)).saveMeasurement(entity);
     }
-//
-//    @Test
-//    void updateMeasurementTest() {
-//        Long id = 1L;
-//        MeasurementRequest request = new MeasurementRequest();
-//        request.setName("kg");
-//
-//        MeasurementEntity entity = new MeasurementEntity();
-//        entity.setId(id);
-//        entity.setName("kg");
-//
-//        when(measurementRepository.findByName(request.getName())).thenReturn(entity);
-//        doNothing().when(measurementRepository).updateMeasurement(entity);
-//
-//        measurementService.updateMeasurement(id, request);
-//
-//        verify(measurementRepository, times(1)).updateMeasurement(entity);
-//        assertEquals("kg", entity.getName());
-//    }
-//
-//    @Test
-//    void findByNameTest() {
-//
-//        String name = "kg";
-//
-//        MeasurementEntity entity = new MeasurementEntity();
-//        entity.setId(1L);
-//        entity.setName(name);
-//
-//        MeasurementResponse expectedResponse = new MeasurementResponse();
-//        expectedResponse.setId(1L);
-//        expectedResponse.setName(name);
-//
-//        when(measurementRepository.findByName(name)).thenReturn(entity);
-//        when(mapStruct.toResponse(entity)).thenReturn(expectedResponse);
-//
-//
-//        MeasurementResponse actualResponse = measurementService.findByName(name);
-//
-//
-//        verify(measurementRepository, times(1)).findByName(name);
-//        verify(mapStruct, times(1)).toResponse(entity);
-//
-//        assertNotNull(actualResponse);
-//        assertEquals(expectedResponse.getId(), actualResponse.getId());
-//        assertEquals(expectedResponse.getName(), actualResponse.getName());
-//    }
-//
-//    @Test
-//    void updateMeasurementTestt() {
-//        Long id = 1L;
-//        MeasurementRequest request = new MeasurementRequest();
-//        request.setName("kg");
-//
-//
-//        when(measurementRepository.findByName(request.getName())).thenReturn(null);
-//
-//        assertThrows(NotFoundException.class, () -> measurementService.updateMeasurement(id, request));
-//    }
+
+    @Test
+    void updateMeasurementTest() {
+        Long id = 1L;
+        MeasurementRequest request = new MeasurementRequest();
+        request.setName("kg");
+
+        MeasurementEntity entity = new MeasurementEntity();
+        entity.setId(id);
+        entity.setName("kg");
+
+    //    when(measurementRepository.findByName(request.getName())).thenReturn(entity);
+        doNothing().when(measurementRepository).updateMeasurement(entity);
+
+        measurementService.updateMeasurement(id, request);
+
+        verify(measurementRepository, times(1)).updateMeasurement(entity);
+        assertEquals("kg", entity.getName());
+    }
+
+    @Test
+    void findByNameTest() {
+
+        String name = "kg";
+
+        MeasurementEntity entity = new MeasurementEntity();
+        entity.setId(1L);
+        entity.setName(name);
+
+        MeasurementResponse expectedResponse = new MeasurementResponse();
+        expectedResponse.setId(1L);
+        expectedResponse.setName(name);
+
+     //   when(measurementRepository.findByName(name)).thenReturn(entity);
+        when(mapStruct.toResponse(entity)).thenReturn(expectedResponse);
+
+
+        MeasurementResponse actualResponse = measurementService.findByName(name);
+
+
+        verify(measurementRepository, times(1)).findByName(name);
+        verify(mapStruct, times(1)).toResponse(entity);
+
+        assertNotNull(actualResponse);
+        assertEquals(expectedResponse.getId(), actualResponse.getId());
+        assertEquals(expectedResponse.getName(), actualResponse.getName());
+    }
+
+    @Test
+    void updateMeasurementTestt() {
+        Long id = 1L;
+        MeasurementRequest request = new MeasurementRequest();
+        request.setName("kg");
+
+
+        when(measurementRepository.findByName(request.getName())).thenReturn(null);
+
+        assertThrows(NotFoundException.class, () -> measurementService.updateMeasurement(id, request));
+    }
 
     @Test
     void deleteMeasurementTest() {
