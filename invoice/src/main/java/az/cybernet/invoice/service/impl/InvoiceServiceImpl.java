@@ -3,7 +3,16 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceRecipientTaxIdRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
 import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
@@ -38,6 +47,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static az.cybernet.invoice.constants.InvoiceType.INR;
+import static az.cybernet.invoice.constants.InvoiceType.INVD;
 import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.DRAFT;
@@ -53,7 +64,6 @@ import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.boot.autoconfigure.amqp.RabbitRetryTemplateCustomizer.Target.SENDER;
 
 @Log
 @Service
@@ -89,7 +99,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var invoiceEntity = invoiceMapper.fromInvoiceRequestToEntity(invoiceRequest);
         invoiceEntity.setInvoiceNumber(generateInvoiceNumber());
-        invoiceEntity.setInvoiceSeries("INVD");
+        invoiceEntity.setInvoiceType(INVD);
         invoiceEntity.setTotalPrice(ZERO);
 
         invoiceRepository.saveInvoice(invoiceEntity);
@@ -205,7 +215,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void requestCorrection(Long invoiceId, RequestCorrectionRequest request) {
@@ -250,7 +259,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
-
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
@@ -268,7 +276,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse findById(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
-}
+    }
 
 
     @Override
@@ -468,7 +476,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .status(InvoiceStatus.DRAFT)
-                .invoiceSeries("INR")
+                .invoiceType(INR)
                 .invoiceNumber(generateInvoiceNumber())
                 .isActive(true)
                 .build();
@@ -514,7 +522,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse sendReturnInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        if (!"INR".equals(invoiceEntity.getInvoiceSeries())) {
+        if (!"INR".equals(invoiceEntity.getInvoiceType().name())) {
             throw new IllegalStateException("This is not a return (INR) invoice");
         }
 

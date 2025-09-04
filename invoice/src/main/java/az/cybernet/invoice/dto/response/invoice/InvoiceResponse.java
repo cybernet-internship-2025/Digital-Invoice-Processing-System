@@ -1,5 +1,6 @@
 package az.cybernet.invoice.dto.response.invoice;
 
+import az.cybernet.invoice.constants.InvoiceType;
 import az.cybernet.invoice.dto.response.item.ItemResponse;
 import az.cybernet.invoice.enums.InvoiceStatus;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,6 @@ public class InvoiceResponse {
     LocalDateTime updatedAt;
     InvoiceStatus status;
     String invoiceNumber;
-    String invoiceSeries;
+    InvoiceType invoiceType;
     List<ItemResponse> items;
 }
