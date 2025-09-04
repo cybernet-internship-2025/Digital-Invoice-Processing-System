@@ -10,6 +10,32 @@ spring:
     liquibase-schema: public
     drop-first: true
 
+  cache:
+    type: redis
+    host: localhost
+    port: 6379
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+    mapper-locations: classpath:mapper/*.xml
+    configuration:
+      map-underscore-to-camel-case: true
+      default-fetch-size: 100
+      default-statement-timeout: 30
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+      
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:
@@ -20,3 +46,4 @@ mybatis:
 integration:
   service:
     url: http://localhost:8084
+

@@ -98,7 +98,7 @@
 
     <resultMap id="ItemEntityResultMap" type="az.cybernet.invoice.entity.ItemEntity">
         <id property="id" column="id"/>
-        <result property="name" column="product_name"/>
+        <result property="name" column="name"/>
         <result property="unitPrice" column="unit_price"/>
         <result property="quantity" column="quantity"/>
         <result property="isActive" column="is_active"/>

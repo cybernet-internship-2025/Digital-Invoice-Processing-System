@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20251002
+      author: gulnare
+      changes:
+        - createTable:
+            schemaName: users
+            tableName: otp_login_data
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    primaryKeyName: otp_login_data_primary_key
+              - column:
+                  name: pin
+                  type: VARCHAR(7)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: VARCHAR(12)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: verification_code
+                  type: VARCHAR(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: number_of_attempts
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: insert_date
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: state
+                  type: VARCHAR(30)
+                  defaultValue: "0"
+                  constraints:
+                    nullable: false

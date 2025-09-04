@@ -4,3 +4,7 @@ databaseChangeLog:
 
   - include:
       file: liquibase/1.0/20251000-create-users-table.yml
+
+
+  - include:
+      file: liquibase/1.0/20251002-create-otp-login-data-table.yml
