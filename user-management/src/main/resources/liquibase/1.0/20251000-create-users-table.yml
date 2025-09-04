@@ -62,6 +62,12 @@ databaseChangeLog:
                     nullable: false
 
               - column:
+                  name: registration_type
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+
+              - column:
                   name: created_at
                   type: TIMESTAMP
                   defaultValue: now()

@@ -49,6 +49,7 @@ services:
     container_name: user-management-service
     depends_on:
       - user-db
+      - redis
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/${DB_NAME_USER}
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME_USER}
@@ -59,6 +60,12 @@ services:
       - "8081:8080"
     networks:
       - backend
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - "6379:6379"
 
   invoice-service:
     build:
@@ -146,3 +153,4 @@ volumes:
   invoice-db-data:
   user-db-data:
   notification-db-data:
+  redis-data:

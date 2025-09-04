@@ -36,36 +36,39 @@ public class OperationServiceImpl implements OperationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveOperation(CreateOperationRequest request) {
-
         OperationEntity entity = new OperationEntity();
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setStatus(request.getStatus());
+        entity.setOperationStatus(request.getStatus());
         entity.setComment(request.getComment());
 
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(request.getInvoiceId());
         entity.setInvoice(invoiceEntity);
 
-        List<OperationDetailsEntity> detailsList = new ArrayList<>();
+        operationRepository.save(entity);
+
+        Long operationId = entity.getId();
+        System.out.println("Saved operation ID: " + operationId);
 
         if (request.getItems() != null && !request.getItems().isEmpty()) {
+            List<OperationDetailsEntity> detailsList = new ArrayList<>();
             for (CreateOperationDetailsRequest itemReq : request.getItems()) {
                 OperationDetailsEntity detail = OperationDetailsEntity.builder()
                         .item(ItemEntity.builder()
                                 .id(itemReq.getItemId())
                                 .build())
                         .itemStatus(itemReq.getItemStatus())
-                        .operation(entity)
+                        .operationId(operationId)
                         .build();
-
                 detailsList.add(detail);
+            }
+
+            for (OperationDetailsEntity detail : detailsList) {
                 operationDetailsService.save(detail);
             }
-        }
+       }}
 
-        entity.setItemDetails(detailsList);
-        operationRepository.save(entity);
-}
+
 
     @Override
     public List<OperationResponse> findAll() {
@@ -76,8 +79,8 @@ public class OperationServiceImpl implements OperationService {
     }
 
     @Override
-    public List<OperationResponse> findByStatus(OperationStatus status) {
-        return operationRepository.findByStatus(status)
+    public List<OperationResponse> findByStatus(OperationStatus operationStatus) {
+        return operationRepository.findByStatus(operationStatus)
                 .stream()
                 .map(operationMapStruct::toResponse)
                 .collect(toList());
@@ -104,7 +107,7 @@ public class OperationServiceImpl implements OperationService {
         OperationEntity op = operationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Operation not found with ID: " + id));
 
-        op.setStatus(newStatus);
+        op.setOperationStatus(newStatus);
         op.setComment(comment);
 
         operationRepository.save(op);

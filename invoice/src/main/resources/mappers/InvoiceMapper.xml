@@ -11,7 +11,7 @@
         <result property="recipientTaxId" column="c_recipient_tax_id"/>
         <result property="totalPrice" column="c_total_price"/>
         <result property="invoiceNumber" column="c_invoice_number"/>
-        <result property="invoiceSeries" column="c_invoice_series"/>
+        <result property="invoiceType" column="c_invoice_type"/>
         <result property="status" column="c_status" typeHandler="az.cybernet.invoice.handler.InvoiceStatusTypeHandler"/>
         <result property="createdAt" column="c_created_at"/>
         <result property="updatedAt" column="c_updated_at"/>
@@ -31,7 +31,7 @@
 
         <collection property="operations" ofType="az.cybernet.invoice.entity.OperationEntity">
             <id property="id" column="o_id"/>
-            <result property="status" column="o_status"/>
+            <result property="operationStatus" column="o_operationStatus"/>
             <result property="comment" column="o_comment"/>
             <result property="createdAt" column="o_created_at"/>
         </collection>
@@ -39,9 +39,9 @@
 
     <insert id="saveInvoice" parameterType="az.cybernet.invoice.entity.InvoiceEntity" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
-        INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, invoice_number, invoice_series,
+        INSERT INTO invoices (sender_tax_id, recipient_tax_id, total_price, invoice_number, invoice_type,
                               status, created_at, updated_at, is_active)
-        VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{invoiceNumber}, #{invoiceSeries},
+        VALUES (#{senderTaxId}, #{recipientTaxId}, #{totalPrice}, #{invoiceNumber}, #{invoiceType},
                 'DRAFT', NOW(), NULL, true)
     </insert>
 
@@ -77,7 +77,7 @@
 
     <update id="approveInvoiceById" parameterType="long">
         UPDATE invoices
-        SET status = 'APPROVED',
+        SET status     = 'APPROVED',
             updated_at = NOW()
         WHERE id = #{id}
           AND is_active = true
@@ -90,7 +90,7 @@
                c.recipient_tax_id AS c_recipient_tax_id,
                c.total_price      AS c_total_price,
                c.invoice_number   AS c_invoice_number,
-               c.invoice_series   AS c_invoice_series,
+               c.invoice_type     AS c_invoice_type,
                c.status           AS c_status,
                c.previous_status  AS c_previous_status,
                c.last_pending_at  AS c_last_pending_at,
@@ -127,7 +127,7 @@
 
     <update id="deleteInvoiceById" parameterType="long">
         UPDATE invoices
-        SET is_active = false,
+        SET is_active  = false,
             updated_at = NOW()
         WHERE id = #{id}
 
@@ -146,8 +146,8 @@
 
     <update id="restoreInvoice" parameterType="long">
         UPDATE invoices
-        SET status = 'DRAFT',
-            is_active = true,
+        SET status     = 'DRAFT',
+            is_active  = true,
             updated_at = NOW()
         WHERE id = #{id}
           AND status = 'CANCELED'
@@ -161,7 +161,7 @@
                c.total_price      AS c_total_price,
                c.is_active        AS c_is_active,
                c.invoice_number   AS c_invoice_number,
-               c.invoice_series   AS c_invoice_series,
+               c.invoice_type     AS c_invoice_type,
                c.status           AS c_status,
                c.created_at       AS c_created_at,
                c.updated_at       AS c_updated_at,
@@ -190,7 +190,7 @@
                c.total_price      AS c_total_price,
                c.is_active        AS c_is_active,
                c.invoice_number   AS c_invoice_number,
-               c.invoice_series   AS c_invoice_series,
+               c.invoice_type     AS c_invoice_type,
                c.status           AS c_status,
                c.created_at       AS c_created_at,
                c.updated_at       AS c_updated_at,
@@ -212,27 +212,25 @@
 
     <select id="findInvoicesBySenderTaxId"
             resultMap="InvoiceResultMap">
-
-
         SELECT
-        c.id               AS c_id,
-        c.sender_tax_id    AS c_sender_tax_id,
+        c.id AS c_id,
+        c.sender_tax_id AS c_sender_tax_id,
         c.recipient_tax_id AS c_recipient_tax_id,
-        c.total_price      AS c_total_price,
-        c.is_active        AS c_is_active,
-        c.invoice_number   AS c_invoice_number,
-        c.invoice_series   AS c_invoice_series,
-        c.status           AS c_status,
-        c.created_at       AS c_created_at,
-        c.updated_at       AS c_updated_at,
+        c.total_price AS c_total_price,
+        c.is_active AS c_is_active,
+        c.invoice_number AS c_invoice_number,
+        c.invoice_type AS c_invoice_type,
+        c.status AS c_status,
+        c.created_at AS c_created_at,
+        c.updated_at AS c_updated_at,
 
-        i.id               AS i_id,
-        i.name             AS i_name,
-        i.unit_price       AS i_unit_price,
-        i.is_active        AS i_is_active,
-        i.quantity         AS i_quantity,
-        i.total_price      AS i_total_price,
-        i.invoice_id       AS i_invoice_id
+        i.id AS i_id,
+        i.name AS i_name,
+        i.unit_price AS i_unit_price,
+        i.is_active AS i_is_active,
+        i.quantity AS i_quantity,
+        i.total_price AS i_total_price,
+        i.invoice_id AS i_invoice_id
 
         FROM invoices c
         LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
@@ -324,11 +322,90 @@
     </update>
 
 
-    <update id="countInvoicesByRecipientUserTaxId">
+    <select id="countInvoicesByRecipientUserTaxId" resultType="long">
+        SELECT COUNT(*)
+        FROM invoices c
+        WHERE c.recipient_tax_id = #{recipientTaxId}
+        AND c.is_active = true
+        AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
 
-    </update>
+        <if test="filter.status != null">
+            AND LOWER(c.status) = LOWER(#{filter.status})
+        </if>
 
-    <select id="findAllInvoicesByRecipientUserTaxId" resultType="az.cybernet.invoice.entity.InvoiceEntity">
+        <if test="filter.fromDate != null">
+            AND c.created_at &gt;= #{filter.fromDate}
+        </if>
+
+        <if test="filter.toDate != null">
+            AND c.created_at &lt;= #{filter.toDate}
+        </if>
+
+        <if test="filter.invoiceNumber != null">
+            AND (c.invoice_series || c.invoice_number) = #{filter.invoiceNumber}
+        </if>
+
+        <if test="filter.year != null">
+            AND EXTRACT(YEAR FROM c.created_at) = #{filter.year}
+        </if>
+    </select>
+
+    <select id="findAllInvoicesByRecipientUserTaxId"
+            resultMap="InvoiceResultMap">
+
+        SELECT c.id               AS c_id,
+        c.sender_tax_id    AS c_sender_tax_id,
+        c.recipient_tax_id AS c_recipient_tax_id,
+        c.total_price      AS c_total_price,
+        c.is_active        AS c_is_active,
+        c.invoice_number   AS c_invoice_number,
+        c.invoice_series   AS c_invoice_series,
+        c.status           AS c_status,
+        c.created_at       AS c_created_at,
+        c.updated_at       AS c_updated_at,
+
+        i.id               AS i_id,
+        i.name             AS i_name,
+        i.unit_price       AS i_unit_price,
+        i.is_active        AS i_is_active,
+        i.quantity         AS i_quantity,
+        i.total_price      AS i_total_price,
+        i.invoice_id       AS i_invoice_id
+
+        FROM invoices c
+        LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
+
+        WHERE c.recipient_tax_id = #{recipientTaxId}
+        AND c.is_active = true
+        AND c.status IN ('PENDING', 'APPROVED', 'CANCELED', 'CORRECTION')
+
+        <if test="filter.status != null">
+            AND LOWER(c.status) = LOWER(#{filter.status})
+        </if>
+
+        <if test="filter.fromDate != null">
+            AND c.created_at &gt;= #{filter.fromDate}
+        </if>
+
+        <if test="filter.toDate != null">
+            AND c.created_at &lt;= #{filter.toDate}
+        </if>
+
+        <if test="filter.invoiceNumber != null">
+            AND (c.invoice_series || c.invoice_number) = #{filter.invoiceNumber}
+        </if>
+
+
+        <if test="filter.year != null">
+            AND EXTRACT(YEAR FROM c.created_at) = #{filter.year}
+        </if>
+
+
+        ORDER BY c.created_at DESC
+
+        <if test="filter.limit != null and filter.offset != null">
+            LIMIT #{filter.limit} OFFSET #{filter.offset}
+        </if>
 
     </select>
 
@@ -362,10 +439,10 @@
     <update id="updateInvoiceRecipientTaxId">
         update invoices
         set recipient_tax_id = #{recipientTaxId},
-            updated_at = now(),
-            previous_status = status,
-            status = 'PENDING',
-            last_pending_at = now()
+            updated_at       = now(),
+            previous_status  = status,
+            status           = 'PENDING',
+            last_pending_at  = now()
         where id = #{invoiceId}
 
     </update>

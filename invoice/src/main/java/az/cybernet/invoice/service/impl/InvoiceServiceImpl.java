@@ -3,7 +3,16 @@ package az.cybernet.invoice.service.impl;
 import az.cybernet.invoice.aop.annotation.Log;
 import az.cybernet.invoice.client.UserClient;
 import az.cybernet.invoice.dto.client.user.UserResponse;
-import az.cybernet.invoice.dto.request.invoice.*;
+import az.cybernet.invoice.dto.request.invoice.ApproveAndCancelInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.CreateInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.DeleteInvoicesRequest;
+import az.cybernet.invoice.dto.request.invoice.InvoiceFilterRequest;
+import az.cybernet.invoice.dto.request.invoice.PaginatedInvoiceResponse;
+import az.cybernet.invoice.dto.request.invoice.RequestCorrectionRequest;
+import az.cybernet.invoice.dto.request.invoice.ReturnInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.SendInvoiceRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceItemsRequest;
+import az.cybernet.invoice.dto.request.invoice.UpdateInvoiceRecipientTaxIdRequest;
 import az.cybernet.invoice.dto.request.item.ItemRequest;
 import az.cybernet.invoice.dto.request.item.ReturnItemRequest;
 import az.cybernet.invoice.dto.request.operation.AddItemsToOperationRequest;
@@ -40,22 +49,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static az.cybernet.invoice.constants.InvoiceType.INR;
+import static az.cybernet.invoice.constants.InvoiceType.INVD;
 import static az.cybernet.invoice.enums.InvoiceStatus.APPROVED;
 import static az.cybernet.invoice.enums.InvoiceStatus.CORRECTION;
 import static az.cybernet.invoice.enums.InvoiceStatus.DRAFT;
 import static az.cybernet.invoice.enums.InvoiceStatus.PENDING;
 import static az.cybernet.invoice.enums.OperationStatus.DELETE;
 import static az.cybernet.invoice.enums.OperationStatus.UPDATE;
-import static az.cybernet.invoice.exception.ExceptionConstants.INVALID_STATUS;
-import static az.cybernet.invoice.exception.ExceptionConstants.INVOICE_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.ITEM_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.RECIPIENT_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.SENDER_NOT_FOUND;
-import static az.cybernet.invoice.exception.ExceptionConstants.UNAUTHORIZED;
+import static az.cybernet.invoice.exception.ExceptionConstants.*;
 import static az.cybernet.invoice.util.GeneralUtil.isNullOrEmpty;
 import static java.math.BigDecimal.ZERO;
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.boot.autoconfigure.amqp.RabbitRetryTemplateCustomizer.Target.SENDER;
 
 @Log
 @Service
@@ -66,8 +71,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     final InvoiceMapper invoiceMapper;
     final ItemService itemService;
     final OperationService operationService;
-    static int MAX_SIZE = 50;
-    static int MIN_SIZE = 10;
     KafkaTemplate<String, InvoiceNotificationEvent>kafkaTemplate;
 
     public InvoiceServiceImpl(
@@ -94,7 +97,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var invoiceEntity = invoiceMapper.fromInvoiceRequestToEntity(invoiceRequest);
         invoiceEntity.setInvoiceNumber(generateInvoiceNumber());
-        invoiceEntity.setInvoiceSeries("INVD");
+        invoiceEntity.setInvoiceType(INVD);
         invoiceEntity.setTotalPrice(ZERO);
 
         invoiceRepository.saveInvoice(invoiceEntity);
@@ -215,7 +218,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void requestCorrection(Long invoiceId, RequestCorrectionRequest request) {
@@ -261,7 +263,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
-
     private void addInvoiceToOperation(Long invoiceId, String comment, OperationStatus status) {
         InvoiceEntity invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
@@ -279,7 +280,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse findById(Long id) {
         var invoiceEntity = fetchInvoiceIfExist(id);
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
-}
+    }
 
 
     @Override
@@ -287,6 +288,9 @@ public class InvoiceServiceImpl implements InvoiceService {
                                                                 InvoiceFilterRequest filter,
                                                                 Integer page,
                                                                 Integer size) {
+        final int MAX_SIZE = 50;
+        final int MIN_SIZE = 10;
+
         if (page == null || page < 0) {
             page = 0;
         }
@@ -432,9 +436,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         boolean hasNext = entities.size() > filter.getLimit() - 1;
 
-        if (hasNext) {
-            entities.removeLast(); // remove last item
-        }
+       // if (hasNext) {
+       //     entities.removeLast(); // remove last item
+     //   }
 
         return invoiceMapper.allBySenderTaxId(entities);
 
@@ -485,7 +489,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .status(InvoiceStatus.DRAFT)
-                .invoiceSeries("INR")
+                .invoiceType(INR)
                 .invoiceNumber(generateInvoiceNumber())
                 .isActive(true)
                 .build();
@@ -533,7 +537,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse sendReturnInvoice(Long invoiceId, String senderTaxId, String recipientTaxId) {
         var invoiceEntity = fetchInvoiceIfExist(invoiceId);
 
-        if (!"INR".equals(invoiceEntity.getInvoiceSeries())) {
+        if (!"INR".equals(invoiceEntity.getInvoiceType().name())) {
             throw new IllegalStateException("This is not a return (INR) invoice");
         }
 
@@ -554,6 +558,96 @@ public class InvoiceServiceImpl implements InvoiceService {
         sendKafka(invoiceEntity);
 
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void approveReturnInvoice(Long returnInvoiceId, ReturnInvoiceRequest request) {
+        processReturnInvoice(request, returnInvoiceId, InvoiceStatus.APPROVED, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelReturnInvoice(Long returnInvoiceId, ReturnInvoiceRequest request) {
+        processReturnInvoice(request, returnInvoiceId, InvoiceStatus.CANCELED, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void requestReturnCorrection(Long returnInvoiceId, ReturnInvoiceRequest request) {
+        processReturnInvoice(request, returnInvoiceId, InvoiceStatus.CORRECTION, request.getComment());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void processReturnInvoice(ReturnInvoiceRequest request,
+                                     Long invoiceReturnId,
+                                     InvoiceStatus action,
+                                     String comment) {
+
+        InvoiceEntity returnInvoice = fetchInvoiceIfExist(invoiceReturnId);
+
+        if (!returnInvoice.getRecipientTaxId().equals(request.getSenderTaxId())
+                || !returnInvoice.getSenderTaxId().equals(request.getRecipientTaxId())) {
+            throw new UnauthorizedException(UNAUTHORIZED_RETURN_INVOICE.getCode(), UNAUTHORIZED_RETURN_INVOICE.getMessage());
+        }
+
+        switch (action) {
+            case APPROVED -> {
+                InvoiceEntity originalInvoice = fetchInvoiceIfExist(request.getOriginalInvoiceId());
+                if (originalInvoice.getStatus() != InvoiceStatus.APPROVED) {
+                    throw new InvalidStatusException(INVALID_RETURN_STATUS.getCode(), "Only approved invoices can have returns");
+                }
+                invoiceRepository.updateInvoiceStatus(invoiceReturnId, InvoiceStatus.APPROVED, LocalDateTime.now());
+
+                for (ReturnItemRequest returnItem : request.getItems()) {
+                    ItemResponse originalItem = itemService.findById(returnItem.getItemId());
+                    if (!originalItem.getInvoiceId().equals(originalInvoice.getId())) {
+                        throw new NotFoundException(INVALID_RETURN_ITEM.getCode(), INVALID_RETURN_ITEM.getMessage());
+                    }
+                    itemService.updateItemStatus(originalItem.getId(), ItemStatus.UPDATED);
+                }
+
+                addInvoiceToOperation(invoiceReturnId, "Return invoice approved", OperationStatus.APPROVED);
+            }
+
+            case CANCELED -> {
+
+                if (returnInvoice.getStatus() != InvoiceStatus.PENDING) {
+                    throw new InvalidStatusException(INVALID_RETURN_STATUS.getCode(), "Only pending return invoices can be canceled");
+                }
+
+                invoiceRepository.updateInvoiceStatus(invoiceReturnId, InvoiceStatus.CANCELED, LocalDateTime.now());
+
+                List<ItemResponse> itemResponses = itemService.findAllItemsByInvoiceId(invoiceReturnId);
+                for (ItemResponse item : itemResponses) {
+                    itemService.updateItemStatus(item.getId(), ItemStatus.DELETED);
+                }
+
+                addInvoiceToOperation(invoiceReturnId, "Return invoice canceled", OperationStatus.CANCELED);
+            }
+
+            case CORRECTION -> {
+                if (returnInvoice.getStatus() != InvoiceStatus.PENDING
+                        && returnInvoice.getStatus() != InvoiceStatus.APPROVED) {
+                    throw new InvalidStatusException(INVALID_RETURN_STATUS.getCode(), "Only pending or approved return invoices can be corrected");
+                }
+                invoiceRepository.updateInvoiceStatus(invoiceReturnId, InvoiceStatus.CORRECTION, LocalDateTime.now());
+
+                String opComment = (comment == null || comment.isBlank())
+                        ? "Correction requested for return invoice"
+                        : comment;
+
+                List<ItemResponse> itemResponses = itemService.findAllItemsByInvoiceId(invoiceReturnId);
+                for (ItemResponse item : itemResponses) {
+                    itemService.updateItemStatus(item.getId(), ItemStatus.UPDATED);
+                }
+
+                addInvoiceToOperation(returnInvoice.getId(), opComment, OperationStatus.CORRECTION);
+            }
+
+            default -> throw new InvalidStatusException(INVALID_RETURN_STATUS.getCode(), INVALID_RETURN_STATUS.getMessage());
+        }
     }
 
     private void doesntMatchInvoiceStatus(InvoiceEntity invoice, InvoiceStatus... statuses) {

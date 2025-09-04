@@ -1,6 +1,6 @@
 package az.cybernet.usermanagement.entity;
 
-
+import az.cybernet.usermanagement.enums.RegistrationType;
 import az.cybernet.usermanagement.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +27,7 @@ public class UserEntity {
     String userId;
     String password;
     Status status;
+    RegistrationType registrationType;
     LocalDate dateOfBirth;
     Boolean isActive;
     LocalDateTime createdAt;

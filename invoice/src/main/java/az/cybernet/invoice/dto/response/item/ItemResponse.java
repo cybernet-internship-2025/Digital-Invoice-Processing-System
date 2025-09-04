@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 @Data
 public class ItemResponse {
     Long id;
-    String productName;
+    String name;
     BigDecimal unitPrice;
     Integer quantity;
     BigDecimal totalPrice;
