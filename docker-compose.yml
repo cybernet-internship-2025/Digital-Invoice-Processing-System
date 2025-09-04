@@ -29,10 +29,10 @@ services:
       - backend
 
   notification-db:
-    image: postgres:16
+    image: postgres:15
     container_name: notification-db
     environment:
-      POSTGRES_DB: notification
+      POSTGRES_DB: notification_service
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
     ports:

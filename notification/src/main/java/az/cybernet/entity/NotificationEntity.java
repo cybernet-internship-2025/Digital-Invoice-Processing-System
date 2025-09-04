@@ -1,7 +1,8 @@
-package az.cybernet.notification.invoice.notification.event;
+package az.cybernet.entity;
 
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
@@ -9,9 +10,14 @@ import java.time.LocalDateTime;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class InvoiceNotificationEvent {
+@Builder
+public class NotificationEntity {
+    Long id;
     Long invoiceId;
     String senderTaxId;
     String receiverTaxId;
     String operationType;
+    String message;
+    LocalDateTime createdAt;
+    boolean isRead;
 }

@@ -1,4 +1,4 @@
-package az.cybernet.notification;
+package az.cybernet;
 
 
 import org.springframework.boot.SpringApplication;

@@ -1,8 +1,8 @@
-package az.cybernet.notification.controller;
+package az.cybernet.controller;
 
 
-import az.cybernet.notification.invoice.notification.event.InvoiceNotificationEvent;
-import az.cybernet.notification.service.NotificationService;
+import az.cybernet.invoice.notification.event.InvoiceNotificationEvent;
+import az.cybernet.service.NotificationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

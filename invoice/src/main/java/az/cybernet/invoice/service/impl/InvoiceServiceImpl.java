@@ -20,12 +20,14 @@ import az.cybernet.invoice.exception.InvalidStatusException;
 import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.exception.UnauthorizedException;
 import az.cybernet.invoice.mapper.InvoiceMapper;
+import az.cybernet.invoice.notification.event.InvoiceNotificationEvent;
 import az.cybernet.invoice.repository.InvoiceRepository;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
 import az.cybernet.invoice.service.abstraction.ItemService;
 import az.cybernet.invoice.service.abstraction.OperationService;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,19 +68,22 @@ public class InvoiceServiceImpl implements InvoiceService {
     final OperationService operationService;
     static int MAX_SIZE = 50;
     static int MIN_SIZE = 10;
+    KafkaTemplate<String, InvoiceNotificationEvent>kafkaTemplate;
 
     public InvoiceServiceImpl(
             InvoiceRepository invoiceRepository,
             UserClient userClient,
             InvoiceMapper invoiceMapper,
             OperationService operationService,
-            @Lazy ItemService itemService
+            @Lazy ItemService itemService,
+            KafkaTemplate<String, InvoiceNotificationEvent> kafkaTemplate
     ) {
         this.invoiceRepository = invoiceRepository;
         this.userClient = userClient;
         this.invoiceMapper = invoiceMapper;
         this.operationService = operationService;
         this.itemService = itemService;
+        this.kafkaTemplate=kafkaTemplate;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -110,6 +115,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             var totalPrice = updateInvoiceTotalPrice(invoiceId);
             invoiceEntity.setTotalPrice(totalPrice);
         }
+
+        sendKafka(invoiceEntity);
 
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
@@ -167,6 +174,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
 
             addInvoiceToOperation(invoiceId, "Invoice approved", OperationStatus.APPROVED);
+
+            sendKafka(invoiceEntity);
         }
     }
 
@@ -198,6 +207,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
                 addInvoiceToOperation(invoiceId, "Invoice canceled", OperationStatus.CANCELED);
 
+                sendKafka(invoiceEntity);
             } else {
                 throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
             }
@@ -244,6 +254,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             itemService.addItemsToOperation(items);
 
+            sendKafka(invoiceEntity);
         } else {
             throw new InvalidStatusException(INVALID_STATUS.getCode(), INVALID_STATUS.getMessage());
         }
@@ -356,6 +367,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .forEach(invoice -> {
                             doesntMatchInvoiceStatus(invoice, InvoiceStatus.DRAFT);
                             addInvoiceToOperation(invoice.getId(), "Invoice deleted", DELETE);
+                            sendKafka(invoice);
                         }
                 );
 
@@ -378,6 +390,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         addInvoiceToOperation(request.getInvoiceId(), "Recipient Tax ID changed to: " + request.getRecipientTaxId(), OperationStatus.PENDING);
 
+        sendKafka(invoice);
+
         return invoiceMapper.fromEntityToResponse(invoice);
     }
 
@@ -396,6 +410,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             doesntMatchInvoiceStatus(invoice, CORRECTION, InvoiceStatus.DRAFT);
             invoice.setStatus(PENDING);
             addInvoiceToOperation(invoice.getId(), "Invoice with id " + invoice.getId() + " sent", OperationStatus.PENDING);
+            sendKafka(invoice);
         });
 
         invoiceRepository.updateStatuses(request.getInvoiceIds(), PENDING.toString());
@@ -449,6 +464,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.refreshInvoice(request.getInvoiceId());
         invoice = fetchInvoiceIfExist(request.getInvoiceId());
+
+        sendKafka(invoice);
 
         return invoiceMapper.fromEntityToResponse(invoice);
     }
@@ -507,6 +524,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceEntity.setItems(returnedItems);
         invoiceEntity.setTotalPrice(totalPrice);
 
+        sendKafka(invoiceEntity);
+
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
 
@@ -531,6 +550,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         invoiceRepository.updateInvoiceStatus(invoiceId, InvoiceStatus.PENDING, LocalDateTime.now());
+
+        sendKafka(invoiceEntity);
+
         return invoiceMapper.fromEntityToResponse(invoiceEntity);
     }
 
@@ -583,6 +605,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoiceRepository.updateStatuses(List.of(invoiceId), "SEND_TO_CANCEL");
 
+        sendKafka(invoice);
+
         addInvoiceToOperation(invoiceId, "Invoice sent to cancel", OperationStatus.SEND_TO_CANCEL);
     }
 
@@ -594,6 +618,17 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .toList();
 
         invoiceRepository.updateStatuses(invoiceIds, "SEND_TO_CANCEL");
+
+        invoiceRepository.findInvoicesByIds(invoiceIds).forEach(this::sendKafka);
     }
 
+    private void sendKafka(InvoiceEntity invoice) {
+        InvoiceNotificationEvent event = InvoiceNotificationEvent.builder()
+                .operationType(invoice.getStatus().toString())
+                .receiverTaxId(invoice.getRecipientTaxId())
+                .senderTaxId(invoice.getSenderTaxId())
+                .invoiceId(invoice.getId())
+                .build();
+        kafkaTemplate.send("invoice-notifications", event);
+    }
 }

@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   liquibase:
     change-log: classpath:liquibase/changelog-master.yml
-    drop-first: false
+    drop-first: true
     default-schema: notification
     liquibase-schema: public
 

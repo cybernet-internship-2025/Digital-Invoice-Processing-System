@@ -334,13 +334,29 @@
 
     <select id="findInvoicesByIds"
             parameterType="list"
-            resultType="az.cybernet.invoice.entity.InvoiceEntity">
-select *
-from invoices i
-where id in
-<foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
-    #{id}
-</foreach>
+            resultMap="InvoiceResultMap">
+
+        select
+        i.id as c_id,
+        i.sender_tax_id as c_sender_tax_id,
+        i.recipient_tax_id as c_recipient_tax_id,
+        i.total_price as c_total_price,
+        i.invoice_number as c_invoice_number,
+        i.invoice_series as c_invoice_series,
+        i.status as c_status,
+        i.created_at as c_created_at,
+        i.updated_at as c_updated_at,
+        i.is_active as c_is_active,
+        c.previous_status  AS c_previous_status,
+        c.last_pending_at  AS c_last_pending_at,
+        c.comment          AS c_comment
+
+        from invoices i
+        where i.id in
+        <foreach collection="invoiceIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
     </select>
 
     <update id="updateInvoiceRecipientTaxId">
