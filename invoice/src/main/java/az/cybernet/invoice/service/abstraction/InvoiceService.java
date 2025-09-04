@@ -3,9 +3,8 @@ package az.cybernet.invoice.service.abstraction;
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
-import az.cybernet.invoice.dto.response.invoice.PagedResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
-import jakarta.servlet.http.HttpServletResponse;
+import az.cybernet.invoice.enums.InvoiceStatus;
 
 import java.util.List;
 
@@ -42,6 +41,17 @@ public interface InvoiceService {
     InvoiceResponse createReturnInvoice(ReturnInvoiceRequest invoiceRequest, String currentUserTaxId);
 
     InvoiceResponse sendReturnInvoice(Long invoiceId, String senderTaxId, String recipientTaxId);
+
+    void processReturnInvoice(ReturnInvoiceRequest request,
+                              Long  invoiceReturnId,
+                              InvoiceStatus status,
+                              String comment);
+
+    void approveReturnInvoice(Long returnInvoiceId, ReturnInvoiceRequest request);
+
+    void cancelReturnInvoice(Long returnInvoiceId, ReturnInvoiceRequest request);
+
+    void requestReturnCorrection(Long returnInvoiceId, ReturnInvoiceRequest request);
 
     void markAsPending(Long invoiceId, String comment);
 
