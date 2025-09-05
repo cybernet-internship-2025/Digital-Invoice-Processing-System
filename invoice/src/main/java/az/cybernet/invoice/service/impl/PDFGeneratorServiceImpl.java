@@ -1,7 +1,8 @@
-package az.cybernet.filestorage.service;
+package az.cybernet.invoice.service.impl;
 
-import az.cybernet.filestorage.dto.client.InvoiceResponse;
-import az.cybernet.filestorage.dto.client.ItemResponse;
+import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
+import az.cybernet.invoice.dto.response.item.ItemResponse;
+import az.cybernet.invoice.service.abstraction.PDFGeneratorService;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 @Service
-public class PDFGeneratorService {
+public class PDFGeneratorServiceImpl implements PDFGeneratorService {
     public void export(HttpServletResponse response, InvoiceResponse invoice) throws IOException {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
@@ -76,7 +77,7 @@ public class PDFGeneratorService {
             int count = 1;
             for (ItemResponse item : invoice.getItems()) {
                 itemsTable.addCell(createCell(String.valueOf(count++), fontNormal));
-                itemsTable.addCell(createCell(item.getProductName(), fontNormal));
+                itemsTable.addCell(createCell(item.getName(), fontNormal));
                 itemsTable.addCell(createCell(String.valueOf(item.getQuantity()), fontNormal));
                 itemsTable.addCell(createCell(item.getTotalPrice().toString(), fontNormal));
             }

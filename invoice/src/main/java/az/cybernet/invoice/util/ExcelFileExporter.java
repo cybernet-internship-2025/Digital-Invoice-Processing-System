@@ -2,7 +2,6 @@ package az.cybernet.invoice.util;
 
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.entity.InvoiceEntity;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ContentDisposition;
@@ -22,7 +21,6 @@ import java.util.List;
 public class ExcelFileExporter {
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
 
     public static byte[] exportInvoicesToExcel(List<FilterResponse> invoices, String[] headers) {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -64,20 +62,14 @@ public class ExcelFileExporter {
     // helper method
     private static void setCell(Row row, int col, Object value) {
         Cell cell = row.createCell(col);
-        if (value == null) {
-            cell.setBlank();
-        } else if (value instanceof String str) {
-            cell.setCellValue(str);
-        } else if (value instanceof Integer i) {
-            cell.setCellValue(i);
-        } else if (value instanceof Long l) {
-            cell.setCellValue(l);
-        } else if (value instanceof BigDecimal bd) {
-            cell.setCellValue(bd.doubleValue());
-        } else if (value instanceof LocalDateTime dt) {
-            cell.setCellValue(DATE_TIME_FORMATTER.format(dt));
-        } else {
-            cell.setCellValue(value.toString());
+        switch (value) {
+            case null -> cell.setBlank();
+            case String str -> cell.setCellValue(str);
+            case Integer i -> cell.setCellValue(i);
+            case Long l -> cell.setCellValue(l);
+            case BigDecimal bd -> cell.setCellValue(bd.doubleValue());
+            case LocalDateTime dt -> cell.setCellValue(DATE_TIME_FORMATTER.format(dt));
+            default -> cell.setCellValue(value.toString());
         }
     }
 
