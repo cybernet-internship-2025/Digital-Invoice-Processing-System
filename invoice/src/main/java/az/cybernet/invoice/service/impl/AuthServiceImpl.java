@@ -4,6 +4,8 @@ import az.cybernet.invoice.dto.client.user.UserDto;
 import az.cybernet.invoice.dto.client.user.UserResponse;
 import az.cybernet.invoice.dto.request.login.LoginRequestDto;
 import az.cybernet.invoice.dto.response.login.LoginResponseDto;
+import az.cybernet.invoice.exception.ExceptionConstants;
+import az.cybernet.invoice.exception.NotFoundException;
 import az.cybernet.invoice.repository.UserRepository;
 import az.cybernet.invoice.service.abstraction.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+
+import static az.cybernet.invoice.exception.ExceptionConstants.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -64,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
         userResponse.setName("User Name");
-        userResponse.getTaxId();
+        userResponse.setTaxId(req.getTaxId());
         userResponse.setIsActive(true);
         userResponse.setCreatedAt(LocalDateTime.now().minusDays(1));
         userResponse.setUpdatedAt(LocalDateTime.now());
