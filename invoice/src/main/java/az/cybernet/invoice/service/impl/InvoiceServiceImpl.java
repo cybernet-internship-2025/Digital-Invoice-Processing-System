@@ -650,7 +650,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setPreviousStatus(invoice.getStatus());
         invoice.setStatus(InvoiceStatus.PENDING);
         invoice.setLastPendingAt(LocalDateTime.now());
-        invoice.setComment(comment);
 
 //        invoiceRepository.updateInvoiceStatus(invoice);
     }

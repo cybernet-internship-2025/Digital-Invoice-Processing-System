@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
         userResponse.setName("User Name");
-        userResponse.setTaxId(user.getTaxId());
+        userResponse.getTaxId();
         userResponse.setIsActive(true);
         userResponse.setCreatedAt(LocalDateTime.now().minusDays(1));
         userResponse.setUpdatedAt(LocalDateTime.now());

@@ -21,7 +21,6 @@ public interface InvoiceMapper {
     @Mapping(target = "updatedAt", expression = "java((java.time.LocalDateTime) null)")
     @Mapping(target = "totalPrice", ignore = true)
     @Mapping(target = "invoiceNumber", ignore = true)
-    @Mapping(target = "invoiceType", ignore = true)
     @Mapping(target = "items", ignore = true)
     InvoiceEntity fromInvoiceRequestToEntity(CreateInvoiceRequest request);
 

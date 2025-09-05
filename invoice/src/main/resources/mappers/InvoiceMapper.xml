@@ -18,7 +18,6 @@
         <result property="isActive" column="c_is_active"/>
         <result property="previousStatus" column="c_previous_status"/>
         <result property="lastPendingAt" column="c_last_pending_at"/>
-        <result property="comment" column="c_comment"/>
 
         <collection property="items" ofType="az.cybernet.invoice.entity.ItemEntity">
             <id property="id" column="i_id"/>
@@ -94,7 +93,6 @@
                c.status           AS c_status,
                c.previous_status  AS c_previous_status,
                c.last_pending_at  AS c_last_pending_at,
-               c.comment          AS c_comment,
                c.is_active        AS c_is_active,
                c.created_at       AS c_created_at,
                c.updated_at       AS c_updated_at,
@@ -108,13 +106,11 @@
                i.invoice_id       AS i_invoice_id,
 
                o.id               AS o_id,
-               o.status           AS o_status,
                o.comment          AS o_comment,
                o.created_at       AS o_created_at,
 
                od.id              AS od_id,
                od.item_status     AS od_item_status,
-               od.comment         AS od_comment,
                od.operation_id    AS od_operation_id
         FROM invoices c
                  LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
@@ -213,24 +209,25 @@
     <select id="findInvoicesBySenderTaxId"
             resultMap="InvoiceResultMap">
         SELECT
-        c.id AS c_id,
-        c.sender_tax_id AS c_sender_tax_id,
+        c.id              AS c_id,
+        c.invoice_number  AS c_invoice_number,
+        c.invoice_type    AS c_invoice_type,
+        c.sender_tax_id   AS c_sender_tax_id,
         c.recipient_tax_id AS c_recipient_tax_id,
-        c.total_price AS c_total_price,
-        c.is_active AS c_is_active,
-        c.invoice_number AS c_invoice_number,
-        c.invoice_type AS c_invoice_type,
-        c.status AS c_status,
-        c.created_at AS c_created_at,
-        c.updated_at AS c_updated_at,
+        c.status          AS c_status,
+        c.total_price     AS c_total_price,
+        c.is_active       AS c_is_active,
+        c.created_at      AS c_created_at,
+        c.updated_at      AS c_updated_at,
 
-        i.id AS i_id,
-        i.name AS i_name,
-        i.unit_price AS i_unit_price,
-        i.is_active AS i_is_active,
-        i.quantity AS i_quantity,
-        i.total_price AS i_total_price,
-        i.invoice_id AS i_invoice_id
+        i.id              AS i_id,
+        i.invoice_id      AS i_invoice_id,
+        i.name            AS i_name,
+        i.quantity        AS i_quantity,
+        i.unit_price      AS i_unit_price,
+        i.total_price     AS i_total_price,
+        i.is_active       AS i_is_active
+
 
         FROM invoices c
         LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true
@@ -353,24 +350,26 @@
     <select id="findAllInvoicesByRecipientUserTaxId"
             resultMap="InvoiceResultMap">
 
-        SELECT c.id               AS c_id,
-        c.sender_tax_id    AS c_sender_tax_id,
-        c.recipient_tax_id AS c_recipient_tax_id,
-        c.total_price      AS c_total_price,
-        c.is_active        AS c_is_active,
+        SELECT
+        c.id               AS c_id,
         c.invoice_number   AS c_invoice_number,
         c.invoice_series   AS c_invoice_series,
+        c.sender_tax_id    AS c_sender_tax_id,
+        c.recipient_tax_id AS c_recipient_tax_id,
         c.status           AS c_status,
+        c.total_price      AS c_total_price,
+        c.is_active        AS c_is_active,
         c.created_at       AS c_created_at,
         c.updated_at       AS c_updated_at,
 
         i.id               AS i_id,
+        i.invoice_id       AS i_invoice_id,
         i.name             AS i_name,
-        i.unit_price       AS i_unit_price,
-        i.is_active        AS i_is_active,
         i.quantity         AS i_quantity,
+        i.unit_price       AS i_unit_price,
         i.total_price      AS i_total_price,
-        i.invoice_id       AS i_invoice_id
+        i.is_active        AS i_is_active
+
 
         FROM invoices c
         LEFT JOIN items i ON c.id = i.invoice_id AND i.is_active = true

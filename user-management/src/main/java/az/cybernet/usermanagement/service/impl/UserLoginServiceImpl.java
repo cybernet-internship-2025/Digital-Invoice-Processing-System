@@ -14,6 +14,7 @@ import az.cybernet.usermanagement.exception.RedisOperationException;
 import az.cybernet.usermanagement.exception.VerificationCodeException;
 import az.cybernet.usermanagement.service.abstraction.IntegService;
 import az.cybernet.usermanagement.service.abstraction.UserLoginService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 @Slf4j
 @Log
-@FieldDefaults(level = PRIVATE, makeFinal = true)
+@FieldDefaults(level = PRIVATE)
 public class UserLoginServiceImpl implements UserLoginService {
     private final IntegService integrationService;
     private final StringRedisTemplate redisTemplate;
@@ -57,8 +58,12 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Autowired
     private BotProperties botProperties;
+    private String botToken;
 
-    String botToken = botProperties.getToken();
+    @PostConstruct
+    public void init() {
+        this.botToken = botProperties.getToken();
+    }
 
     @Override
     public void loginByPhone(LoginRequest loginRequest) {
