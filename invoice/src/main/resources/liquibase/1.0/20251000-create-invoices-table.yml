@@ -59,11 +59,23 @@ databaseChangeLog:
                     nullable: false
 
               - column:
+                  name: previous_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+
+              - column:
                   name: invoice_number
                   type: VARCHAR(8)
                   constraints:
                     nullable: false
                     unique: true
+
+              - column:
+                  name: last_pending_at
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: true
 
               - column:
                   name: is_active

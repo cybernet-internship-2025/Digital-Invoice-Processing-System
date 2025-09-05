@@ -19,6 +19,7 @@ public enum ExceptionConstants {
     UNAUTHORIZED("UNAUTHORIZED", "You are not allowed to perform surgery"),
     HTTP_METHOD_IS_NOT_CORRECT("HTTP_METHOD_IS_NOT_CORRECT", "http method is not correct"),
     RECIPIENT_NOT_FOUND("RECIPIENT_NOT_FOUND", "no recipient with id found"),
+    USER_NOT_FOUND("USER_NOT_FOUND", "User not found"),
     ITEM_NOT_FOUND("ITEM_NOT_FOUND","item not found"),
     UNAUTHORIZED_RETURN_INVOICE("UNAUTHORIZED_RETURN_INVOICE", "You are not allowed to perform return of invoice"),
     INVALID_RETURN_STATUS("INVALID_RETURN_STATUS", "Return status is invalid"),
@@ -28,7 +29,7 @@ public enum ExceptionConstants {
     String message;
 
     public String getMessage(Long id) {
-        if ((this == SENDER_NOT_FOUND || this == RECIPIENT_NOT_FOUND
+        if ((this == SENDER_NOT_FOUND || this == RECIPIENT_NOT_FOUND || this == USER_NOT_FOUND
                 || this == INVOICE_NOT_FOUND) || this==MEASUREMENT_NOT_FOUND && id != null || this==ITEM_NOT_FOUND) {
             return String.format("No %s with id (ID: %s) was found",
                     this.name().toLowerCase().replace("_not_found", ""), id);

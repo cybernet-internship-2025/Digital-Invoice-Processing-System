@@ -38,5 +38,4 @@ public class InvoiceEntity {
     List<ItemEntity> items;
     InvoiceStatus previousStatus;
     LocalDateTime lastPendingAt;
-    String comment;
 }
