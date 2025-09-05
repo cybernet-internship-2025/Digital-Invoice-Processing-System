@@ -3,9 +3,7 @@ package az.cybernet.invoice.controller;
 import az.cybernet.invoice.dto.request.invoice.*;
 import az.cybernet.invoice.dto.response.invoice.FilterResponse;
 import az.cybernet.invoice.dto.response.invoice.InvoiceResponse;
-import az.cybernet.invoice.service.abstraction.InvoiceFileService;
 import az.cybernet.invoice.service.abstraction.InvoiceService;
-import az.cybernet.invoice.util.ExcelFileExporter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,8 +32,6 @@ import static org.springframework.http.HttpStatus.OK;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class InvoiceController {
     InvoiceService invoiceService;
-    ExcelFileExporter excelFileExporter;
-    InvoiceFileService invoiceFileService;
 
     @PostMapping
     @ResponseStatus(CREATED)
@@ -132,7 +128,7 @@ public class InvoiceController {
     @PutMapping("/{id}/pending")
     public ResponseEntity<Void> markAsPending(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "Səhvlər var") String comment) {
+            @RequestParam(defaultValue = "There are mistakes") String comment) {
         invoiceService.markAsPending(id, comment);
         return ResponseEntity.ok().build();
     }
@@ -153,26 +149,4 @@ public class InvoiceController {
     void cancelPendingInvoicesAfterTimeout() {
         invoiceService.cancelPendingInvoicesAfterTimeout();
     }
-
-    @PostMapping("/{taxId}/sent/export-to-excelexport")
-    public ResponseEntity<byte[]> exportSentInvoiceToExcel(
-            @PathVariable("taxId") String taxId,
-            @RequestBody @Valid InvoiceFilterRequest invoiceFilterRequest,
-            @RequestParam(value = "fileName", defaultValue = "Invoice") String fileName) {
-        return excelFileExporter.buildExcelResponse(
-                invoiceFileService.exportInvoiceToExcel(invoiceFilterRequest, taxId),
-                fileName
-        );
-    }
-
-    @PostMapping("/{taxId}/recipient/export-to-excel")
-    public ResponseEntity<byte[]> exportRecipientInvoiceToExcel(
-            @PathVariable("taxId") String taxId,
-            @RequestBody InvoiceExportRequest request) {
-
-        return excelFileExporter
-                .buildExcelResponse(invoiceFileService
-                        .exportRecipientInvoicesToExcel(request, taxId), "invoices_received");
-    }
-
 }
