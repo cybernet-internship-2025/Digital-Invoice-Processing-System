@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="az.cybernet.repository.NotificationRepository">
+
+    <resultMap id="NotificationResultMap" type="az.cybernet.entity.NotificationEntity">
+        <id property="id" column="n_id"/>
+        <result property="invoiceId" column="invoice_id"/>
+        <result property="senderTaxId" column="sender_tax_id"/>
+        <result property="receiverTaxId" column="receiver_tax_id"/>
+        <result property="operationType" column="operation_type"/>
+        <result property="message" column="message"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="isRead" column="is_read"/>
+    </resultMap>
+
+    <insert id="save" parameterType="az.cybernet.entity.NotificationEntity" useGeneratedKeys="true" keyProperty="id">
+        insert into notification(invoice_id, sender_tax_id, receiver_tax_id, operation_type, message, created_at, is_read)
+        values (#{invoiceId}, #{senderTaxId}, #{receiverTaxId}, #{operationType}, #{message}, #{createdAt}, #{isRead})
+    </insert>
+
+</mapper>
