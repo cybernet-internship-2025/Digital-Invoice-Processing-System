@@ -8,13 +8,13 @@ import az.cybernet.usermanagement.dto.request.LoginRequest;
 
 public interface UserLoginService {
 
-    void loginByPhone(LoginRequest loginRequest);
+    String loginByPhone(LoginRequest loginRequest);
 
-    void loginByEmail(LoginByEmailRequest loginByEmailRequest);
+    String loginByEmail(LoginByEmailRequest loginByEmailRequest);
 
-    void loginByTelegram(LoginByTelegramRequest loginByTelegramRequest);
+    String loginByTelegram(LoginByTelegramRequest loginByTelegramRequest);
 
-    boolean checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request);
+    String checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request);
 
     boolean validateCitizen(String pin, String phoneNumber);
 

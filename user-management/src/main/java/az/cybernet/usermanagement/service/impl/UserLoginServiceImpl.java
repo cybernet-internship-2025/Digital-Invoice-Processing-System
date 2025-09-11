@@ -2,6 +2,7 @@ package az.cybernet.usermanagement.service.impl;
 
 import az.cybernet.usermanagement.client.IntegClient;
 import az.cybernet.usermanagement.config.BotProperties;
+import az.cybernet.usermanagement.config.JwtService;
 import az.cybernet.usermanagement.dto.request.EnterCodeByTelegramRequest;
 import az.cybernet.usermanagement.dto.request.LoginByEmailRequest;
 import az.cybernet.usermanagement.dto.request.LoginByTelegramRequest;
@@ -53,6 +54,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     private final JavaMailSender mailSender;
     private final IntegClient integrationClient;
     private final RegexUtil regexUtil;
+    private final JwtService jwtService;
     private static final String AZERBAIJAN_PHONE_REGEX = "^(\\+994|0)?(50|51|55|70|77|99|10)\\d{7}$";
     private static final String AZERBAIJAN_PIN_REGEX = "^[A-Z0-9]{7}$";
 
@@ -64,18 +66,18 @@ public class UserLoginServiceImpl implements UserLoginService {
     public void init() {
         this.botToken = botProperties.getToken();
     }
-
     @Override
-    public void loginByPhone(LoginRequest loginRequest) {
+    public String loginByPhone(LoginRequest loginRequest) {
         String phoneNumber = loginRequest.getPhoneNumber();
         validateCitizen(loginRequest.getPin(), phoneNumber);
         String otp = String.valueOf(this.generateOtp());
         redisTemplate.opsForValue().set("OTP_" + phoneNumber, otp, 5, TimeUnit.MINUTES);
         integrationService.sendOtp(phoneNumber, otp);
+        return "OTP sent: " + phoneNumber;
     }
 
     @Override
-    public void loginByEmail(LoginByEmailRequest loginByEmailRequest) {
+    public String loginByEmail(LoginByEmailRequest loginByEmailRequest) {
         String email = loginByEmailRequest.getEmail();
         String otp = String.valueOf(this.generateOtp());
         redisTemplate.opsForValue().set("OTP_" + email, otp, 5, TimeUnit.MINUTES);
@@ -85,6 +87,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         message.setSubject("Sizin OTP kodunuz");
         message.setText("Sizin OTP kodunuz: " + otp);
         mailSender.send(message);
+        return "OTP sent: " + email;
     }
 
     public int generateOtp() {
@@ -93,7 +96,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     }
 
     @Override
-    public void loginByTelegram(LoginByTelegramRequest request) {
+    public String loginByTelegram(LoginByTelegramRequest request) {
         checkAttemptsLimit(request);
         String verificationCode = generateOtpAndSaveAtRedis(request);
 
@@ -103,13 +106,16 @@ public class UserLoginServiceImpl implements UserLoginService {
             params.add("chat_id", request.getChatId());
             params.add("text", verificationCode);
 
-            restTemplate.postForObject(url, params, String.class);
+//            restTemplate.postForObject(url, params, String.class);
         } catch (Exception e) {
             e.printStackTrace();
+            return "An error occurred: " + e.getMessage();
         }
 
-        loginHelper.insertOTPLoginData(request, verificationCode);
+//        loginHelper.insertOTPLoginData(request, verificationCode);
+        return "OTP sent";
     }
+
 
     private void checkAttemptsLimit(LoginByTelegramRequest request) {
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
@@ -119,7 +125,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             RecentLoginAttempts recentLoginAttempts = attemptsRedisTemplate.opsForValue().get(loginByFinCacheKey);
 
             if (Objects.isNull(recentLoginAttempts)) {
-                log.warn("Recent login attempts is null for request");
+                log.warn("Recent login attempts is null for request {}", request);
                 recentLoginAttempts = new RecentLoginAttempts(new ArrayList<>());
             }
 
@@ -127,12 +133,11 @@ public class UserLoginServiceImpl implements UserLoginService {
                     .parse(attempt.getDate()).isBefore(oneHourAgo));
 
             if (recentLoginAttempts.getLoginAttempts().size() > 2) {
-                log.error("User trying to send too many otp ");
+                log.error("User trying to send too many otp {}", request);
                 throw new OtpLimitExceededException("Too many OTP requests in 1 hour");
             }
         }
     }
-
     private String generateOtpAndSaveAtRedis(LoginByTelegramRequest request) {
         Otp otp = new Otp(String.valueOf(generateOtp()), 0);
         String loginByFinCacheKey = getLoginByFinCacheKey(request.getPin());
@@ -155,6 +160,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         return otp.getVerificationCode();
     }
 
+
     private String getLoginByFinCacheKey(String pin) {
         return "loginByFinCacheKey-" + pin;
     }
@@ -167,14 +173,14 @@ public class UserLoginServiceImpl implements UserLoginService {
         try {
             return attemptsRedisTemplate.hasKey(key);
         } catch (Exception e) {
-            log.error("Redis error while checking key ");
+            log.error("Redis error while checking key {}: {}", key, e.getMessage(), e);
             throw new RedisOperationException("Redis error while checking key: " + key, e);
         }
     }
 
     @Override
-    public boolean checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request) {
-        log.info("Enter code request");
+    public String checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request) {
+        log.info("Enter code request {} ", request);
         String otpCacheKey = getOtpCodeCacheKey(request.getPin());
 
         if (hasKeyInRedis(otpCacheKey)) {
@@ -198,8 +204,9 @@ public class UserLoginServiceImpl implements UserLoginService {
             log.error("OTP not found in Redis, possibly expired");
             throw new VerificationCodeException("OTP expired or not found", 400);
         }
-        // loginHelper.updateLoginOTPData(request.getCode(), request.getPin(), request.getPhoneNumber());
-        return true;
+        return jwtService.generateToken(request.getPin(), request.getPhoneNumber());
+
+//        loginHelper.updateLoginOTPData(request.getCode(), request.getPin(), request.getPhoneNumber());
     }
     @Override
     public boolean validateCitizen(String pin, String phoneNumber) {
