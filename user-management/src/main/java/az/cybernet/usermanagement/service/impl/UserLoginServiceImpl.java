@@ -2,6 +2,7 @@ package az.cybernet.usermanagement.service.impl;
 
 import az.cybernet.usermanagement.client.IntegClient;
 import az.cybernet.usermanagement.config.BotProperties;
+import az.cybernet.usermanagement.config.JwtService;
 import az.cybernet.usermanagement.dto.request.EnterCodeByTelegramRequest;
 import az.cybernet.usermanagement.dto.request.LoginByEmailRequest;
 import az.cybernet.usermanagement.dto.request.LoginByTelegramRequest;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ import org.springframework.web.client.RestTemplate;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import az.cybernet.usermanagement.aop.annotation.Log;
@@ -53,6 +57,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     private final JavaMailSender mailSender;
     private final IntegClient integrationClient;
     private final RegexUtil regexUtil;
+    private final JwtService jwtService;
     private static final String AZERBAIJAN_PHONE_REGEX = "^(\\+994|0)?(50|51|55|70|77|99|10)\\d{7}$";
     private static final String AZERBAIJAN_PIN_REGEX = "^[A-Z0-9]{7}$";
 
@@ -173,7 +178,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     }
 
     @Override
-    public boolean checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request) {
+    public ResponseEntity<Map<String, String>> checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request) {
         log.info("Enter code request");
         String otpCacheKey = getOtpCodeCacheKey(request.getPin());
 
@@ -199,7 +204,11 @@ public class UserLoginServiceImpl implements UserLoginService {
             throw new VerificationCodeException("OTP expired or not found", 400);
         }
         // loginHelper.updateLoginOTPData(request.getCode(), request.getPin(), request.getPhoneNumber());
-        return true;
+        String token= jwtService.generateToken(request.getPin(), request.getPhoneNumber());
+        Map<String,String> response =new HashMap<>();
+        response.put("token",token);
+        return ResponseEntity.ok(response);
+
     }
     @Override
     public boolean validateCitizen(String pin, String phoneNumber) {

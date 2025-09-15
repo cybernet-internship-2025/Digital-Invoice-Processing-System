@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -37,7 +39,7 @@ public class UserLoginController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
     @PostMapping("/verify-otp-code")
-    public boolean verify(@RequestBody EnterCodeByTelegramRequest request) {
+    public ResponseEntity<Map<String, String>> verify(@RequestBody EnterCodeByTelegramRequest request) {
         return loginService.checkIsVerificationCodeSuccess(request);
     }
 
