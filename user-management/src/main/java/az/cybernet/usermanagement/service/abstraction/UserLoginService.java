@@ -4,6 +4,9 @@ import az.cybernet.usermanagement.dto.request.EnterCodeByTelegramRequest;
 import az.cybernet.usermanagement.dto.request.LoginByEmailRequest;
 import az.cybernet.usermanagement.dto.request.LoginByTelegramRequest;
 import az.cybernet.usermanagement.dto.request.LoginRequest;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Map;
 
 
 public interface UserLoginService {
@@ -14,7 +17,7 @@ public interface UserLoginService {
 
     void loginByTelegram(LoginByTelegramRequest loginByTelegramRequest);
 
-    boolean checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request);
+    ResponseEntity<Map<String, String>> checkIsVerificationCodeSuccess(EnterCodeByTelegramRequest request);
 
     boolean validateCitizen(String pin, String phoneNumber);
 
